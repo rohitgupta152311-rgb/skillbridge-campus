@@ -69,6 +69,6 @@ services:
 # 3. Managed PostgreSQL Database
 databases:
   - name: skillbridge-postgres
-    plan: starter # $7/mo - Persistent storage (never expires in 30 days), automated daily backups, 1GB RAM, 250GB bandwidth
+    plan: 0.5c-1g # $7/mo Render Flexible Compute: 0.5 CPU, 1GB RAM, persistent storage, automated daily backups
     databaseName: skillbridge
     user: skillbridge_user
