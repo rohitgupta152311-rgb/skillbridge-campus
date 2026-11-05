@@ -5,7 +5,7 @@ services:
     env: node
     plan: starter # $7/mo - Always On (No cold starts / sleep), 0.5 CPU, 512MB RAM
     rootDir: server
-    buildCommand: npm install && npx prisma generate && npm run build
+    buildCommand: npm install --include=dev && npx prisma generate && npm run build
     startCommand: npm start
     healthCheckPath: /health
     envVars:
