@@ -242,6 +242,105 @@ export function SkillExchangePage() {
         </div>
       </div>
 
+      {/* ── LIVE RECIPROCAL EXCHANGE SPOTLIGHT (SIGNATURE ANIMATION) ── */}
+      {activeTab === 'mutual' && mutualMatches.length > 0 && (
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 md:p-8 text-white border border-violet-500/30 shadow-xl mb-6 animate-fade-in">
+          {/* Header banner */}
+          <div className="flex flex-wrap items-center justify-between pb-4 border-b border-white/10 gap-2 mb-6">
+            <div className="flex items-center gap-2.5">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+              </span>
+              <span className="text-xs font-bold uppercase tracking-wider text-violet-300">
+                Live Reciprocal Exchange Spotlight
+              </span>
+            </div>
+            <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              ⚡ Highest Campus Compatibility
+            </span>
+          </div>
+
+          {/* The Interactive 3-way visual connection */}
+          <div className="grid grid-cols-1 md:grid-cols-11 gap-4 items-center">
+            {/* Student A (You) */}
+            <div className="md:col-span-4 p-5 rounded-2xl bg-white/5 border border-white/10 text-center space-y-2.5 backdrop-blur-xs">
+              <Avatar name={user?.fullName || 'You'} src={user?.avatar} size="lg" className="mx-auto ring-2 ring-violet-400" />
+              <div>
+                <h4 className="font-bold text-sm text-white">{user?.fullName} (You)</h4>
+                <p className="text-[11px] text-slate-300 line-clamp-1">{user?.headline || 'Full-Stack Developer'}</p>
+                <p className="text-[10px] text-violet-400 mt-0.5">{user?.department}</p>
+              </div>
+              <div className="pt-2.5 border-t border-white/10">
+                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block mb-1.5">You Offer To Teach</span>
+                <div className="flex flex-wrap justify-center gap-1.5">
+                  {mutualMatches[0].iCanTeachThem.map(s => (
+                    <span key={s} className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Center Animated Connector */}
+            <div className="md:col-span-3 flex flex-col items-center justify-center text-center py-4 space-y-3">
+              <div className="relative w-full flex items-center justify-center">
+                <div className="h-0.5 w-full bg-gradient-to-r from-emerald-400 via-violet-400 to-indigo-400" />
+                <div className="absolute w-12 h-12 rounded-full bg-violet-600 border-2 border-white flex items-center justify-center shadow-lg shadow-violet-500/50 hover:scale-110 transition-transform cursor-pointer">
+                  <ArrowLeftRight className="w-5 h-5 text-white animate-pulse" />
+                </div>
+              </div>
+              <div className="pt-2">
+                <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-amber-300 to-violet-300">
+                  {mutualMatches[0].matchScore}%
+                </span>
+                <p className="text-[10px] font-bold text-violet-200 tracking-wider uppercase mt-0.5">Reciprocal Match</p>
+              </div>
+              <p className="text-[10px] text-slate-300 max-w-[200px] leading-tight">
+                Zero financial cost. 2x learning velocity through mutual peer exchange.
+              </p>
+            </div>
+
+            {/* Student B (Partner) */}
+            <div className="md:col-span-4 p-5 rounded-2xl bg-white/5 border border-white/10 text-center space-y-2.5 backdrop-blur-xs">
+              <Avatar name={mutualMatches[0].partnerName} src={mutualMatches[0].partnerAvatar} size="lg" className="mx-auto ring-2 ring-indigo-400" />
+              <div>
+                <h4 className="font-bold text-sm text-white">{mutualMatches[0].partnerName}</h4>
+                <p className="text-[11px] text-slate-300 line-clamp-1">{mutualMatches[0].partnerHeadline}</p>
+                <p className="text-[10px] text-indigo-400 mt-0.5">{mutualMatches[0].partnerDepartment}</p>
+              </div>
+              <div className="pt-2.5 border-t border-white/10">
+                <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block mb-1.5">They Teach You</span>
+                <div className="flex flex-wrap justify-center gap-1.5">
+                  {mutualMatches[0].theyCanTeachMe.map(s => (
+                    <span key={s} className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Call to Action */}
+          <div className="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-xs text-slate-300">
+              <Calendar className="w-4 h-4 text-violet-400 shrink-0" />
+              <span>Matching free timetable days: <strong>{mutualMatches[0].sharedDays.join(' & ')}</strong></span>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => openScheduleModal(mutualMatches[0])}
+              className="w-full sm:w-auto bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold px-6 py-2 shadow-lg shadow-violet-600/30 rounded-xl"
+            >
+              Connect & Exchange Skills →
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* ── MATCHES LIST ── */}
       <div className="space-y-4">
         {currentList.length === 0 ? (

@@ -20,7 +20,7 @@ async function bootstrap() {
 
   server.listen(env.PORT, () => {
     console.log(`=======================================================`);
-    console.log(`🚀 SkillBridge 2.0 Backend Server Running`);
+    console.log(`🚀 StudyBridge 2.0 Backend Server Running`);
     console.log(`📡 Environment: ${env.NODE_ENV}`);
     console.log(`🌐 Server Port: http://localhost:${env.PORT}`);
     console.log(`🩺 Health Check: http://localhost:${env.PORT}/health`);
@@ -50,6 +50,6 @@ async function bootstrap() {
 }
 
 bootstrap().catch((err) => {
-  console.error('Failed to start SkillBridge server:', err);
+  console.error('Failed to start StudyBridge server:', err);
   process.exit(1);
 });

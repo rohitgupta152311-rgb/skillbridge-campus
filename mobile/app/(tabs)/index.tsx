@@ -57,7 +57,7 @@ export default function FeedScreen() {
       authorAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
       timeAgo: '4h ago',
       content:
-        'Hosting an open review session this Thursday at 5 PM on Cache Coherence and Paxos Consensus. Available for 1-on-1 tutoring slots on SkillBridge for midterm prep! Drop your questions below.',
+        'Hosting an open review session this Thursday at 5 PM on Cache Coherence and Paxos Consensus. Available for 1-on-1 tutoring slots on StudyBridge for midterm prep! Drop your questions below.',
       likes: 42,
       comments: 14,
       liked: true,
@@ -70,7 +70,7 @@ export default function FeedScreen() {
       authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
       timeAgo: 'Yesterday',
       content:
-        'Big shoutout to Sarah Jenkins for the mentorship session on Dynamic Programming! Solved all memoization practice problems for CS301 with her guidance. SkillBridge matching works wonders.',
+        'Big shoutout to Sarah Jenkins for the mentorship session on Dynamic Programming! Solved all memoization practice problems for CS301 with her guidance. StudyBridge matching works wonders.',
       likes: 29,
       comments: 3,
       liked: false,
@@ -126,7 +126,7 @@ export default function FeedScreen() {
     const newPost = {
       id: `p-${Date.now()}`,
       authorName: user?.profile?.fullName || 'Campus Peer',
-      authorHeadline: user?.profile?.headline || 'SkillBridge Member',
+      authorHeadline: user?.profile?.headline || 'StudyBridge Member',
       authorAvatar:
         user?.profile?.avatarUrl ||
         'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200',
@@ -152,7 +152,7 @@ export default function FeedScreen() {
           <View style={styles.logoIcon}>
             <GraduationCap color="#ffffff" size={18} />
           </View>
-          <Text style={styles.brandTitle}>SkillBridge</Text>
+          <Text style={styles.brandTitle}>StudyBridge</Text>
           <View style={styles.badge}>
             <Text style={styles.badgeText}>3.0</Text>
           </View>

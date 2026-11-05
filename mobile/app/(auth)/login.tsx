@@ -60,7 +60,7 @@ export default function MobileLoginScreen() {
             <GraduationCap size={28} color="#ffffff" />
           </View>
           <View style={styles.titleRow}>
-            <Text style={styles.brandName}>SkillBridge</Text>
+            <Text style={styles.brandName}>StudyBridge</Text>
             <View style={styles.versionPill}>
               <Text style={styles.versionText}>Mobile 3.0</Text>
             </View>

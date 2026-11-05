@@ -1,3 +1,4 @@
+import { FindMyTeamModal } from './FindMyTeamModal';
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -34,6 +35,7 @@ export function ProjectSpacePage() {
 
   // Modals state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isFindTeamOpen, setIsFindTeamOpen] = useState(false);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
   const [selectedProjectForApply, setSelectedProjectForApply] = useState<Project | null>(null);
   const [selectedPositionId, setSelectedPositionId] = useState<string>('');
@@ -216,6 +218,15 @@ export function ProjectSpacePage() {
               onClick={() => setIsCreateOpen(true)}
             >
               Launch a Project
+            </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              leftIcon={<Sparkles className="w-4 h-4 text-violet-600" />}
+              className="bg-white text-slate-900 hover:bg-slate-50 font-bold shadow-md border border-slate-200"
+              onClick={() => setIsFindTeamOpen(true)}
+            >
+              Find My Team
             </Button>
             <Link to="/exchange">
               <Button
@@ -636,6 +647,12 @@ export function ProjectSpacePage() {
           </div>
         </form>
       </Modal>
+      {/* ── FIND MY TEAM ALGORITHMIC MATCHMAKER MODAL ── */}
+      <FindMyTeamModal
+        isOpen={isFindTeamOpen}
+        onClose={() => setIsFindTeamOpen(false)}
+        onApply={(proj, posId) => handleOpenApply(proj, posId)}
+      />
     </div>
   );
 }

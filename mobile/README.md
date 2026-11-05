@@ -1,8 +1,8 @@
-# SkillBridge 3.0 Mobile Application (React Native & Expo)
+# StudyBridge 3.0 Mobile Application (React Native & Expo)
 
-SkillBridge Mobile is a cross-platform (Android & iOS) peer-to-peer tutoring and academic networking application built with **React Native**, **Expo (SDK 52)**, and **Expo Router**.
+StudyBridge Mobile is a cross-platform (Android & iOS) peer-to-peer tutoring and academic networking application built with **React Native**, **Expo (SDK 52)**, and **Expo Router**.
 
-It communicates with the centralized **SkillBridge Render Backend** and shares the exact same **PostgreSQL database** as the web client.
+It communicates with the centralized **StudyBridge Render Backend** and shares the exact same **PostgreSQL database** as the web client.
 
 ---
 
@@ -39,7 +39,7 @@ npx expo start
 
 ### 3. Backend API Connection
 - **Android Emulator**: Automatically routes to `http://10.0.2.2:5000/api/v1` to communicate with the host backend.
-- **iOS Simulator / Physical Device**: Update `extra.productionApiUrl` in `app.json` or set to your Render deployment URL: `https://skillbridge-api.onrender.com/api/v1`.
+- **iOS Simulator / Physical Device**: Update `extra.productionApiUrl` in `app.json` or set to your Render deployment URL: `https://studybridge-api.onrender.com/api/v1`.
 
 ---
 

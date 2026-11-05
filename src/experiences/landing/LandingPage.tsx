@@ -1,42 +1,61 @@
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   GraduationCap, Search, Calendar, MessageSquare, Star, Users, BookOpen, Code,
-  Cpu, BarChart3, Globe, Zap, ArrowRight, CheckCircle, ChevronRight, Wifi,
-  Brain, Calculator, Network,
+  Cpu, BarChart3, Globe, Zap, ArrowRight, CheckCircle2, ChevronRight, Wifi,
+  Brain, Calculator, Network, Sparkles, Repeat, Rocket, ShieldCheck, Layers
 } from 'lucide-react';
 import { Avatar, StarRating, Card, Badge, Button } from '../../shared/components';
-import { mockUsers, mockExpertise, mockReviews } from '../../infrastructure/mock-database/seed-data';
+import { mockUsers, mockExpertise, mockReviews, mockProjects } from '../../infrastructure/mock-database/seed-data';
 
 const mentorUsers = mockUsers.filter(u => u.role === 'mentor').slice(0, 4);
 
-const steps = [
-  { icon: Users, title: 'Create Your Profile', desc: 'Sign up and tell us about your academic goals, subjects, and learning preferences.' },
-  { icon: Brain, title: 'Get Smart Matches', desc: 'Our algorithm finds mentors who match your needs based on expertise, schedule, and ratings.' },
-  { icon: Zap, title: 'Start Learning', desc: 'Book sessions, chat with mentors, and accelerate your academic journey.' },
+const pillars = [
+  {
+    icon: Repeat,
+    badge: 'Signature Feature',
+    title: 'Reciprocal Skill Exchange',
+    desc: 'Trade technical skills with campus peers in a zero-cash reciprocal barter. Student A teaches React; Student B teaches Python.',
+    color: 'from-violet-600 to-indigo-600',
+    link: '/exchange',
+    cta: 'Explore Exchanges',
+  },
+  {
+    icon: Rocket,
+    badge: 'Campus Incubator',
+    title: 'ProjectSpace Team Matcher',
+    desc: 'Assemble multidisciplinary hackathon and engineering capstone teams. Our algorithm matches project needs with student talent.',
+    color: 'from-blue-600 to-cyan-600',
+    link: '/projects',
+    cta: 'Find Project Teams',
+  },
+  {
+    icon: ShieldCheck,
+    badge: 'Academic Trust',
+    title: 'Verified Peer Tutoring',
+    desc: 'Book 1-on-1 tutoring sessions with departmental peers who have aced your exact course curriculum and professors.',
+    color: 'from-emerald-600 to-teal-600',
+    link: '/mentors',
+    cta: 'Browse Mentors',
+  },
 ];
 
 const categories = [
-  { icon: Code, title: 'Web Development', count: 4 },
-  { icon: Brain, title: 'Machine Learning', count: 2 },
-  { icon: BarChart3, title: 'Data Structures', count: 3 },
-  { icon: Cpu, title: 'Digital Electronics', count: 2 },
-  { icon: Calculator, title: 'Mathematics', count: 3 },
-  { icon: Network, title: 'Computer Networks', count: 2 },
-  { icon: Globe, title: 'Python', count: 3 },
-  { icon: Wifi, title: 'IoT & Embedded', count: 2 },
+  { icon: Code, title: 'Web Development', count: 8 },
+  { icon: Brain, title: 'Machine Learning & AI', count: 6 },
+  { icon: BarChart3, title: 'Data Structures & Alg.', count: 7 },
+  { icon: Cpu, title: 'Digital Electronics & VLSI', count: 5 },
+  { icon: Calculator, title: 'Engineering Mathematics', count: 4 },
+  { icon: Network, title: 'Computer Networks', count: 4 },
+  { icon: Wifi, title: 'IoT & Embedded Systems', count: 5 },
+  { icon: Layers, title: 'Robotics & CAD', count: 4 },
 ];
 
 const stats = [
-  { value: '12+', label: 'Active Mentors' },
-  { value: '500+', label: 'Sessions Completed' },
-  { value: '4.8', label: 'Average Rating' },
-  { value: '200+', label: 'Students Helped' },
-];
-
-const testimonials = [
-  { name: 'Alex Turner', dept: 'Computer Science, 2nd Year', quote: 'SkillBridge helped me find the perfect React mentor. Sarah explained hooks so clearly that I built my first app in a week!' },
-  { name: 'Mia Anderson', dept: 'Computer Science, 2nd Year', quote: 'The smart matching algorithm connected me with Rajesh for ML. His industry experience made all the difference in understanding concepts.' },
-  { name: 'Omar Hassan', dept: 'Electronics, 2nd Year', quote: 'Finally understood sequential circuits thanks to my mentor Emily. The scheduling system made it easy to book lab sessions.' },
+  { value: '38+', label: 'Verified Campus Students' },
+  { value: '8', label: 'Multidisciplinary Projects' },
+  { value: '96%', label: 'Top Reciprocal Match Rate' },
+  { value: '0 ₹', label: 'Zero-Cash Peer Barter' },
 ];
 
 export function LandingPage() {
@@ -44,63 +63,92 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Nav */}
-      <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-slate-200/60">
+      {/* ── TOP NAVIGATION ── */}
+      <nav className="fixed top-0 w-full bg-white/85 backdrop-blur-md z-50 border-b border-slate-200/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center">
+          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/')}>
+            <div className="w-9 h-9 bg-gradient-to-tr from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md shadow-violet-500/20">
               <GraduationCap className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-slate-900">SkillBridge</span>
+            <div>
+              <span className="text-xl font-black text-slate-900 tracking-tight">SkillBridge</span>
+              <span className="hidden sm:inline-block ml-2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-violet-100 text-violet-700">
+                CIH-008
+              </span>
+            </div>
           </div>
           <div className="hidden md:flex items-center gap-8">
-            <a href="#how-it-works" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">How It Works</a>
-            <a href="#mentors" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">Mentors</a>
-            <a href="#categories" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">Categories</a>
-            <a href="#testimonials" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">Testimonials</a>
+            <a href="#pillars" className="text-sm font-semibold text-slate-600 hover:text-violet-600 transition-colors">Platform Pillars</a>
+            <a href="#algorithm" className="text-sm font-semibold text-slate-600 hover:text-violet-600 transition-colors">Match Algorithm</a>
+            <a href="#projects" className="text-sm font-semibold text-slate-600 hover:text-violet-600 transition-colors">Campus Projects</a>
+            <a href="#categories" className="text-sm font-semibold text-slate-600 hover:text-violet-600 transition-colors">Domains</a>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>Log In</Button>
-            <Button size="sm" onClick={() => navigate('/register')}>Sign Up</Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
+              Log In
+            </Button>
+            <Button size="sm" className="bg-violet-600 hover:bg-violet-700 text-white font-bold" onClick={() => navigate('/register')}>
+              Join Campus
+            </Button>
           </div>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 bg-gradient-to-br from-[#1e1b4b] via-[#312e81] to-[#4c1d95] overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-violet-500 rounded-full blur-3xl" />
-          <div className="absolute bottom-10 right-20 w-96 h-96 bg-blue-500 rounded-full blur-3xl" />
+      {/* ── HERO SECTION ── */}
+      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#31104b] overflow-hidden text-white">
+        <div className="absolute inset-0 opacity-25">
+          <div className="absolute top-20 left-10 w-96 h-96 bg-violet-500 rounded-full blur-3xl" />
+          <div className="absolute bottom-10 right-20 w-[500px] h-[500px] bg-indigo-500 rounded-full blur-3xl" />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-violet-200 text-sm mb-6">
-              <Zap className="w-4 h-4" /> Smart Peer-to-Peer Tutoring Platform
+          <div className="max-w-3xl mx-auto text-center space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-violet-200 text-xs sm:text-sm font-medium backdrop-blur">
+              <Sparkles className="w-4 h-4 text-violet-400" />
+              <span>Smart Campus Life &bull; Challenge ID: CIH-008</span>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-              Learn Together.<br />Grow Together.
+
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
+              Connect Skills.<br />
+              <span className="bg-gradient-to-r from-violet-300 via-indigo-200 to-pink-300 bg-clip-text text-transparent">
+                Exchange Knowledge.
+              </span><br />
+              Build Together.
             </h1>
-            <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed">
-              Connect with experienced student mentors who understand your academic journey. Get personalized tutoring, master new skills, and achieve your goals.
+
+            <p className="text-base sm:text-lg md:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
+              The next-generation campus networking ecosystem. Trade peer technical skills in zero-cash mutual barters, assemble multidisciplinary project teams, and master your university coursework.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-              <Button size="lg" onClick={() => navigate('/register')} rightIcon={<ArrowRight className="w-5 h-5" />}>
-                Find a Mentor
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+              <Button
+                size="lg"
+                className="bg-violet-600 hover:bg-violet-500 text-white font-bold shadow-xl shadow-violet-600/30"
+                onClick={() => navigate('/register')}
+                rightIcon={<ArrowRight className="w-5 h-5" />}
+              >
+                Start Skill Exchange
               </Button>
-              <Button variant="outline" size="lg" onClick={() => navigate('/register')}
-                className="!border-white/30 !text-white hover:!bg-white/10">
-                Become a Mentor
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => navigate('/projects')}
+                className="!border-white/30 !text-white hover:!bg-white/10 font-bold"
+                leftIcon={<Rocket className="w-5 h-5 text-violet-300" />}
+              >
+                Explore ProjectSpace
               </Button>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-6">
+
+            {/* Micro Highlights */}
+            <div className="pt-8 flex flex-wrap items-center justify-center gap-6">
               {[
-                { icon: Users, label: '500+ Active Mentors' },
-                { icon: Star, label: '4.8★ Average Rating' },
-                { icon: BookOpen, label: '1000+ Sessions' },
+                { icon: Repeat, label: 'Two-Way Skill Barter' },
+                { icon: Users, label: '38+ Active Student Profiles' },
+                { icon: ShieldCheck, label: 'Department Verified' },
               ].map((s, i) => (
-                <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 backdrop-blur border border-white/10">
+                <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 backdrop-blur border border-white/15 text-xs sm:text-sm font-medium">
                   <s.icon className="w-4 h-4 text-violet-300" />
-                  <span className="text-sm font-medium text-white">{s.label}</span>
+                  <span>{s.label}</span>
                 </div>
               ))}
             </div>
@@ -108,184 +156,228 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="py-20 bg-white">
+      {/* ── 3 CORE PLATFORM PILLARS ── */}
+      <section id="pillars" className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Badge variant="violet" size="md">How It Works</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-4 mb-4">Get started in 3 simple steps</h2>
-            <p className="text-slate-500 text-lg max-w-2xl mx-auto">Our smart platform makes finding the right mentor effortless.</p>
+          <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
+            <Badge variant="violet" size="md">Core Pillars</Badge>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Built for Modern Campus Collaboration
+            </h2>
+            <p className="text-slate-600 text-sm sm:text-base">
+              Traditional tutoring is one-way and costly. SkillBridge turns your university into an interconnected peer learning and venture launchpad.
+            </p>
           </div>
+
           <div className="grid md:grid-cols-3 gap-8">
-            {steps.map((step, i) => (
-              <div key={i} className="text-center group">
-                <div className="relative w-16 h-16 mx-auto mb-6">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/25 group-hover:scale-110 transition-transform">
-                    <step.icon className="w-7 h-7 text-white" />
+            {pillars.map((pillar, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-violet-300 transition-all flex flex-col justify-between group"
+              >
+                <div className="space-y-4">
+                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${pillar.color} flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform`}>
+                    <pillar.icon className="w-7 h-7" />
                   </div>
-                  <span className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-amber-400 text-xs font-bold text-white flex items-center justify-center">{i + 1}</span>
+                  <span className="inline-block text-[11px] font-bold uppercase tracking-wider text-violet-600 bg-violet-50 px-2.5 py-0.5 rounded-full">
+                    {pillar.badge}
+                  </span>
+                  <h3 className="text-xl font-bold text-slate-900">{pillar.title}</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">{pillar.desc}</p>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">{step.title}</h3>
-                <p className="text-slate-500 leading-relaxed">{step.desc}</p>
+
+                <div className="pt-6 border-t border-slate-100 mt-6">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-violet-600 hover:text-violet-700 hover:bg-violet-50 justify-between font-semibold"
+                    onClick={() => navigate(pillar.link)}
+                    rightIcon={<ChevronRight className="w-4 h-4" />}
+                  >
+                    {pillar.cta}
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Featured Mentors */}
-      <section id="mentors" className="py-20 bg-slate-50">
+      {/* ── 5-FACTOR MATCHMAKER ALGORITHM EXPLAINER ── */}
+      <section id="algorithm" className="py-20 bg-white border-y border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Badge variant="violet" size="md">Featured Mentors</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-4 mb-4">Learn from the best on campus</h2>
-            <p className="text-slate-500 text-lg">Top-rated mentors ready to help you succeed.</p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {mentorUsers.map(mentor => {
-              const expertise = mockExpertise.filter(e => e.mentorId === mentor.id).slice(0, 3);
-              const reviews = mockReviews.filter(r => r.mentorId === mentor.id);
-              const avgRating = reviews.length > 0 ? reviews.reduce((s, r) => s + r.overallRating, 0) / reviews.length : 0;
-              return (
-                <Card key={mentor.id} hover className="text-center">
-                  <Avatar name={mentor.fullName} size="xl" className="mx-auto mb-3" />
-                  <h3 className="font-semibold text-slate-900">{mentor.fullName}</h3>
-                  <p className="text-sm text-slate-500 mb-1">{mentor.department}</p>
-                  <p className="text-xs text-violet-600 font-medium mb-3">{mentor.year}</p>
-                  <div className="flex flex-wrap justify-center gap-1.5 mb-3">
-                    {expertise.map(e => <Badge key={e.id} variant="info">{e.topic}</Badge>)}
+          <div className="grid lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-6 space-y-6">
+              <Badge variant="violet" size="md">Matchmaking Engine</Badge>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                Weighted 5-Factor Peer Compatibility Algorithm
+              </h2>
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                Rather than random lists, SkillBridge scores student pairs using a mathematically rigorous multi-factor algorithm calibrated specifically for collegiate academic cycles:
+              </p>
+
+              <div className="space-y-3">
+                {[
+                  { factor: 'Domain Expertise & Skill Coverage', weight: '35%', desc: 'Overlap between skills offered and skills wanted.' },
+                  { factor: 'Schedule Compatibility', weight: '25%', desc: 'Jaccard intersection over shared weekly availability slots.' },
+                  { factor: 'Two-Way Reciprocal Match', weight: '20%', desc: 'Bidirectional learning equilibrium (zero-cash barter).' },
+                  { factor: 'Peer Reputation & Rating', weight: '10%', desc: 'Normalized peer review score and badges earned.' },
+                  { factor: 'Academic Department Alignment', weight: '10%', desc: 'Shared courses, faculty, and academic year relevance.' },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <span className="px-2 py-0.5 rounded-md bg-violet-600 text-white text-xs font-bold shrink-0 mt-0.5">
+                      {item.weight}
+                    </span>
+                    <div>
+                      <span className="text-sm font-bold text-slate-900">{item.factor}</span>
+                      <p className="text-xs text-slate-500 mt-0.5">{item.desc}</p>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-center gap-2 mb-3">
-                    <StarRating rating={avgRating} size="sm" />
-                    <span className="text-sm font-medium text-slate-700">{avgRating.toFixed(1)}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Live Reciprocal Demonstration Card */}
+            <div className="lg:col-span-6">
+              <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-8 rounded-3xl text-white shadow-2xl border border-white/10 space-y-6">
+                <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-violet-400" />
+                    <span className="text-xs uppercase tracking-wider font-bold text-slate-300">
+                      Live Reciprocal Match Demonstration
+                    </span>
                   </div>
-                  <p className="text-xs text-slate-400">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</p>
-                </Card>
-              );
-            })}
+                  <span className="text-xs font-black text-emerald-400 bg-emerald-950/60 border border-emerald-500/40 px-2.5 py-1 rounded-full">
+                    96% Mutual Match
+                  </span>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {/* Student A */}
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
+                    <span className="text-[10px] uppercase font-bold text-violet-300">Student A (You)</span>
+                    <h4 className="font-bold text-white text-base">Alex Chen</h4>
+                    <p className="text-xs text-slate-400">CS &bull; 3rd Year</p>
+                    <div className="text-xs space-y-1 pt-2">
+                      <div className="text-emerald-400 font-semibold">Teaches: React, TypeScript</div>
+                      <div className="text-violet-300 font-semibold">Wants: Python, ML</div>
+                    </div>
+                  </div>
+
+                  {/* Student B */}
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
+                    <span className="text-[10px] uppercase font-bold text-emerald-300">Student B (Partner)</span>
+                    <h4 className="font-bold text-white text-base">Sarah Jenkins</h4>
+                    <p className="text-xs text-slate-400">Data Science &bull; 4th Year</p>
+                    <div className="text-xs space-y-1 pt-2">
+                      <div className="text-emerald-400 font-semibold">Teaches: Python, ML</div>
+                      <div className="text-violet-300 font-semibold">Wants: React, TypeScript</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-violet-500/20 rounded-xl border border-violet-400/30 text-center">
+                  <p className="text-xs text-violet-200">
+                    ⚡ Perfect Inversion: Both students teach what the other needs, with 4 overlapping available days!
+                  </p>
+                </div>
+
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold"
+                  onClick={() => navigate('/exchange')}
+                >
+                  Experience the Reciprocal Matchmaker &rarr;
+                </Button>
+              </div>
+            </div>
           </div>
-          <div className="text-center mt-10">
-            <Button variant="outline" onClick={() => navigate('/register')} rightIcon={<ChevronRight className="w-4 h-4" />}>
-              View All Mentors
+        </div>
+      </section>
+
+      {/* ── STATS SECTION ── */}
+      <section className="py-16 bg-gradient-to-r from-violet-700 via-indigo-700 to-violet-800 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((stat, i) => (
+              <div key={i} className="text-center space-y-1">
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-black">{stat.value}</p>
+                <p className="text-violet-200 text-xs sm:text-sm font-semibold">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── POPULAR CATEGORIES ── */}
+      <section id="categories" className="py-20 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 space-y-2">
+            <Badge variant="violet" size="md">Academic Engineering Domains</Badge>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Multidisciplinary Campus Coverage
+            </h2>
+            <p className="text-slate-600 text-sm">
+              Connecting Computer Science, Electronics, Mechanical, Civil, and Data Science.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {categories.map((cat, i) => (
+              <div
+                key={i}
+                onClick={() => navigate('/exchange')}
+                className="group p-5 rounded-2xl bg-white border border-slate-200 hover:border-violet-300 hover:shadow-md transition-all cursor-pointer text-center space-y-2"
+              >
+                <div className="w-12 h-12 mx-auto rounded-xl bg-violet-50 flex items-center justify-center group-hover:bg-violet-600 group-hover:text-white transition-all text-violet-600">
+                  <cat.icon className="w-6 h-6" />
+                </div>
+                <h3 className="font-bold text-slate-900 text-sm">{cat.title}</h3>
+                <p className="text-xs text-slate-500">{cat.count} verified peers</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CALL TO ACTION ── */}
+      <section className="py-20 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white">
+        <div className="max-w-3xl mx-auto px-4 text-center space-y-6">
+          <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+            Ready to Connect &amp; Build Together?
+          </h2>
+          <p className="text-base sm:text-lg text-slate-300 leading-relaxed">
+            Join 38+ students across campus currently trading skills, discovering co-founders, and conquering university coursework.
+          </p>
+          <div className="pt-2">
+            <Button
+              size="lg"
+              onClick={() => navigate('/register')}
+              className="!bg-white !text-violet-900 hover:!bg-slate-100 font-extrabold shadow-xl text-base px-8"
+              rightIcon={<ArrowRight className="w-5 h-5" />}
+            >
+              Get Started on SkillBridge
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Categories */}
-      <section id="categories" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Badge variant="violet" size="md">Popular Categories</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-4 mb-4">Explore learning categories</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {categories.map((cat, i) => (
-              <div key={i} className="group p-5 rounded-xl border border-slate-200 hover:border-violet-300 hover:shadow-md transition-all cursor-pointer text-center">
-                <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-violet-50 flex items-center justify-center group-hover:bg-violet-100 transition-colors">
-                  <cat.icon className="w-6 h-6 text-violet-600" />
-                </div>
-                <h3 className="font-medium text-slate-900 text-sm mb-1">{cat.title}</h3>
-                <p className="text-xs text-slate-400">{cat.count} mentors</p>
+      {/* ── FOOTER ── */}
+      <footer className="bg-slate-900 text-slate-400 py-16 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center">
+                <GraduationCap className="w-5 h-5 text-white" />
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section className="py-16 bg-gradient-to-r from-violet-600 to-indigo-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, i) => (
-              <div key={i} className="text-center">
-                <p className="text-3xl md:text-4xl font-bold text-white mb-1">{stat.value}</p>
-                <p className="text-violet-200 text-sm">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section id="testimonials" className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Badge variant="violet" size="md">Testimonials</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-4 mb-4">What students say</h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((t, i) => (
-              <Card key={i} padding="lg">
-                <div className="flex items-center gap-1 mb-4">
-                  {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-amber-400 text-amber-400" />)}
-                </div>
-                <p className="text-slate-600 leading-relaxed mb-5 italic">"{t.quote}"</p>
-                <div className="flex items-center gap-3">
-                  <Avatar name={t.name} size="sm" />
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">{t.name}</p>
-                    <p className="text-xs text-slate-500">{t.dept}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-20 bg-gradient-to-br from-[#1e1b4b] to-[#4c1d95]">
-        <div className="max-w-3xl mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Ready to accelerate your learning?</h2>
-          <p className="text-lg text-slate-300 mb-8">Join hundreds of students already learning smarter with SkillBridge.</p>
-          <Button size="lg" onClick={() => navigate('/register')} className="!bg-white !text-violet-700 hover:!bg-slate-100"
-            rightIcon={<ArrowRight className="w-5 h-5" />}>
-            Get Started Free
-          </Button>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8 mb-12">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center">
-                  <GraduationCap className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-lg font-bold text-white">SkillBridge</span>
-              </div>
-              <p className="text-sm leading-relaxed">Smart peer-to-peer tutoring platform connecting students with the right mentors for academic success.</p>
+              <span className="text-lg font-bold text-white">SkillBridge</span>
             </div>
-            <div>
-              <h4 className="font-semibold text-white mb-4 text-sm">Quick Links</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a></li>
-                <li><a href="#mentors" className="hover:text-white transition-colors">Find Mentors</a></li>
-                <li><a href="#categories" className="hover:text-white transition-colors">Categories</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white mb-4 text-sm">Resources</h4>
-              <ul className="space-y-2 text-sm">
-                <li><span className="hover:text-white transition-colors cursor-pointer">Help Center</span></li>
-                <li><span className="hover:text-white transition-colors cursor-pointer">Community Guidelines</span></li>
-                <li><span className="hover:text-white transition-colors cursor-pointer">Safety Tips</span></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white mb-4 text-sm">Contact</h4>
-              <ul className="space-y-2 text-sm">
-                <li>support@skillbridge.campus</li>
-                <li>Student Center, Room 105</li>
-                <li>Mon–Fri, 9 AM – 5 PM</li>
-              </ul>
-            </div>
+            <p className="text-xs text-slate-400 text-center sm:text-right">
+              Challenge ID: <strong>CIH-008</strong> &bull; Smart Peer-to-Peer Tutoring &amp; Mentorship Matchmaker
+            </p>
           </div>
-          <div className="border-t border-slate-800 pt-8 text-center text-sm">
-            <p>© 2026 SkillBridge. Built for CIH-008 Hackathon. All rights reserved.</p>
+          <div className="border-t border-slate-800 pt-6 text-center text-xs text-slate-500">
+            &copy; 2026 SkillBridge. Fully audited, redesigned, and seeded with campus dataset.
           </div>
         </div>
       </footer>

@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding SkillBridge 2.0 PostgreSQL database...');
+  console.log('Seeding StudyBridge 2.0 PostgreSQL database...');
 
   const passwordHash = await bcrypt.hash('demo1234', 10);
   const adminPasswordHash = await bcrypt.hash('admin1234', 10);

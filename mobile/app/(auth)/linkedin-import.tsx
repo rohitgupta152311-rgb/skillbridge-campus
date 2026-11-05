@@ -69,7 +69,7 @@ export default function MobileLinkedInImportScreen() {
           </View>
           <Text style={styles.title}>Review Imported Profile</Text>
           <Text style={styles.desc}>
-            SkillBridge imported your official public identity. Please review and confirm your academic details below before saving.
+            StudyBridge imported your official public identity. Please review and confirm your academic details below before saving.
           </Text>
         </View>
 

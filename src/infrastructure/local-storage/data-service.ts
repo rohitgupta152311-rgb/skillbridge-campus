@@ -27,7 +27,7 @@ const STORAGE_KEYS = {
   connections: 'sb_connections',
   projects: 'sb_projects',
   projectApplications: 'sb_project_applications',
-  initialized: 'sb_initialized_v4',
+  initialized: 'sb_initialized_v4_rich_students',
 } as const;
 
 function loadOrSeed<T>(key: string, seedData: T[]): T[] {

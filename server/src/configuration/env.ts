@@ -6,9 +6,9 @@ dotenv.config();
 const envSchema = z.object({
   PORT: z.string().default('5000').transform((v) => parseInt(v, 10)),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  DATABASE_URL: z.string().optional().default('postgresql://postgres:postgres@localhost:5432/skillbridge?schema=public'),
+  DATABASE_URL: z.string().optional().default('postgresql://postgres:postgres@localhost:5432/studybridge?schema=public'),
   FRONTEND_URL: z.string().default('http://localhost:5173'),
-  JWT_SECRET: z.string().default('skillbridge_super_secure_jwt_secret_key_change_in_production_2026'),
+  JWT_SECRET: z.string().default('studybridge_super_secure_jwt_secret_key_change_in_production_2026'),
   JWT_EXPIRES_IN: z.string().default('7d'),
   GOOGLE_CLIENT_ID: z.string().optional().default(''),
   GOOGLE_CLIENT_SECRET: z.string().optional().default(''),

@@ -1,11 +1,11 @@
-# SkillBridge 3.0 – Complete Web + Mobile Campus Networking & Mentorship Ecosystem
+# StudyBridge 3.0 – Complete Web + Mobile Campus Networking & Mentorship Ecosystem
 
-[![CI/CD Deployment](https://github.com/skillbridge/campus/actions/workflows/deploy.yml/badge.svg)](https://github.com/skillbridge/campus/actions)
-[![EAS Mobile OTA Updates](https://github.com/skillbridge/campus/actions/workflows/mobile-eas.yml/badge.svg)](https://github.com/skillbridge/campus/actions)
-[![Backend Status](https://img.shields.io/badge/Render-Backend%20Live-brightgreen)](https://skillbridge-backend.onrender.com/health)
+[![CI/CD Deployment](https://github.com/studybridge/campus/actions/workflows/deploy.yml/badge.svg)](https://github.com/studybridge/campus/actions)
+[![EAS Mobile OTA Updates](https://github.com/studybridge/campus/actions/workflows/mobile-eas.yml/badge.svg)](https://github.com/studybridge/campus/actions)
+[![Backend Status](https://img.shields.io/badge/Render-Backend%20Live-brightgreen)](https://studybridge-backend.onrender.com/health)
 [![Expo SDK](https://img.shields.io/badge/Expo-SDK%2052-blue.svg)](https://expo.dev)
 
-SkillBridge 3.0 is a complete, production-grade professional networking and peer-to-peer mentorship ecosystem designed specifically for university students, faculty, and alumni. It unifies the best concepts of **LinkedIn** (professional networking, verified skill endorsements, home activity feed), **Discord** (real-time chat, student communities), **Calendly** (conflict-aware calendar scheduling), and **Upwork** (skill discovery and verified mentor reputation).
+StudyBridge 3.0 is a complete, production-grade professional networking and peer-to-peer mentorship ecosystem designed specifically for university students, faculty, and alumni. It unifies the best concepts of **LinkedIn** (professional networking, verified skill endorsements, home activity feed), **Discord** (real-time chat, student communities), **Calendly** (conflict-aware calendar scheduling), and **Upwork** (skill discovery and verified mentor reputation).
 
 ---
 
@@ -35,10 +35,10 @@ All applications connect to the **same centralized backend and PostgreSQL databa
 
 ---
 
-## 🌟 Key Features in SkillBridge 3.0
+## 🌟 Key Features in StudyBridge 3.0
 
 ### 1. Official LinkedIn Login & Automatic Profile Import (7-Step Flow)
-SkillBridge adheres strictly to official LinkedIn Developer policies:
+StudyBridge adheres strictly to official LinkedIn Developer policies:
 - **Zero Scraping & Minimal Scopes**: Uses official OpenID Connect scopes (`openid`, `profile`, `email`).
 - **Profile Import**: Automatically imports verified photo, name, email, headline, and public profile link.
 - **Review & Edit Modal**: Users preview imported information, specify their university department/year, and edit fields before saving.
@@ -129,8 +129,8 @@ To deploy the entire stack on Render:
 2. In Render Dashboard, click **New +** > **Blueprint** and select this repository.
 3. Render automatically sets up:
    - **`skillbridge-postgres`**: Managed PostgreSQL database.
-   - **`skillbridge-backend`**: Node/Express Web Service with health check `/health`.
-   - **`skillbridge-frontend`**: Static Site hosting the React + Vite web client.
+   - **`studybridge-backend`**: Node/Express Web Service with health check `/health`.
+   - **`studybridge-frontend`**: Static Site hosting the React + Vite web client.
 
 ### 2. Expo EAS Build & OTA Publishing
 ```bash
@@ -150,5 +150,5 @@ eas build --platform ios --profile production
 ---
 
 ## 📄 License & Attribution
-SkillBridge 3.0 was designed for the CIH-008 Smart Peer-to-Peer Tutoring and Mentorship Matchmaker challenge.
-All rights reserved © 2026 SkillBridge Technologies.
+StudyBridge 3.0 was designed for the CIH-008 Smart Peer-to-Peer Tutoring and Mentorship Matchmaker challenge.
+All rights reserved © 2026 StudyBridge Technologies.

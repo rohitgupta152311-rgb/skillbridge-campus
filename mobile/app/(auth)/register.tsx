@@ -32,14 +32,14 @@ export default function MobileRegisterScreen() {
 
     // Auto-login with selected role
     await loginWithDemo(role);
-    Alert.alert('Account Created', `Welcome to SkillBridge, ${fullName}! Your mobile profile has been initialized.`);
+    Alert.alert('Account Created', `Welcome to StudyBridge, ${fullName}! Your mobile profile has been initialized.`);
     router.replace('/(tabs)');
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.title}>Join SkillBridge</Text>
+        <Text style={styles.title}>Join StudyBridge</Text>
         <Text style={styles.subtitle}>
           Create your university networking & mentorship profile
         </Text>

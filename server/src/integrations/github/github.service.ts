@@ -62,7 +62,7 @@ export class GitHubService {
     const res = await fetch('https://api.github.com/user', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'User-Agent': 'SkillBridge-Campus',
+        'User-Agent': 'StudyBridge-Campus',
       },
     });
 
@@ -79,7 +79,7 @@ export class GitHubService {
         const emailsRes = await fetch('https://api.github.com/user/emails', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
-            'User-Agent': 'SkillBridge-Campus',
+            'User-Agent': 'StudyBridge-Campus',
           },
         });
         if (emailsRes.ok) {

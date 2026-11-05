@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "SkillBridge Campus",
-    "slug": "skillbridge-campus",
+    "name": "StudyBridge Campus",
+    "slug": "studybridge-campus",
     "version": "3.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "scheme": "skillbridge",
+    "scheme": "studybridge",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -15,11 +15,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.skillbridge.campus",
+      "bundleIdentifier": "com.studybridge.campus",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSCameraUsageDescription": "SkillBridge requires access to your camera to upload profile and post photos.",
-        "NSPhotoLibraryUsageDescription": "SkillBridge requires access to your photo library to select avatar and coursework documents."
+        "NSCameraUsageDescription": "StudyBridge requires access to your camera to upload profile and post photos.",
+        "NSPhotoLibraryUsageDescription": "StudyBridge requires access to your photo library to select avatar and coursework documents."
       }
     },
     "android": {
@@ -27,7 +27,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1e1b4b"
       },
-      "package": "com.skillbridge.campus",
+      "package": "com.studybridge.campus",
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
@@ -44,7 +44,7 @@
       [
         "expo-updates",
         {
-          "username": "skillbridge"
+          "username": "studybridge"
         }
       ]
     ],
@@ -65,7 +65,7 @@
         "projectId": "00000000-0000-0000-0000-000000000000"
       },
       "apiUrl": "http://10.0.2.2:5000/api/v1",
-      "productionApiUrl": "https://skillbridge-api.onrender.com/api/v1"
+      "productionApiUrl": "https://studybridge-api.onrender.com/api/v1"
     }
   }
 }

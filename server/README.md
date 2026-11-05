@@ -1,6 +1,6 @@
-# SkillBridge 2.0 Backend Service
+# StudyBridge 2.0 Backend Service
 
-High-performance Express.js + TypeScript + Prisma + PostgreSQL + Socket.IO server powering the SkillBridge Campus Professional Networking & Mentorship Ecosystem.
+High-performance Express.js + TypeScript + Prisma + PostgreSQL + Socket.IO server powering the StudyBridge Campus Professional Networking & Mentorship Ecosystem.
 
 ---
 
@@ -59,19 +59,19 @@ npm start
 3. Create **OAuth 2.0 Client IDs** (Application Type: Web Application).
 4. **Authorized JavaScript Origins**:
    - `http://localhost:5173` (Local)
-   - `https://skillbridge-campus.onrender.com` (Production)
+   - `https://studybridge-campus.onrender.com` (Production)
 5. **Authorized Redirect URIs**:
    - `http://localhost:5000/api/v1/auth/google/callback` (Local)
-   - `https://skillbridge-backend.onrender.com/api/v1/auth/google/callback` (Production)
+   - `https://studybridge-backend.onrender.com/api/v1/auth/google/callback` (Production)
 6. Copy `Client ID` to `GOOGLE_CLIENT_ID` and `Client Secret` to `GOOGLE_CLIENT_SECRET`.
 
 ### 2. GitHub OAuth
 1. Open [GitHub Developer Settings](https://github.com/settings/developers) > **OAuth Apps**.
 2. Click **New OAuth App**.
-3. **Homepage URL**: `https://skillbridge-campus.onrender.com` (or `http://localhost:5173`)
+3. **Homepage URL**: `https://studybridge-campus.onrender.com` (or `http://localhost:5173`)
 4. **Authorization callback URL**:
    - `http://localhost:5000/api/v1/auth/github/callback` (Local)
-   - `https://skillbridge-backend.onrender.com/api/v1/auth/github/callback` (Production)
+   - `https://studybridge-backend.onrender.com/api/v1/auth/github/callback` (Production)
 5. Copy keys to `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`.
 
 ### 3. LinkedIn OAuth 2.0 (OpenID Connect)
@@ -79,7 +79,7 @@ npm start
 2. Create an App and attach the **Sign In with LinkedIn using OpenID Connect** product.
 3. Under **Auth** tab > **Authorized redirect URLs for your app**:
    - `http://localhost:5000/api/v1/auth/linkedin/callback` (Local)
-   - `https://skillbridge-backend.onrender.com/api/v1/auth/linkedin/callback` (Production)
+   - `https://studybridge-backend.onrender.com/api/v1/auth/linkedin/callback` (Production)
 4. Copy credentials to `LINKEDIN_CLIENT_ID` and `LINKEDIN_CLIENT_SECRET`.
 
 ---

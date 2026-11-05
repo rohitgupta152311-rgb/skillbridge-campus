@@ -70,7 +70,7 @@ export default function ProfileScreen() {
           </View>
 
           <Text style={styles.headline}>
-            {user?.profile?.headline || 'SkillBridge Member'}
+            {user?.profile?.headline || 'StudyBridge Member'}
           </Text>
 
           <Text style={styles.meta}>

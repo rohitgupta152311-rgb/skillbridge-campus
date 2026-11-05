@@ -46,7 +46,7 @@ export class UploadService {
     if (cloudName && apiKey && apiSecret) {
       // Production Cloudinary Upload
       const timestamp = Math.floor(Date.now() / 1000);
-      const signaturePayload = `folder=skillbridge/${folder}&timestamp=${timestamp}${apiSecret}`;
+      const signaturePayload = `folder=studybridge/${folder}&timestamp=${timestamp}${apiSecret}`;
       const signature = crypto.createHash('sha1').update(signaturePayload).digest('hex');
 
       const formData = new URLSearchParams();
@@ -54,7 +54,7 @@ export class UploadService {
       formData.append('api_key', apiKey);
       formData.append('timestamp', String(timestamp));
       formData.append('signature', signature);
-      formData.append('folder', `skillbridge/${folder}`);
+      formData.append('folder', `studybridge/${folder}`);
 
       const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
         method: 'POST',

@@ -1,6 +1,6 @@
-# SkillBridge 3.0 – Production Deployment & Infrastructure Guide
+# StudyBridge 3.0 – Production Deployment & Infrastructure Guide
 
-This guide details the complete production deployment process for the SkillBridge 3.0 ecosystem across **Render**, **GitHub Actions**, **LinkedIn Developer Portal**, and **Expo EAS**.
+This guide details the complete production deployment process for the StudyBridge 3.0 ecosystem across **Render**, **GitHub Actions**, **LinkedIn Developer Portal**, and **Expo EAS**.
 
 ---
 
@@ -11,12 +11,12 @@ The root repository contains a validated [`render.yaml`](./render.yaml) blueprin
 ### Automatic Provisioning via Render Blueprint:
 1. Log in to [Render Dashboard](https://dashboard.render.com/).
 2. Click **New +** > **Blueprint**.
-3. Connect your GitHub repository (`skillbridge-campus`).
+3. Connect your GitHub repository (`studybridge-campus`).
 4. Render automatically parses `render.yaml` and provisions:
    - **`skillbridge-postgres`**: PostgreSQL 16 database.
-   - **`skillbridge-backend`**: Node.js/Express Web Service.
-   - **`skillbridge-frontend`**: Static Site hosting the React application.
-5. In the Render dashboard under `skillbridge-backend` > **Environment**, provide your production OAuth keys.
+   - **`studybridge-backend`**: Node.js/Express Web Service.
+   - **`studybridge-frontend`**: Static Site hosting the React application.
+5. In the Render dashboard under `studybridge-backend` > **Environment**, provide your production OAuth keys.
 
 ---
 
@@ -26,14 +26,14 @@ To enable the official LinkedIn Profile Auto-Import flow:
 
 1. Visit the [LinkedIn Developer Portal](https://www.linkedin.com/developers/).
 2. Click **Create App**:
-   - App Name: `SkillBridge Campus`
+   - App Name: `StudyBridge Campus`
    - Company: Link your university or student organization page.
-   - Privacy Policy URL: `https://skillbridge-campus.onrender.com/privacy`
+   - Privacy Policy URL: `https://studybridge-campus.onrender.com/privacy`
 3. Under the **Products** tab, request access to:
    - **Sign In with LinkedIn using OpenID Connect** (Approved instantly for all developer accounts).
 4. Under the **Auth** tab, add your **Authorized Redirect URLs**:
    - Development: `http://localhost:5000/api/v1/auth/linkedin/callback`
-   - Production: `https://skillbridge-backend.onrender.com/api/v1/auth/linkedin/callback`
+   - Production: `https://studybridge-backend.onrender.com/api/v1/auth/linkedin/callback`
 5. Copy your **Client ID** and **Client Secret** and add them to Render environment variables:
    - `LINKEDIN_CLIENT_ID`
    - `LINKEDIN_CLIENT_SECRET`
@@ -47,13 +47,13 @@ To enable the official LinkedIn Profile Auto-Import flow:
 1. Go to [Google Cloud Console](https://console.cloud.google.com/) > **APIs & Services** > **Credentials**.
 2. Create an **OAuth 2.0 Client ID** (Web application).
 3. Add Authorized Redirect URI:
-   - `https://skillbridge-backend.onrender.com/api/v1/auth/google/callback`
+   - `https://studybridge-backend.onrender.com/api/v1/auth/google/callback`
 4. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in Render.
 
 ### GitHub Developer Settings:
 1. Go to [GitHub Developer Settings](https://github.com/settings/developers) > **OAuth Apps** > **New OAuth App**.
 2. Authorization callback URL:
-   - `https://skillbridge-backend.onrender.com/api/v1/auth/github/callback`
+   - `https://studybridge-backend.onrender.com/api/v1/auth/github/callback`
 3. Set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` in Render.
 
 ---

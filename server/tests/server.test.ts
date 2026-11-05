@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 
-describe('SkillBridge 2.0 Backend Core Services', () => {
+describe('StudyBridge 2.0 Backend Core Services', () => {
   it('should validate environment defaults', () => {
     assert.strictEqual(typeof process.env.PORT !== 'undefined' || true, true);
   });
