@@ -586,12 +586,9 @@ export function getOAuthStatus(_req: Request, res: Response) {
 }
 
 export function handleGoogleAuth(req: Request, res: Response) {
-  if (!env.GOOGLE_CLIENT_ID) {
-    return res.status(503).json({
-      success: false,
-      message: 'Google OAuth is not configured on this server. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in environment variables.',
-      docs: 'Register OAuth credentials in Google Cloud Console with redirect URI: ' + env.GOOGLE_CALLBACK_URL,
-    });
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  if (!env.GOOGLE_CLIENT_ID || env.GOOGLE_CLIENT_ID === 'placeholder' || env.GOOGLE_CLIENT_ID.includes('your_google')) {
+    return res.redirect(frontendUrl + '/login?oauth_demo=google');
   }
 
   const state = Buffer.from(JSON.stringify({ timestamp: Date.now() })).toString('base64');
@@ -599,12 +596,9 @@ export function handleGoogleAuth(req: Request, res: Response) {
 }
 
 export function handleGitHubAuth(req: Request, res: Response) {
-  if (!env.GITHUB_CLIENT_ID) {
-    return res.status(503).json({
-      success: false,
-      message: 'GitHub OAuth is not configured on this server. Please set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET in environment variables.',
-      docs: 'Register OAuth App in GitHub Settings > Developer Settings with callback URL: ' + env.GITHUB_CALLBACK_URL,
-    });
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  if (!env.GITHUB_CLIENT_ID || env.GITHUB_CLIENT_ID === 'placeholder' || env.GITHUB_CLIENT_ID.includes('your_github')) {
+    return res.redirect(frontendUrl + '/login?oauth_demo=github');
   }
 
   const state = Buffer.from(JSON.stringify({ timestamp: Date.now() })).toString('base64');
@@ -612,12 +606,9 @@ export function handleGitHubAuth(req: Request, res: Response) {
 }
 
 export function handleLinkedInAuth(req: Request, res: Response) {
-  if (!env.LINKEDIN_CLIENT_ID) {
-    return res.status(503).json({
-      success: false,
-      message: 'LinkedIn OAuth 2.0 is not configured on this server. Please set LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET in environment variables.',
-      docs: 'Register App in LinkedIn Developer Portal with Sign In with LinkedIn product and callback URL: ' + env.LINKEDIN_CALLBACK_URL,
-    });
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  if (!env.LINKEDIN_CLIENT_ID || env.LINKEDIN_CLIENT_ID === 'placeholder' || env.LINKEDIN_CLIENT_ID.includes('your_linkedin')) {
+    return res.redirect(frontendUrl + '/login?oauth_demo=linkedin');
   }
 
   const state = Buffer.from(JSON.stringify({ timestamp: Date.now() })).toString('base64');

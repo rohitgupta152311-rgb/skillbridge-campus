@@ -3,6 +3,17 @@ import { User, UserRole } from '../../foundation/types';
 import { getUserByEmail, addUser, initializeDataStore } from '../../infrastructure/local-storage/data-service';
 import { DEMO_CREDENTIALS } from '../../foundation/constants';
 
+export interface OAuthProfileData {
+  email: string;
+  fullName: string;
+  avatar?: string;
+  role?: UserRole;
+  department?: string;
+  year?: string;
+  headline?: string;
+  provider: 'google' | 'github' | 'linkedin';
+}
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -10,6 +21,7 @@ interface AuthState {
   error: string | null;
   login: (email: string, password: string) => Promise<boolean>;
   register: (data: RegisterData) => Promise<boolean>;
+  loginWithOAuth: (profile: OAuthProfileData) => Promise<boolean>;
   logout: () => void;
   clearError: () => void;
 }
@@ -114,6 +126,39 @@ export const useAuthStore = create<AuthState>((set) => {
 
       localStorage.setItem(AUTH_KEY, JSON.stringify(newUser));
       set({ user: newUser, isAuthenticated: true, isLoading: false });
+      return true;
+    },
+
+    loginWithOAuth: async (profile: OAuthProfileData): Promise<boolean> => {
+      set({ isLoading: true, error: null });
+      await new Promise(r => setTimeout(r, 400));
+
+      let user = getUserByEmail(profile.email);
+      if (!user) {
+        user = addUser({
+          email: profile.email,
+          fullName: profile.fullName,
+          avatar: profile.avatar || '',
+          role: profile.role || 'mentee',
+          department: profile.department || 'Computer Science',
+          year: profile.year || '3rd Year',
+          bio: profile.headline || `Student at Campus • Verified via ${profile.provider.toUpperCase()}`,
+          isVerified: true,
+          isSuspended: false,
+          learningPreferences: ['visual', 'kinesthetic'],
+          languages: ['English', 'Hindi'],
+          onlineStatus: 'available',
+        });
+      } else {
+        // If user already exists, update verification and avatar if provided
+        if (profile.avatar && (!user.avatar || user.avatar.includes('placeholder'))) {
+          user.avatar = profile.avatar;
+        }
+        user.isVerified = true;
+      }
+
+      localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+      set({ user, isAuthenticated: true, isLoading: false, error: null });
       return true;
     },
 
