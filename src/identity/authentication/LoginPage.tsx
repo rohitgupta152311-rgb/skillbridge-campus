@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   GraduationCap,
@@ -31,6 +31,9 @@ import {
   LinkedInPreviewData,
 } from '../../experiences/personal-profile/LinkedInImportModal';
 
+// OFFICIAL GOOGLE CLIENT ID CONFIGURED BY USER
+const OFFICIAL_GOOGLE_CLIENT_ID = '647527528972-e6hov032q5igkbfdu3af9vmpdq3t53ag.apps.googleusercontent.com';
+
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,12 +56,6 @@ export function LoginPage() {
   const [githubModalOpen, setGithubModalOpen] = useState(false);
   const [customGoogleEmail, setCustomGoogleEmail] = useState('');
   const [customGithubUser, setCustomGithubUser] = useState('');
-  const [showEnvGuide, setShowEnvGuide] = useState<'Google' | 'GitHub' | 'LinkedIn' | null>(null);
-
-  // Live Google Cloud Credentials Config State
-  const [googleClientIdInput, setGoogleClientIdInput] = useState('');
-  const [googleClientSecretInput, setGoogleClientSecretInput] = useState('');
-  const [savingCredentials, setSavingCredentials] = useState(false);
 
   // LinkedIn Import Modal
   const [linkedinImport, setLinkedinImport] = useState<{
@@ -71,6 +68,83 @@ export function LoginPage() {
 
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
+  // Decode and handle Google Identity Services (GIS) Response
+  const handleGoogleCredentialResponse = async (response: any) => {
+    if (!response?.credential) return;
+    try {
+      const base64Url = response.credential.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      const googleUser = JSON.parse(jsonPayload);
+
+      const success = await loginWithOAuth({
+        provider: 'google',
+        email: googleUser.email,
+        fullName: googleUser.name,
+        avatar: googleUser.picture,
+        department: 'Computer Science',
+        year: '3rd Year',
+        headline: `${googleUser.name} • Google Verified Student (${googleUser.email})`,
+      });
+
+      if (success) {
+        addToast({
+          type: 'success',
+          title: 'Google Sign-In Successful',
+          message: `Authenticated as ${googleUser.name} (${googleUser.email})`,
+        });
+        setGoogleModalOpen(false);
+        navigate('/feed');
+      }
+    } catch (err) {
+      console.error('Failed to parse Google credential JWT:', err);
+    }
+  };
+
+  // Initialize Official Google Identity Services SDK
+  useEffect(() => {
+    const initGsi = () => {
+      if (typeof window !== 'undefined' && (window as any).google?.accounts?.id) {
+        (window as any).google.accounts.id.initialize({
+          client_id: OFFICIAL_GOOGLE_CLIENT_ID,
+          callback: handleGoogleCredentialResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+        });
+
+        // Render official button on the page if container is mounted
+        const btnContainer = document.getElementById('googleSignInRealBtn');
+        if (btnContainer) {
+          (window as any).google.accounts.id.renderButton(btnContainer, {
+            theme: 'outline',
+            size: 'large',
+            width: 360,
+            text: 'continue_with',
+            shape: 'rectangular',
+          });
+        }
+      }
+    };
+
+    if ((window as any).google?.accounts?.id) {
+      initGsi();
+    } else {
+      const interval = setInterval(() => {
+        if ((window as any).google?.accounts?.id) {
+          initGsi();
+          clearInterval(interval);
+        }
+      }, 300);
+      return () => clearInterval(interval);
+    }
+  }, [googleModalOpen]);
+
+  // Handle URL params on redirect
   useEffect(() => {
     const params = new URLSearchParams(location.search);
 
@@ -85,7 +159,7 @@ export function LoginPage() {
         addToast({
           type: 'success',
           title: 'Google Sign-In Verified',
-          message: `Welcome, ${oauthUser.fullName}! Successfully authenticated with Google.`,
+          message: `Welcome, ${oauthUser.fullName}! Successfully authenticated via Google.`,
         });
         navigate('/feed');
         return;
@@ -93,19 +167,6 @@ export function LoginPage() {
         console.error('Failed to parse oauth_user', e);
       }
     }
-
-    // 2. Check for missing credentials redirect from backend
-    const missingCreds = params.get('missing_credentials');
-    if (missingCreds) {
-      setGoogleModalOpen(true);
-      setShowEnvGuide('Google');
-    }
-
-    // 3. Check for demo OAuth redirects from backend
-    const oauthDemo = params.get('oauth_demo');
-    if (oauthDemo === 'google') setGoogleModalOpen(true);
-    if (oauthDemo === 'github') setGithubModalOpen(true);
-    if (oauthDemo === 'linkedin') startSampleLinkedInImport();
 
     const previewParam = params.get('linkedin_preview');
     if (previewParam) {
@@ -121,51 +182,30 @@ export function LoginPage() {
     }
   }, [location.search]);
 
-  const handleLaunchRealGoogleAuth = () => {
-    // Redirects browser directly to backend Google OAuth initiation route
-    window.location.href = `${apiUrl}/auth/google`;
-  };
-
-  const handleLaunchRealGitHubAuth = () => {
-    window.location.href = `${apiUrl}/auth/github`;
-  };
-
-  const handleSaveGoogleCredentials = async () => {
-    if (!googleClientIdInput.trim()) return;
-    setSavingCredentials(true);
-    try {
-      const res = await fetch(`${apiUrl}/auth/configure-oauth`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          googleClientId: googleClientIdInput.trim(),
-          googleClientSecret: googleClientSecretInput.trim(),
-        }),
+  const handleLaunchOfficialGooglePrompt = () => {
+    if (typeof window !== 'undefined' && (window as any).google?.accounts?.id) {
+      (window as any).google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // If One Tap is skipped or blocked by browser, open the Google modal
+          setGoogleModalOpen(true);
+        }
       });
-      if (res.ok) {
-        addToast({
-          type: 'success',
-          title: 'Google Cloud Credentials Saved',
-          message: 'Redirecting to official Google authentication...',
-        });
-        setTimeout(() => {
-          handleLaunchRealGoogleAuth();
-        }, 800);
-      } else {
-        throw new Error('Server returned error');
-      }
-    } catch (e) {
-      addToast({
-        type: 'info',
-        title: 'Credentials Saved in Session',
-        message: 'Redirecting to Google sign-in...',
-      });
-      setTimeout(() => {
-        handleLaunchRealGoogleAuth();
-      }, 800);
-    } finally {
-      setSavingCredentials(false);
+    } else {
+      setGoogleModalOpen(true);
     }
+  };
+
+  const handleLaunchRealGoogleRedirect = () => {
+    // Official Google OAuth 2.0 redirect
+    const params = new URLSearchParams({
+      client_id: OFFICIAL_GOOGLE_CLIENT_ID,
+      redirect_uri: 'http://localhost:5000/api/v1/auth/google/callback',
+      response_type: 'code',
+      scope: 'openid email profile',
+      prompt: 'select_account',
+      access_type: 'offline',
+    });
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   };
 
   const handleConfirmLinkedInImport = async (finalData: any) => {
@@ -285,7 +325,7 @@ export function LoginPage() {
 
   const handleOAuthClick = (provider: 'Google' | 'GitHub' | 'LinkedIn') => {
     if (provider === 'Google') {
-      setGoogleModalOpen(true);
+      handleLaunchOfficialGooglePrompt();
     } else if (provider === 'GitHub') {
       setGithubModalOpen(true);
     } else if (provider === 'LinkedIn') {
@@ -369,7 +409,7 @@ export function LoginPage() {
 
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">Welcome back</h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1 mb-6">
-            Enter your campus credentials or sign in with university providers.
+            Enter your campus credentials or sign in with Google.
           </p>
 
           {/* 1-Click Demo Personas */}
@@ -411,35 +451,37 @@ export function LoginPage() {
 
           {/* Social OAuth Buttons */}
           <div className="space-y-2.5 mb-6">
-            {/* Google Sign In */}
-            <button
-              type="button"
-              onClick={() => handleOAuthClick('Google')}
-              className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 text-sm font-semibold transition-all shadow-xs group"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24">
-                <path
-                  fill="#4285F4"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                />
-              </svg>
-              <span>Continue with Google</span>
-              <span className="text-[10px] uppercase font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 ml-auto">
-                Real OAuth
-              </span>
-            </button>
+            {/* Real Google Button Container for GIS */}
+            <div className="flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleOAuthClick('Google')}
+                className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 text-sm font-semibold transition-all shadow-xs group"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                  />
+                </svg>
+                <span>Continue with Google</span>
+                <span className="text-[10px] uppercase font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 ml-auto">
+                  Live Active
+                </span>
+              </button>
+            </div>
 
             <div className="grid grid-cols-2 gap-2.5">
               {/* GitHub */}
@@ -597,92 +639,41 @@ export function LoginPage() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-900 tracking-tight">Official Google Authentication</h3>
-                <p className="text-xs text-slate-500 font-medium">Google Cloud OAuth 2.0 &amp; OpenID Connect</p>
+                <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  Client ID Connected: 647527528972-...
+                </p>
               </div>
             </div>
 
-            {/* Launch Official Google Login Button */}
+            {/* Official Google Identity Services Render Container */}
             <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 mb-5">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-blue-950 flex items-center gap-1.5">
-                  <Globe className="w-4 h-4 text-blue-600" />
-                  Live Google OAuth Redirection
-                </span>
-                <span className="text-[10px] font-bold text-blue-700 bg-white px-2 py-0.5 rounded-full border border-blue-200">
-                  accounts.google.com
-                </span>
-              </div>
-              <p className="text-xs text-blue-900/80 leading-relaxed mb-3">
-                Click below to launch Google's official OAuth handshake via <code className="text-[11px] font-bold text-blue-800">/api/v1/auth/google</code>.
-              </p>
+              <span className="text-xs font-bold text-blue-950 block mb-2">
+                Click below to sign in with your real Google Account:
+              </span>
+              
+              {/* Native Google Identity Services Button */}
+              <div id="googleSignInRealBtn" className="flex justify-center mb-3 min-h-[44px]"></div>
+
+              {/* Direct Redirect to Google Accounts */}
               <button
                 type="button"
-                onClick={handleLaunchRealGoogleAuth}
+                onClick={handleLaunchRealGoogleRedirect}
                 className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl bg-[#4285F4] hover:bg-blue-600 text-white text-xs font-bold shadow-md transition-all"
               >
-                <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v2h-2zm0-10h2v8h-2z" />
-                </svg>
-                Launch Official Google Sign-In Screen
+                <span>Launch Google Web Login (accounts.google.com)</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Google Cloud Console Connect Box */}
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 mb-5 text-xs space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-800 flex items-center gap-1.5">
-                  <KeyRound className="w-3.5 h-3.5 text-amber-600" />
-                  Google Cloud Console Client ID Setup
-                </span>
-                <span className="text-[10px] text-slate-500 font-mono">console.cloud.google.com</span>
-              </div>
-              <p className="text-slate-600 text-[11px] leading-relaxed">
-                Google requires a registered OAuth 2.0 Web Client ID to accept sign-ins. Paste your Google Cloud credentials below to link them instantly to the backend:
-              </p>
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  placeholder="GOOGLE_CLIENT_ID (e.g. 12345678-xxxx.apps.googleusercontent.com)"
-                  value={googleClientIdInput}
-                  onChange={(e) => setGoogleClientIdInput(e.target.value)}
-                  className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500 bg-white"
-                />
-                <input
-                  type="password"
-                  placeholder="GOOGLE_CLIENT_SECRET (Optional for Client verification)"
-                  value={googleClientSecretInput}
-                  onChange={(e) => setGoogleClientSecretInput(e.target.value)}
-                  className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500 bg-white"
-                />
-                <button
-                  type="button"
-                  disabled={!googleClientIdInput.trim() || savingCredentials}
-                  onClick={handleSaveGoogleCredentials}
-                  className="w-full py-2 px-3 rounded-xl bg-[#151e4e] hover:bg-[#0f1638] disabled:opacity-50 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
-                >
-                  <Settings className="w-3.5 h-3.5" />
-                  {savingCredentials ? 'Connecting...' : 'Save & Connect to Google Live'}
-                </button>
-              </div>
-
-              {/* Exact Redirect URI reference */}
-              <div className="pt-2 border-t border-slate-200 text-[11px] text-slate-500 space-y-1">
-                <p className="font-bold text-slate-700">Add this Authorized Redirect URI in Google Cloud Console:</p>
-                <code className="block p-1.5 rounded-lg bg-slate-900 text-slate-200 font-mono text-[10px] break-all select-all">
-                  https://skillbridge-backend-15a7.onrender.com/api/v1/auth/google/callback
-                </code>
-              </div>
-            </div>
-
-            {/* Quick 1-Click Verified Student Accounts (Instant Fallback) */}
+            {/* Quick 1-Click Verified Student Accounts (Instant) */}
             <div className="pt-2 border-t border-slate-200">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
                   <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                   Instant Google Verified Student Profiles
                 </span>
-                <span className="text-[10px] text-slate-400">No setup needed</span>
+                <span className="text-[10px] text-slate-400">1-Click Test</span>
               </div>
 
               <div className="space-y-2 mb-3">
@@ -778,7 +769,7 @@ export function LoginPage() {
       )}
 
       {/* ─────────────────────────────────────────────
-          2. REAL GITHUB OAUTH MODAL (Interactive & Live)
+          2. GITHUB OAUTH MODAL (Interactive & Live)
       ───────────────────────────────────────────── */}
       {githubModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
@@ -798,37 +789,13 @@ export function LoginPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900 tracking-tight">Official GitHub OAuth Authentication</h3>
+                <h3 className="text-lg font-bold text-slate-900 tracking-tight">GitHub Developer Authentication</h3>
                 <p className="text-xs text-slate-500 font-medium">Verified Campus Developer Profile</p>
               </div>
             </div>
 
-            {/* Launch Official GitHub Login */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-100 to-indigo-50 border border-slate-300 mb-5">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                  <Code className="w-4 h-4 text-slate-900" />
-                  Live GitHub Redirection
-                </span>
-                <span className="text-[10px] font-bold text-slate-700 bg-white px-2 py-0.5 rounded-full border border-slate-300">
-                  github.com/login/oauth
-                </span>
-              </div>
-              <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                Click below to launch GitHub's official authorization screen via <code className="text-[11px] font-bold text-slate-800">/api/v1/auth/github</code>.
-              </p>
-              <button
-                type="button"
-                onClick={handleLaunchRealGitHubAuth}
-                className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold shadow-md transition-all"
-              >
-                Launch Official GitHub Authorize Screen
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
             {/* Quick-Pick Developer Profiles */}
-            <div className="pt-2 border-t border-slate-200">
+            <div className="pt-2">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
                   <Sparkles className="w-3.5 h-3.5 text-indigo-500" />

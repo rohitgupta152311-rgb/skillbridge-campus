@@ -25,9 +25,9 @@ services:
         value: 7d
       # Optional 3rd-party OAuth & Storage (can be updated later in Render Dashboard):
       - key: GOOGLE_CLIENT_ID
-        value: placeholder
+        sync: false
       - key: GOOGLE_CLIENT_SECRET
-        value: placeholder
+        sync: false
       - key: GOOGLE_CALLBACK_URL
         value: https://skillbridge-backend-15a7.onrender.com/api/v1/auth/google/callback
       - key: GITHUB_CLIENT_ID
