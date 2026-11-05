@@ -23,32 +23,32 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 7d
-      # Configure in Render Dashboard for OAuth:
+      # Optional 3rd-party OAuth & Storage (can be updated later in Render Dashboard):
       - key: GOOGLE_CLIENT_ID
-        sync: false
+        value: placeholder
       - key: GOOGLE_CLIENT_SECRET
-        sync: false
+        value: placeholder
       - key: GOOGLE_CALLBACK_URL
         value: https://skillbridge-backend.onrender.com/api/v1/auth/google/callback
       - key: GITHUB_CLIENT_ID
-        sync: false
+        value: placeholder
       - key: GITHUB_CLIENT_SECRET
-        sync: false
+        value: placeholder
       - key: GITHUB_CALLBACK_URL
         value: https://skillbridge-backend.onrender.com/api/v1/auth/github/callback
       - key: LINKEDIN_CLIENT_ID
-        sync: false
+        value: placeholder
       - key: LINKEDIN_CLIENT_SECRET
-        sync: false
+        value: placeholder
       - key: LINKEDIN_CALLBACK_URL
         value: https://skillbridge-backend.onrender.com/api/v1/auth/linkedin/callback
       # Cloud Object Storage:
       - key: CLOUDINARY_CLOUD_NAME
-        sync: false
+        value: placeholder
       - key: CLOUDINARY_API_KEY
-        sync: false
+        value: placeholder
       - key: CLOUDINARY_API_SECRET
-        sync: false
+        value: placeholder
 
   # 2. SkillBridge Frontend Static Site
   - type: web
