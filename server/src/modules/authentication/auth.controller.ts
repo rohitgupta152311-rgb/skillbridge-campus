@@ -614,3 +614,223 @@ export function handleLinkedInAuth(req: Request, res: Response) {
   const state = Buffer.from(JSON.stringify({ timestamp: Date.now() })).toString('base64');
   return res.redirect(LinkedInService.getAuthorizationUrl(state));
 }
+
+// ─────────────────────────────────────────────
+// GOOGLE & GITHUB REAL OAUTH CALLBACK HANDLERS
+// ─────────────────────────────────────────────
+
+export async function handleGoogleCallback(req: Request, res: Response) {
+  const code = req.query.code as string;
+  const error = req.query.error as string;
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+  if (error || !code) {
+    return res.redirect(frontendUrl + '/login?error=' + encodeURIComponent(error || 'Google Authorization denied'));
+  }
+
+  try {
+    const { accessToken } = await GoogleService.exchangeCodeForToken(code);
+    const userInfo = await GoogleService.fetchUserInfo(accessToken);
+
+    let account = await prisma.account.findUnique({
+      where: {
+        provider_providerAccountId: {
+          provider: 'google',
+          providerAccountId: userInfo.sub,
+        },
+      },
+      include: { user: { include: { profile: true } } },
+    });
+
+    let user: any;
+    if (account) {
+      user = account.user;
+    } else {
+      user = await prisma.user.findUnique({
+        where: { email: userInfo.email },
+        include: { profile: true },
+      });
+
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            email: userInfo.email,
+            isVerified: true,
+            role: 'MENTEE',
+            profile: {
+              create: {
+                fullName: userInfo.name,
+                avatarUrl: userInfo.picture,
+                headline: 'Student at Campus • Verified via Google',
+                university: 'Campus University',
+                department: 'Computer Science',
+                currentYear: '1st Year',
+              },
+            },
+          },
+          include: { profile: true },
+        });
+      }
+
+      await prisma.account.create({
+        data: {
+          userId: user.id,
+          provider: 'google',
+          providerAccountId: userInfo.sub,
+        },
+      });
+    }
+
+    const token = signToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    const userData = encodeURIComponent(
+      JSON.stringify({
+        id: user.id,
+        email: user.email,
+        fullName: user.profile?.fullName || userInfo.name,
+        avatar: user.profile?.avatarUrl || userInfo.picture,
+        role: user.role.toLowerCase(),
+        department: user.profile?.department || 'Computer Science',
+        year: user.profile?.currentYear || '1st Year',
+        isVerified: true,
+        token,
+      })
+    );
+
+    return res.redirect(frontendUrl + '/login?token=' + token + '&oauth_user=' + userData);
+  } catch (err: any) {
+    console.error('Google OAuth Callback Error:', err);
+    return res.redirect(frontendUrl + '/login?error=' + encodeURIComponent(err.message || 'Google OAuth Failed'));
+  }
+}
+
+export async function handleGitHubCallback(req: Request, res: Response) {
+  const code = req.query.code as string;
+  const error = req.query.error as string;
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+  if (error || !code) {
+    return res.redirect(frontendUrl + '/login?error=' + encodeURIComponent(error || 'GitHub Authorization denied'));
+  }
+
+  try {
+    const { accessToken } = await GitHubService.exchangeCodeForToken(code);
+    const userInfo = await GitHubService.fetchUserInfo(accessToken);
+
+    const email = userInfo.email || (userInfo.login + '@users.noreply.github.com');
+    const fullName = userInfo.name || userInfo.login;
+
+    let account = await prisma.account.findUnique({
+      where: {
+        provider_providerAccountId: {
+          provider: 'github',
+          providerAccountId: String(userInfo.id),
+        },
+      },
+      include: { user: { include: { profile: true } } },
+    });
+
+    let user: any;
+    if (account) {
+      user = account.user;
+    } else {
+      user = await prisma.user.findUnique({
+        where: { email },
+        include: { profile: true },
+      });
+
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            email,
+            isVerified: true,
+            role: 'MENTEE',
+            profile: {
+              create: {
+                fullName,
+                avatarUrl: userInfo.avatar_url,
+                headline: userInfo.bio || ('Developer on GitHub (@' + userInfo.login + ')'),
+                university: 'Campus University',
+                department: 'Computer Science',
+                currentYear: '1st Year',
+                githubUrl: userInfo.html_url,
+              },
+            },
+          },
+          include: { profile: true },
+        });
+      }
+
+      await prisma.account.create({
+        data: {
+          userId: user.id,
+          provider: 'github',
+          providerAccountId: String(userInfo.id),
+        },
+      });
+    }
+
+    const token = signToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    const userData = encodeURIComponent(
+      JSON.stringify({
+        id: user.id,
+        email: user.email,
+        fullName: user.profile?.fullName || fullName,
+        avatar: user.profile?.avatarUrl || userInfo.avatar_url,
+        role: user.role.toLowerCase(),
+        department: user.profile?.department || 'Computer Science',
+        year: user.profile?.currentYear || '1st Year',
+        isVerified: true,
+        token,
+      })
+    );
+
+    return res.redirect(frontendUrl + '/login?token=' + token + '&oauth_user=' + userData);
+  } catch (err: any) {
+    console.error('GitHub OAuth Callback Error:', err);
+    return res.redirect(frontendUrl + '/login?error=' + encodeURIComponent(err.message || 'GitHub OAuth Failed'));
+  }
+}
+
+export async function configureOAuth(req: Request, res: Response) {
+  try {
+    const { googleClientId, googleClientSecret, githubClientId, githubClientSecret } = req.body;
+
+    if (googleClientId) {
+      process.env.GOOGLE_CLIENT_ID = googleClientId.trim();
+      (env as any).GOOGLE_CLIENT_ID = googleClientId.trim();
+    }
+    if (googleClientSecret) {
+      process.env.GOOGLE_CLIENT_SECRET = googleClientSecret.trim();
+      (env as any).GOOGLE_CLIENT_SECRET = googleClientSecret.trim();
+    }
+    if (githubClientId) {
+      process.env.GITHUB_CLIENT_ID = githubClientId.trim();
+      (env as any).GITHUB_CLIENT_ID = githubClientId.trim();
+    }
+    if (githubClientSecret) {
+      process.env.GITHUB_CLIENT_SECRET = githubClientSecret.trim();
+      (env as any).GITHUB_CLIENT_SECRET = githubClientSecret.trim();
+    }
+
+    return res.json({
+      success: true,
+      message: 'OAuth credentials configured successfully in memory.',
+      data: {
+        googleConfigured: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_ID !== 'placeholder'),
+        githubConfigured: Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_ID !== 'placeholder'),
+      },
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}

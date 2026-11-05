@@ -8,6 +8,9 @@ import {
   handleGitHubAuth,
   handleLinkedInAuth,
   handleLinkedInCallback,
+  handleGoogleCallback,
+  configureOAuth,
+  handleGitHubCallback,
   exchangeOAuthCode,
   confirmOAuthImport,
   getLinkedAccounts,
@@ -32,6 +35,9 @@ authRouter.get('/linkedin', handleLinkedInAuth);
 
 // OAuth Callbacks & Unified Code Exchange
 authRouter.get('/linkedin/callback', handleLinkedInCallback);
+authRouter.get('/google/callback', handleGoogleCallback);
+authRouter.post('/configure-oauth', configureOAuth);
+authRouter.get('/github/callback', handleGitHubCallback);
 authRouter.post('/oauth/exchange', exchangeOAuthCode);
 authRouter.post('/linkedin/confirm-import', confirmOAuthImport);
 
