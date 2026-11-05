@@ -1,0 +1,371 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  SafeAreaView,
+  ScrollView,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import {
+  Sparkles,
+  Star,
+  Clock,
+  CheckCircle,
+  Calendar,
+  Filter,
+} from 'lucide-react-native';
+
+export default function MentorshipScreen() {
+  const router = useRouter();
+  const [selectedTopic, setSelectedTopic] = useState('All');
+
+  const topics = ['All', 'Algorithms & DSA', 'Distributed Systems', 'Machine Learning', 'Full-Stack Web', 'Operating Systems'];
+
+  const mentors = [
+    {
+      id: 'mentor-1',
+      name: 'Sarah Jenkins',
+      role: 'Graduate TA & Distributed Systems Lead',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
+      matchScore: 98,
+      rating: 4.95,
+      reviewsCount: 38,
+      topics: ['Distributed Systems', 'Algorithms & DSA', 'Cloud Architecture'],
+      availability: 'Tomorrow, 3:00 PM',
+      breakdown: {
+        topic: '35/35',
+        schedule: '25/25',
+        rating: '19/20',
+        skills: '10/10',
+        preference: '9/10',
+      },
+    },
+    {
+      id: 'mentor-2',
+      name: 'Elena Rostova',
+      role: 'PhD Researcher in Deep Learning',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200',
+      matchScore: 94,
+      rating: 4.9,
+      reviewsCount: 24,
+      topics: ['Machine Learning', 'PyTorch', 'Computer Vision'],
+      availability: 'Thursday, 5:00 PM',
+      breakdown: {
+        topic: '33/35',
+        schedule: '23/25',
+        rating: '19/20',
+        skills: '10/10',
+        preference: '9/10',
+      },
+    },
+    {
+      id: 'mentor-3',
+      name: 'Marcus Vance',
+      role: 'Senior Full-Stack Engineer & GDSC President',
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200',
+      matchScore: 91,
+      rating: 4.88,
+      reviewsCount: 42,
+      topics: ['Full-Stack Web', 'React', 'TypeScript', 'Node.js'],
+      availability: 'Friday, 2:00 PM',
+      breakdown: {
+        topic: '31/35',
+        schedule: '24/25',
+        rating: '18/20',
+        skills: '9/10',
+        preference: '9/10',
+      },
+    },
+  ];
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <View>
+            <View style={styles.engineBadge}>
+              <Sparkles size={12} color="#7c3aed" />
+              <Text style={styles.engineBadgeText}>5-Factor AI Matchmaking</Text>
+            </View>
+            <Text style={styles.title}>Find Peer Mentors</Text>
+          </View>
+        </View>
+
+        {/* Topic Filters */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterScroll}
+        >
+          {topics.map((t) => (
+            <TouchableOpacity
+              key={t}
+              style={[styles.topicChip, selectedTopic === t && styles.topicChipActive]}
+              onPress={() => setSelectedTopic(t)}
+            >
+              <Text
+                style={[
+                  styles.topicChipText,
+                  selectedTopic === t && styles.topicChipTextActive,
+                ]}
+              >
+                {t}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      <FlatList
+        data={mentors}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            {/* Match Header */}
+            <View style={styles.matchBar}>
+              <View style={styles.scorePill}>
+                <Sparkles size={12} color="#ffffff" />
+                <Text style={styles.scoreText}>{item.matchScore}% Match</Text>
+              </View>
+              <Text style={styles.breakdownSummary}>
+                Topic 35% • Sched 25% • Rating 20%
+              </Text>
+            </View>
+
+            {/* Mentor Info */}
+            <View style={styles.body}>
+              <Image source={{ uri: item.avatar }} style={styles.avatar} />
+              <View style={styles.info}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.role}>{item.role}</Text>
+
+                <View style={styles.ratingRow}>
+                  <Star size={13} color="#f59e0b" fill="#f59e0b" />
+                  <Text style={styles.ratingText}>
+                    {item.rating} ({item.reviewsCount} reviews)
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Topics */}
+            <View style={styles.topicsRow}>
+              {item.topics.map((top) => (
+                <View key={top} style={styles.topPill}>
+                  <Text style={styles.topText}>{top}</Text>
+                </View>
+              ))}
+            </View>
+
+            {/* Footer Slot & Booking */}
+            <View style={styles.footer}>
+              <View style={styles.slotInfo}>
+                <Clock size={13} color="#64748b" />
+                <Text style={styles.slotText}>Next: {item.availability}</Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.bookBtn}
+                onPress={() => router.push(`/booking/${item.id}` as any)}
+              >
+                <Calendar size={13} color="#ffffff" />
+                <Text style={styles.bookBtnText}>Book Slot</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      />
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  header: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  headerTop: {
+    marginBottom: 10,
+  },
+  engineBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ede9fe',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    marginBottom: 4,
+  },
+  engineBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#6d28d9',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0f172a',
+  },
+  filterScroll: {
+    paddingBottom: 10,
+    gap: 8,
+  },
+  topicChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: '#f1f5f9',
+  },
+  topicChipActive: {
+    backgroundColor: '#7c3aed',
+  },
+  topicChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748b',
+  },
+  topicChipTextActive: {
+    color: '#ffffff',
+  },
+  listContent: {
+    padding: 12,
+    gap: 12,
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    overflow: 'hidden',
+  },
+  matchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f5f3ff',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ede9fe',
+  },
+  scorePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#7c3aed',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  scoreText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  breakdownSummary: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#6d28d9',
+  },
+  body: {
+    flexDirection: 'row',
+    padding: 14,
+  },
+  avatar: {
+    width: 54,
+    height: 54,
+    borderRadius: 16,
+    marginRight: 12,
+  },
+  info: {
+    flex: 1,
+  },
+  name: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  role: {
+    fontSize: 11,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  ratingText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  topicsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    paddingHorizontal: 14,
+    marginBottom: 12,
+  },
+  topPill: {
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  topText: {
+    fontSize: 11,
+    color: '#475569',
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    backgroundColor: '#fafafa',
+  },
+  slotInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  slotText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  bookBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#7c3aed',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 16,
+  },
+  bookBtnText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+});

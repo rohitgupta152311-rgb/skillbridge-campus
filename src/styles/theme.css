@@ -1,0 +1,13 @@
+:root {
+  --primary-navy: #1e1b4b;
+  --secondary-navy: #312e81;
+  --accent-violet: #7c3aed;
+  --accent-violet-light: #8b5cf6;
+  --soft-blue: #3b82f6;
+  --surface-white: #ffffff;
+  --surface-gray: #f8fafc;
+  --border-subtle: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+}

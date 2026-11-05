@@ -1,0 +1,583 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  MENTEE
+  MENTOR
+  FACULTY
+  ALUMNI
+  ADMIN
+}
+
+enum ConnectionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum SessionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum SessionType {
+  ONLINE
+  IN_PERSON
+}
+
+enum PostType {
+  STANDARD
+  PROJECT_SHOWCASE
+  ACHIEVEMENT
+  ACADEMIC_QUESTION
+  OPPORTUNITY
+}
+
+enum ReactionType {
+  LIKE
+  CELEBRATE
+  SUPPORT
+  INSIGHTFUL
+  CURIOUS
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
+}
+
+enum NotificationType {
+  CONNECTION_REQUEST
+  CONNECTION_ACCEPTED
+  POST_LIKE
+  POST_COMMENT
+  SKILL_ENDORSED
+  SESSION_REQUESTED
+  SESSION_ACCEPTED
+  SESSION_CANCELLED
+  SESSION_REMINDER
+  NEW_MESSAGE
+  SYSTEM
+}
+
+model User {
+  id              String        @id @default(uuid())
+  email           String        @unique
+  passwordHash    String?
+  role            UserRole      @default(MENTEE)
+  isVerified      Boolean       @default(false)
+  isSuspended     Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  accounts        Account[]
+  sessions        Session[]
+  profile         Profile?
+  
+  posts           Post[]
+  postReactions   PostReaction[]
+  comments        Comment[]
+  savedPosts      SavedPost[]
+  
+  sentConnections     Connection[] @relation("SentConnections")
+  receivedConnections Connection[] @relation("ReceivedConnections")
+  following           Follow[]     @relation("UserFollowing")
+  followers           Follow[]     @relation("UserFollowers")
+  
+  userSkills          UserSkill[]
+  givenEndorsements   Endorsement[] @relation("Endorser")
+  
+  communityMemberships CommunityMembership[]
+  
+  mentorExpertise     MentorExpertise[]
+  mentorAvailability  MentorAvailability[]
+  
+  menteeSessions      TutoringSession[] @relation("MenteeSessions")
+  mentorSessions      TutoringSession[] @relation("MentorSessions")
+  
+  reviewsWritten      Review[] @relation("MenteeReviews")
+  reviewsReceived     Review[] @relation("MentorReviews")
+  
+  conversationParticipants ConversationParticipant[]
+  sentMessages            Message[]
+  
+  notifications       Notification[]
+  reportsFiled        UserReport[] @relation("Reporter")
+  reportsReceived     UserReport[] @relation("ReportedUser")
+  
+  auditLogs           AuditLog[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Account {
+  id                String   @id @default(uuid())
+  userId            String
+  provider          String   // 'google' | 'github' | 'linkedin'
+  providerAccountId String
+  accessToken       String?  @db.Text
+  refreshToken      String?  @db.Text
+  expiresAt         Int?
+  tokenType         String?
+  scope             String?
+  idToken           String?  @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  sessionToken String   @unique
+  expiresAt    DateTime
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Profile {
+  id                  String       @id @default(uuid())
+  userId              String       @unique
+  fullName            String
+  avatarUrl           String?
+  coverImageUrl       String?
+  headline            String?
+  bio                 String?      @db.Text
+  university          String       @default("Campus University")
+  department          String
+  degree              String?
+  currentYear         String       // "1st Year", "2nd Year", "3rd Year", "4th Year", "Alumni", "Faculty"
+  graduationYear      Int?
+  portfolioUrl        String?
+  githubUrl           String?
+  linkedinUrl         String?
+  languages           String[]     @default(["English"])
+  learningPreferences String[]     @default(["visual"])
+  onlineStatus        String       @default("offline")
+  
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  educations          Education[]
+  experiences         Experience[]
+  projects            Project[]
+  certifications      Certification[]
+
+  @@index([fullName])
+  @@index([department])
+}
+
+model Education {
+  id           String    @id @default(uuid())
+  profileId    String
+  institution  String
+  degree       String
+  fieldOfStudy String
+  startDate    DateTime
+  endDate      DateTime?
+  grade        String?
+  description  String?
+
+  profile      Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+model Experience {
+  id          String    @id @default(uuid())
+  profileId   String
+  title       String
+  company     String
+  location    String?
+  isCurrent   Boolean   @default(false)
+  startDate   DateTime
+  endDate     DateTime?
+  description String?   @db.Text
+
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+model Skill {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  category    String      @default("technical")
+  
+  userSkills  UserSkill[]
+
+  @@index([name])
+}
+
+model UserSkill {
+  id           String        @id @default(uuid())
+  userId       String
+  skillId      String
+  proficiency  Int           @default(3) // 1-5
+  yearsOfExp   Float         @default(1.0)
+  
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill        Skill         @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  endorsements Endorsement[]
+
+  @@unique([userId, skillId])
+  @@index([userId])
+}
+
+model Endorsement {
+  id          String    @id @default(uuid())
+  userSkillId String
+  endorserId  String
+  createdAt   DateTime  @default(now())
+
+  userSkill   UserSkill @relation(fields: [userSkillId], references: [id], onDelete: Cascade)
+  endorser    User      @relation("Endorser", fields: [endorserId], references: [id], onDelete: Cascade)
+
+  @@unique([userSkillId, endorserId])
+}
+
+model Project {
+  id          String    @id @default(uuid())
+  profileId   String
+  title       String
+  description String    @db.Text
+  projectUrl  String?
+  githubUrl   String?
+  startDate   DateTime?
+  endDate     DateTime?
+  skillsUsed  String[]
+
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+model Certification {
+  id             String    @id @default(uuid())
+  profileId      String
+  name           String
+  issuingOrg     String
+  issueDate      DateTime
+  expirationDate DateTime?
+  credentialUrl  String?
+
+  profile        Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+model Connection {
+  id          String           @id @default(uuid())
+  senderId    String
+  receiverId  String
+  status      ConnectionStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  sender      User             @relation("SentConnections", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User             @relation("ReceivedConnections", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([status])
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower    User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model Post {
+  id          String         @id @default(uuid())
+  authorId    String
+  communityId String?
+  content     String         @db.Text
+  postType    PostType       @default(STANDARD)
+  mediaUrls   String[]
+  tags        String[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  community   Community?     @relation(fields: [communityId], references: [id], onDelete: SetNull)
+  reactions   PostReaction[]
+  comments    Comment[]
+  savedBy     SavedPost[]
+
+  @@index([authorId])
+  @@index([communityId])
+  @@index([createdAt])
+}
+
+model PostReaction {
+  id        String       @id @default(uuid())
+  postId    String
+  userId    String
+  type      ReactionType @default(LIKE)
+  createdAt DateTime     @default(now())
+
+  post      Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  postId    String
+  authorId  String
+  parentId  String?
+  content   String    @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+
+  @@index([postId])
+  @@index([authorId])
+}
+
+model SavedPost {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([userId])
+}
+
+model Community {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String   @db.Text
+  coverImage  String?
+  iconImage   String?
+  isPrivate   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  memberships CommunityMembership[]
+  posts       Post[]
+
+  @@index([slug])
+}
+
+model CommunityMembership {
+  id          String    @id @default(uuid())
+  communityId String
+  userId      String
+  role        String    @default("MEMBER") // "ADMIN", "MODERATOR", "MEMBER"
+  joinedAt    DateTime  @default(now())
+
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, userId])
+  @@index([communityId])
+  @@index([userId])
+}
+
+model MentorExpertise {
+  id                String   @id @default(uuid())
+  mentorId          String
+  topic             String
+  category          String   // "technical" | "academic"
+  proficiencyLevel  Int      @default(5)
+  description       String?
+  yearsOfExperience Float    @default(2.0)
+
+  mentor            User     @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+
+  @@index([mentorId])
+  @@index([topic])
+}
+
+model MentorAvailability {
+  id          String   @id @default(uuid())
+  mentorId    String
+  dayOfWeek   String   // "monday", "tuesday", etc.
+  startTime   String   // "HH:mm"
+  endTime     String   // "HH:mm"
+  isRecurring Boolean  @default(true)
+
+  mentor      User     @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+
+  @@index([mentorId])
+}
+
+model TutoringSession {
+  id                 String        @id @default(uuid())
+  mentorId           String
+  menteeId           String
+  topic              String
+  description        String?       @db.Text
+  sessionDate        DateTime
+  startTime          String
+  duration           Int           @default(60) // minutes
+  sessionType        SessionType   @default(ONLINE)
+  location           String?
+  meetingLink        String?
+  status             SessionStatus @default(PENDING)
+  cancelledBy        String?
+  cancellationReason String?
+  notes              String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  mentor             User          @relation("MentorSessions", fields: [mentorId], references: [id], onDelete: Restrict)
+  mentee             User          @relation("MenteeSessions", fields: [menteeId], references: [id], onDelete: Restrict)
+  review             Review?
+
+  @@index([mentorId])
+  @@index([menteeId])
+  @@index([status])
+  @@index([sessionDate])
+}
+
+model Review {
+  id               String          @id @default(uuid())
+  sessionId        String          @unique
+  mentorId         String
+  menteeId         String
+  overallRating    Int             // 1-5
+  teachingQuality  Int             // 1-5
+  communication    Int             // 1-5
+  subjectKnowledge Int             // 1-5
+  reviewText       String          @db.Text
+  createdAt        DateTime        @default(now())
+
+  session          TutoringSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  mentor           User            @relation("MentorReviews", fields: [mentorId], references: [id], onDelete: Cascade)
+  mentee           User            @relation("MenteeReviews", fields: [menteeId], references: [id], onDelete: Cascade)
+
+  @@index([mentorId])
+  @@index([menteeId])
+}
+
+model Conversation {
+  id           String                    @id @default(uuid())
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  id             String       @id @default(uuid())
+  conversationId String
+  userId         String
+  lastReadAt     DateTime     @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  senderId       String
+  content        String       @db.Text
+  createdAt      DateTime     @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  linkUrl   String?
+  createdAt DateTime         @default(now())
+
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+}
+
+model UserReport {
+  id             String       @id @default(uuid())
+  reporterId     String
+  reportedUserId String
+  reason         String
+  description    String       @db.Text
+  status         ReportStatus @default(PENDING)
+  resolvedAt     DateTime?
+  resolutionNote String?
+  createdAt      DateTime     @default(now())
+
+  reporter       User         @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser   User         @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String?
+  details    Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([action])
+  @@index([entityType])
+}
