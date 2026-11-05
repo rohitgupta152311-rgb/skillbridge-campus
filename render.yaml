@@ -51,9 +51,9 @@ services:
         sync: false
 
   # 2. SkillBridge Frontend Static Site
-  - type: static
+  - type: web
     name: skillbridge-frontend
-    plan: free
+    runtime: static
     buildCommand: npm install && npm run build
     staticPublishPath: dist
     routes:
