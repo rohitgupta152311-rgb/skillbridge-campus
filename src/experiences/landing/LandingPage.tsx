@@ -1,14 +1,13 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   GraduationCap, Search, Calendar, MessageSquare, Star, Users, BookOpen, Code,
   Cpu, BarChart3, Globe, Zap, ArrowRight, CheckCircle2, ChevronRight, Wifi,
-  Brain, Calculator, Network, Sparkles, Repeat, Rocket, ShieldCheck, Layers
+  Brain, Calculator, Network, Sparkles, Repeat, Rocket, ShieldCheck, Layers,
+  Music, Laptop, HeartHandshake, Compass, ArrowLeftRight
 } from 'lucide-react';
-import { Avatar, StarRating, Card, Badge, Button } from '../../shared/components';
-import { mockUsers, mockExpertise, mockReviews, mockProjects } from '../../infrastructure/mock-database/seed-data';
-
-const mentorUsers = mockUsers.filter(u => u.role === 'mentor').slice(0, 4);
+import { Avatar, Card, Badge, Button } from '../../shared/components';
+import { mockUsers, mockProjects } from '../../infrastructure/mock-database/seed-data';
 
 const pillars = [
   {
@@ -16,7 +15,6 @@ const pillars = [
     badge: 'Signature Feature',
     title: 'Reciprocal Skill Exchange',
     desc: 'Trade technical skills with campus peers in a zero-cash reciprocal barter. Student A teaches React; Student B teaches Python.',
-    color: 'from-violet-600 to-indigo-600',
     link: '/exchange',
     cta: 'Explore Exchanges',
   },
@@ -25,7 +23,6 @@ const pillars = [
     badge: 'Campus Incubator',
     title: 'ProjectSpace Team Matcher',
     desc: 'Assemble multidisciplinary hackathon and engineering capstone teams. Our algorithm matches project needs with student talent.',
-    color: 'from-blue-600 to-cyan-600',
     link: '/projects',
     cta: 'Find Project Teams',
   },
@@ -34,9 +31,8 @@ const pillars = [
     badge: 'Academic Trust',
     title: 'Verified Peer Tutoring',
     desc: 'Book 1-on-1 tutoring sessions with departmental peers who have aced your exact course curriculum and professors.',
-    color: 'from-emerald-600 to-teal-600',
-    link: '/mentors',
-    cta: 'Browse Mentors',
+    link: '/explore',
+    cta: 'Browse Peers',
   },
 ];
 
@@ -51,146 +47,226 @@ const categories = [
   { icon: Layers, title: 'Robotics & CAD', count: 4 },
 ];
 
-const stats = [
-  { value: '38+', label: 'Verified Campus Students' },
-  { value: '8', label: 'Multidisciplinary Projects' },
-  { value: '96%', label: 'Top Reciprocal Match Rate' },
-  { value: '0 ₹', label: 'Zero-Cash Peer Barter' },
-];
-
 export function LandingPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* ── TOP NAVIGATION ── */}
-      <nav className="fixed top-0 w-full bg-white/85 backdrop-blur-md z-50 border-b border-slate-200/70">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/')}>
-            <div className="w-9 h-9 bg-gradient-to-tr from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md shadow-violet-500/20">
+    <div className="min-h-screen bg-[#EEF2F9] text-slate-800 font-sans p-3 sm:p-6 lg:p-8">
+      {/* ── FLOATING MAIN CONTAINER (Matching SkillSwap Theme) ── */}
+      <div className="max-w-7xl mx-auto bg-white rounded-3xl shadow-soft border border-slate-200/70 overflow-hidden">
+        
+        {/* ── CLEAN TOP NAVIGATION ── */}
+        <header className="px-6 lg:px-12 py-5 flex items-center justify-between border-b border-slate-100">
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-[#151e4e] flex items-center justify-center text-white shadow-sm">
               <GraduationCap className="w-5 h-5 text-white" />
             </div>
-            <div>
-              <span className="text-xl font-black text-slate-900 tracking-tight">SkillBridge</span>
-              <span className="hidden sm:inline-block ml-2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-violet-100 text-violet-700">
+            <div className="flex items-center gap-2">
+              <span className="text-xl font-extrabold tracking-tight text-[#151e4e]">SkillBridge</span>
+              <span className="hidden sm:inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 text-[#151e4e] border border-indigo-100">
                 CIH-008
               </span>
             </div>
-          </div>
-          <div className="hidden md:flex items-center gap-8">
-            <a href="#pillars" className="text-sm font-semibold text-slate-600 hover:text-violet-600 transition-colors">Platform Pillars</a>
-            <a href="#algorithm" className="text-sm font-semibold text-slate-600 hover:text-violet-600 transition-colors">Match Algorithm</a>
-            <a href="#projects" className="text-sm font-semibold text-slate-600 hover:text-violet-600 transition-colors">Campus Projects</a>
-            <a href="#categories" className="text-sm font-semibold text-slate-600 hover:text-violet-600 transition-colors">Domains</a>
-          </div>
+          </Link>
+
+          {/* Centered links */}
+          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+            <a href="#benefits" className="hover:text-[#151e4e] transition-colors">Benefits</a>
+            <a href="#how-it-works" className="hover:text-[#151e4e] transition-colors">How it works</a>
+            <a href="#explore" className="hover:text-[#151e4e] transition-colors">Explore</a>
+            <a href="#communities" className="hover:text-[#151e4e] transition-colors">Communities</a>
+          </nav>
+
+          {/* Right Action Buttons */}
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
-              Log In
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/login')}
+              className="text-xs font-bold text-slate-700 hover:text-slate-900"
+            >
+              Sign in
             </Button>
-            <Button size="sm" className="bg-violet-600 hover:bg-violet-700 text-white font-bold" onClick={() => navigate('/register')}>
+            <Button
+              size="sm"
+              onClick={() => navigate('/register')}
+              className="bg-[#151e4e] hover:bg-[#0f1638] text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs"
+            >
               Join Campus
             </Button>
           </div>
-        </div>
-      </nav>
+        </header>
 
-      {/* ── HERO SECTION ── */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#31104b] overflow-hidden text-white">
-        <div className="absolute inset-0 opacity-25">
-          <div className="absolute top-20 left-10 w-96 h-96 bg-violet-500 rounded-full blur-3xl" />
-          <div className="absolute bottom-10 right-20 w-[500px] h-[500px] bg-indigo-500 rounded-full blur-3xl" />
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-violet-200 text-xs sm:text-sm font-medium backdrop-blur">
-              <Sparkles className="w-4 h-4 text-violet-400" />
-              <span>Smart Campus Life &bull; Challenge ID: CIH-008</span>
-            </div>
+        {/* ── HERO SECTION: SWAP SKILLS, SPARK GROWTH ── */}
+        <section className="relative px-6 sm:px-12 lg:px-16 py-12 lg:py-20 overflow-hidden bg-gradient-to-b from-white via-slate-50/50 to-white">
+          <div className="grid lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+            
+            {/* Left Content Column */}
+            <div className="lg:col-span-7 space-y-6 text-left">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-100/80 text-[#151e4e] text-xs font-bold shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Smart Campus Peer-to-Peer Community &bull; Challenge CIH-008</span>
+              </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
-              Connect Skills.<br />
-              <span className="bg-gradient-to-r from-violet-300 via-indigo-200 to-pink-300 bg-clip-text text-transparent">
-                Exchange Knowledge.
-              </span><br />
-              Build Together.
-            </h1>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.12]">
+                Swap Skills,<br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#151e4e] via-indigo-600 to-violet-600">
+                  Spark Growth
+                </span>
+              </h1>
 
-            <p className="text-base sm:text-lg md:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
-              The next-generation campus networking ecosystem. Trade peer technical skills in zero-cash mutual barters, assemble multidisciplinary project teams, and master your university coursework.
-            </p>
+              <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed font-normal">
+                Connect with students across Indian universities to teach and learn new skills—no money needed, just passion and knowledge.
+              </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button
-                size="lg"
-                className="bg-violet-600 hover:bg-violet-500 text-white font-bold shadow-xl shadow-violet-600/30"
-                onClick={() => navigate('/register')}
-                rightIcon={<ArrowRight className="w-5 h-5" />}
-              >
-                Start Skill Exchange
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => navigate('/projects')}
-                className="!border-white/30 !text-white hover:!bg-white/10 font-bold"
-                leftIcon={<Rocket className="w-5 h-5 text-violet-300" />}
-              >
-                Explore ProjectSpace
-              </Button>
-            </div>
+              <div className="flex flex-wrap items-center gap-4 pt-2">
+                <Button
+                  size="lg"
+                  className="bg-[#151e4e] hover:bg-[#0f1638] text-white font-extrabold text-xs sm:text-sm tracking-wider uppercase px-7 py-3.5 rounded-xl shadow-pill-active"
+                  onClick={() => navigate('/feed')}
+                >
+                  JOIN THE COMMUNITY
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs sm:text-sm px-6 py-3.5 rounded-xl"
+                  onClick={() => navigate('/explore')}
+                  rightIcon={<ArrowRight className="w-4 h-4" />}
+                >
+                  Explore Talent
+                </Button>
+              </div>
 
-            {/* Micro Highlights */}
-            <div className="pt-8 flex flex-wrap items-center justify-center gap-6">
-              {[
-                { icon: Repeat, label: 'Two-Way Skill Barter' },
-                { icon: Users, label: '38+ Active Student Profiles' },
-                { icon: ShieldCheck, label: 'Department Verified' },
-              ].map((s, i) => (
-                <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 backdrop-blur border border-white/15 text-xs sm:text-sm font-medium">
-                  <s.icon className="w-4 h-4 text-violet-300" />
-                  <span>{s.label}</span>
+              {/* Trust Indicators */}
+              <div className="pt-6 border-t border-slate-100 flex flex-wrap items-center gap-6 text-xs text-slate-500 font-medium">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>45+ Verified Indian Student Profiles</span>
                 </div>
-              ))}
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Zero Financial Cost (Pure Barter)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Department &amp; University Verified</span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ── 3 CORE PLATFORM PILLARS ── */}
-      <section id="pillars" className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-            <Badge variant="violet" size="md">Core Pillars</Badge>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-              Built for Modern Campus Collaboration
+            {/* Right Graphic Column: Two-Learner Reciprocal Illustration */}
+            <div className="lg:col-span-5 relative">
+              <div className="relative mx-auto max-w-md bg-gradient-to-tr from-indigo-50 via-amber-50/40 to-slate-50 rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-card text-center space-y-6">
+                
+                {/* Floating Decorative Glow */}
+                <div className="absolute -top-6 -right-6 w-32 h-32 bg-amber-200/40 rounded-full blur-2xl pointer-events-none" />
+                <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-indigo-200/40 rounded-full blur-2xl pointer-events-none" />
+
+                {/* Floating Skill Bubbles & Exchange Flow */}
+                <div className="relative z-10 flex items-center justify-between gap-4">
+                  {/* Learner 1 (Creative / Music / UI) */}
+                  <div className="flex flex-col items-center space-y-2">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 p-1 shadow-lg shadow-amber-500/25">
+                      <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-amber-500">
+                        <Music className="w-7 h-7 sm:w-9 sm:h-9 text-orange-500" />
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs font-bold text-slate-900">Sneha Patel</p>
+                      <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                        Teaches: Design &amp; UI
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bidirectional Arrow Indicator */}
+                  <div className="flex flex-col items-center space-y-1">
+                    <div className="w-10 h-10 rounded-full bg-[#151e4e] text-white flex items-center justify-center shadow-md animate-pulse">
+                      <ArrowLeftRight className="w-5 h-5" />
+                    </div>
+                    <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                      96% Match
+                    </span>
+                  </div>
+
+                  {/* Learner 2 (Coding / Python / React) */}
+                  <div className="flex flex-col items-center space-y-2">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-600 p-1 shadow-lg shadow-indigo-500/25">
+                      <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-indigo-600">
+                        <Code className="w-7 h-7 sm:w-9 sm:h-9 text-indigo-600" />
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs font-bold text-slate-900">Rohit Gupta</p>
+                      <span className="text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
+                        Teaches: React &amp; TS
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Reciprocal Quote Card */}
+                <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs text-left space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-slate-900">Live Barter Connection</span>
+                    <span className="text-emerald-600 flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                      Zero Cost
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Rohit teaches modern ReactJS component architecture; Sneha teaches Figma design systems and user flows.
+                  </p>
+                  <div className="pt-2 flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-100">
+                    <span>Overlapping: Mon, Wed, Fri</span>
+                    <Link to="/exchange" className="font-bold text-[#151e4e] hover:underline">
+                      View Barter &rarr;
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        {/* ── 3 CORE PLATFORM PILLARS ── */}
+        <section id="benefits" className="px-6 sm:px-12 lg:px-16 py-16 bg-slate-50/60 border-t border-slate-100">
+          <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-[#151e4e] bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+              Why SkillBridge Works
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Three Pillars of Collegiate Peer Collaboration
             </h2>
-            <p className="text-slate-600 text-sm sm:text-base">
-              Traditional tutoring is one-way and costly. SkillBridge turns your university into an interconnected peer learning and venture launchpad.
+            <p className="text-xs sm:text-sm text-slate-500">
+              Unlike commercial tutoring platforms with hourly paywalls, SkillBridge unlocks mutual campus value.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-6">
             {pillars.map((pillar, i) => (
               <div
                 key={i}
-                className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-violet-300 transition-all flex flex-col justify-between group"
+                className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-card hover:shadow-soft hover:border-slate-300 transition-all flex flex-col justify-between group"
               >
-                <div className="space-y-4">
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${pillar.color} flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform`}>
-                    <pillar.icon className="w-7 h-7" />
+                <div className="space-y-3">
+                  <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-[#151e4e] group-hover:bg-[#151e4e] group-hover:text-white transition-colors">
+                    <pillar.icon className="w-6 h-6" />
                   </div>
-                  <span className="inline-block text-[11px] font-bold uppercase tracking-wider text-violet-600 bg-violet-50 px-2.5 py-0.5 rounded-full">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                     {pillar.badge}
                   </span>
-                  <h3 className="text-xl font-bold text-slate-900">{pillar.title}</h3>
-                  <p className="text-slate-600 text-sm leading-relaxed">{pillar.desc}</p>
+                  <h3 className="text-base font-bold text-slate-900">{pillar.title}</h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">{pillar.desc}</p>
                 </div>
 
-                <div className="pt-6 border-t border-slate-100 mt-6">
+                <div className="pt-4 border-t border-slate-100 mt-4">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full text-violet-600 hover:text-violet-700 hover:bg-violet-50 justify-between font-semibold"
+                    className="w-full justify-between text-xs font-bold text-[#151e4e] hover:bg-slate-50"
                     onClick={() => navigate(pillar.link)}
                     rightIcon={<ChevronRight className="w-4 h-4" />}
                   >
@@ -200,187 +276,99 @@ export function LandingPage() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ── 5-FACTOR MATCHMAKER ALGORITHM EXPLAINER ── */}
-      <section id="algorithm" className="py-20 bg-white border-y border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-6 space-y-6">
-              <Badge variant="violet" size="md">Matchmaking Engine</Badge>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
-                Weighted 5-Factor Peer Compatibility Algorithm
+        {/* ── ALGORITHM SECTION: 5-FACTOR MATCHING ── */}
+        <section id="how-it-works" className="px-6 sm:px-12 lg:px-16 py-16 bg-white border-t border-slate-100">
+          <div className="grid lg:grid-cols-12 gap-10 items-center">
+            <div className="lg:col-span-6 space-y-5">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-[#151e4e] bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+                Matchmaking Engine
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
+                Mathematical 5-Factor Peer Compatibility Scoring
               </h2>
-              <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                Rather than random lists, SkillBridge scores student pairs using a mathematically rigorous multi-factor algorithm calibrated specifically for collegiate academic cycles:
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                SkillBridge calculates reciprocal affinity using a multi-factor formula calibrated for campus academic timetables:
               </p>
 
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {[
-                  { factor: 'Domain Expertise & Skill Coverage', weight: '35%', desc: 'Overlap between skills offered and skills wanted.' },
+                  { factor: 'Domain Expertise Coverage', weight: '35%', desc: 'Overlap between skills offered and skills wanted.' },
                   { factor: 'Schedule Compatibility', weight: '25%', desc: 'Jaccard intersection over shared weekly availability slots.' },
-                  { factor: 'Two-Way Reciprocal Match', weight: '20%', desc: 'Bidirectional learning equilibrium (zero-cash barter).' },
-                  { factor: 'Peer Reputation & Rating', weight: '10%', desc: 'Normalized peer review score and badges earned.' },
+                  { factor: 'Two-Way Reciprocal Match', weight: '20%', desc: 'Mutual learning equilibrium (zero-cash barter).' },
+                  { factor: 'Peer Reputation & Rating', weight: '10%', desc: 'Verified peer review score and badges earned.' },
                   { factor: 'Academic Department Alignment', weight: '10%', desc: 'Shared courses, faculty, and academic year relevance.' },
                 ].map((item, idx) => (
                   <div key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/70">
-                    <span className="px-2 py-0.5 rounded-md bg-violet-600 text-white text-xs font-bold shrink-0 mt-0.5">
+                    <span className="px-2 py-0.5 rounded-md bg-[#151e4e] text-white text-[11px] font-bold shrink-0 mt-0.5">
                       {item.weight}
                     </span>
                     <div>
-                      <span className="text-sm font-bold text-slate-900">{item.factor}</span>
-                      <p className="text-xs text-slate-500 mt-0.5">{item.desc}</p>
+                      <span className="text-xs font-bold text-slate-900">{item.factor}</span>
+                      <p className="text-[11px] text-slate-500 mt-0.5">{item.desc}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Live Reciprocal Demonstration Card */}
-            <div className="lg:col-span-6">
-              <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-8 rounded-3xl text-white shadow-2xl border border-white/10 space-y-6">
-                <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-violet-400" />
-                    <span className="text-xs uppercase tracking-wider font-bold text-slate-300">
-                      Live Reciprocal Match Demonstration
-                    </span>
-                  </div>
-                  <span className="text-xs font-black text-emerald-400 bg-emerald-950/60 border border-emerald-500/40 px-2.5 py-1 rounded-full">
-                    96% Mutual Match
-                  </span>
-                </div>
-
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {/* Student A */}
-                  <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
-                    <span className="text-[10px] uppercase font-bold text-violet-300">Student A (You)</span>
-                    <h4 className="font-bold text-white text-base">Alex Chen</h4>
-                    <p className="text-xs text-slate-400">CS &bull; 3rd Year</p>
-                    <div className="text-xs space-y-1 pt-2">
-                      <div className="text-emerald-400 font-semibold">Teaches: React, TypeScript</div>
-                      <div className="text-violet-300 font-semibold">Wants: Python, ML</div>
-                    </div>
-                  </div>
-
-                  {/* Student B */}
-                  <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
-                    <span className="text-[10px] uppercase font-bold text-emerald-300">Student B (Partner)</span>
-                    <h4 className="font-bold text-white text-base">Sarah Jenkins</h4>
-                    <p className="text-xs text-slate-400">Data Science &bull; 4th Year</p>
-                    <div className="text-xs space-y-1 pt-2">
-                      <div className="text-emerald-400 font-semibold">Teaches: Python, ML</div>
-                      <div className="text-violet-300 font-semibold">Wants: React, TypeScript</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-3 bg-violet-500/20 rounded-xl border border-violet-400/30 text-center">
-                  <p className="text-xs text-violet-200">
-                    ⚡ Perfect Inversion: Both students teach what the other needs, with 4 overlapping available days!
-                  </p>
-                </div>
-
-                <Button
-                  variant="primary"
-                  size="md"
-                  className="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold"
-                  onClick={() => navigate('/exchange')}
-                >
-                  Experience the Reciprocal Matchmaker &rarr;
-                </Button>
+            {/* Reciprocal Score Card Preview */}
+            <div className="lg:col-span-6 bg-slate-50 rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Live Mathematical Verification
+                </span>
+                <span className="text-xs font-black text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full">
+                  Score: 96 / 100
+                </span>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ── STATS SECTION ── */}
-      <section className="py-16 bg-gradient-to-r from-violet-700 via-indigo-700 to-violet-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, i) => (
-              <div key={i} className="text-center space-y-1">
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-black">{stat.value}</p>
-                <p className="text-violet-200 text-xs sm:text-sm font-semibold">{stat.label}</p>
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-1">
+                  <p className="font-bold text-slate-900">Rohit Gupta</p>
+                  <p className="text-[10px] text-slate-500">DTU &bull; 3rd Year CS</p>
+                  <p className="text-[11px] text-emerald-700 font-medium">Offers: React, TypeScript</p>
+                  <p className="text-[11px] text-[#151e4e] font-medium">Wants: Python, ML</p>
+                </div>
+
+                <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-1">
+                  <p className="font-bold text-slate-900">Ananya Singh</p>
+                  <p className="text-[10px] text-slate-500">BITS Pilani &bull; 3rd Year AI</p>
+                  <p className="text-[11px] text-emerald-700 font-medium">Offers: Python, ML</p>
+                  <p className="text-[11px] text-[#151e4e] font-medium">Wants: React, TypeScript</p>
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* ── POPULAR CATEGORIES ── */}
-      <section id="categories" className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 space-y-2">
-            <Badge variant="violet" size="md">Academic Engineering Domains</Badge>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
-              Multidisciplinary Campus Coverage
-            </h2>
-            <p className="text-slate-600 text-sm">
-              Connecting Computer Science, Electronics, Mechanical, Civil, and Data Science.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {categories.map((cat, i) => (
-              <div
-                key={i}
+              <div className="p-3 bg-indigo-50/80 rounded-xl border border-indigo-100 text-xs text-[#151e4e] text-center font-medium">
+                ⚡ Perfect Inversion: Both students teach what the other needs, with 4 overlapping available days!
+              </div>
+
+              <Button
+                variant="primary"
+                size="md"
+                className="w-full bg-[#151e4e] hover:bg-[#0f1638] text-white font-bold"
                 onClick={() => navigate('/exchange')}
-                className="group p-5 rounded-2xl bg-white border border-slate-200 hover:border-violet-300 hover:shadow-md transition-all cursor-pointer text-center space-y-2"
               >
-                <div className="w-12 h-12 mx-auto rounded-xl bg-violet-50 flex items-center justify-center group-hover:bg-violet-600 group-hover:text-white transition-all text-violet-600">
-                  <cat.icon className="w-6 h-6" />
-                </div>
-                <h3 className="font-bold text-slate-900 text-sm">{cat.title}</h3>
-                <p className="text-xs text-slate-500">{cat.count} verified peers</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── CALL TO ACTION ── */}
-      <section className="py-20 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white">
-        <div className="max-w-3xl mx-auto px-4 text-center space-y-6">
-          <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
-            Ready to Connect &amp; Build Together?
-          </h2>
-          <p className="text-base sm:text-lg text-slate-300 leading-relaxed">
-            Join 38+ students across campus currently trading skills, discovering co-founders, and conquering university coursework.
-          </p>
-          <div className="pt-2">
-            <Button
-              size="lg"
-              onClick={() => navigate('/register')}
-              className="!bg-white !text-violet-900 hover:!bg-slate-100 font-extrabold shadow-xl text-base px-8"
-              rightIcon={<ArrowRight className="w-5 h-5" />}
-            >
-              Get Started on SkillBridge
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* ── FOOTER ── */}
-      <footer className="bg-slate-900 text-slate-400 py-16 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center">
-                <GraduationCap className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-lg font-bold text-white">SkillBridge</span>
+                Launch Skill Exchange Engine &rarr;
+              </Button>
             </div>
-            <p className="text-xs text-slate-400 text-center sm:text-right">
-              Challenge ID: <strong>CIH-008</strong> &bull; Smart Peer-to-Peer Tutoring &amp; Mentorship Matchmaker
-            </p>
           </div>
-          <div className="border-t border-slate-800 pt-6 text-center text-xs text-slate-500">
-            &copy; 2026 SkillBridge. Fully audited, redesigned, and seeded with campus dataset.
+        </section>
+
+        {/* ── FOOTER ── */}
+        <footer className="px-6 sm:px-12 lg:px-16 py-8 border-t border-slate-100 bg-slate-50/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-slate-800">SkillBridge</span>
+            <span>&bull;</span>
+            <span>Swap Skills, Spark Growth</span>
           </div>
-        </div>
-      </footer>
+          <p>
+            Challenge ID: <strong>CIH-008</strong> &bull; Smart Peer-to-Peer Tutoring &amp; Mentorship Matchmaker
+          </p>
+        </footer>
+
+      </div>
     </div>
   );
 }

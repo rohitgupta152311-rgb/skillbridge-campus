@@ -217,10 +217,10 @@ export function DashboardLayout() {
                     to={item.path}
                     onClick={() => setSidebarOpen(false)}
                     className={clsx(
-                      'flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all group',
+                      'flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm transition-all group duration-150',
                       active
-                        ? 'bg-violet-50 text-violet-700 font-semibold shadow-xs'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                        ? 'bg-[#151e4e] text-white font-bold shadow-pill-active'
+                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold'
                     )}
                   >
                     <div className="flex items-center gap-3">
@@ -228,9 +228,9 @@ export function DashboardLayout() {
                         className={clsx(
                           'w-4 h-4 transition-colors',
                           active
-                            ? 'text-violet-600'
+                            ? 'text-white'
                             : item.highlight
-                            ? 'text-violet-600 group-hover:text-violet-700'
+                            ? 'text-[#151e4e] group-hover:text-slate-900'
                             : 'text-slate-400 group-hover:text-slate-600'
                         )}
                       />
@@ -278,9 +278,25 @@ export function DashboardLayout() {
           </Link>
         </div>
 
+        {/* Floating SkillSwap Metric Card (as seen in theme reference) */}
+        <div className="p-3 mb-2 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-600 font-bold">
+              <ArrowLeftRight className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-sm font-black text-slate-900 tracking-tight leading-none">1,245</p>
+              <p className="text-[10px] text-slate-500 font-medium mt-0.5">Total Peer Exchanges</p>
+            </div>
+          </div>
+          <span className="text-[10px] font-bold text-amber-700 bg-amber-100/80 px-1.5 py-0.5 rounded-md">
+            +18%
+          </span>
+        </div>
+
         <button
           onClick={handleLogout}
-          className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors"
+          className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-colors"
         >
           <LogOut className="w-3.5 h-3.5" /> Sign Out
         </button>
@@ -289,9 +305,9 @@ export function DashboardLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:w-[260px] bg-white border-r border-slate-200/80 z-40">
+    <div className="min-h-screen bg-[#EEF2F9]">
+      {/* Desktop Floating Sidebar matching SkillSwap theme */}
+      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:top-4 lg:bottom-4 lg:left-4 lg:w-[260px] bg-white rounded-3xl shadow-soft border border-slate-200/70 z-40 overflow-hidden">
         <SidebarContent />
       </aside>
 
@@ -309,10 +325,10 @@ export function DashboardLayout() {
       )}
 
       {/* Main Container */}
-      <div className="lg:pl-[260px] flex flex-col min-h-screen">
-        {/* Top Professional Navigation Bar (LinkedIn Style) */}
-        <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
-          <div className="flex items-center justify-between h-16 px-4 lg:px-8">
+      <div className="lg:pl-[288px] flex flex-col min-h-screen">
+        {/* Top Floating Navigation Bar matching modern theme */}
+        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/70 lg:mx-4 lg:mt-3 lg:rounded-2xl lg:shadow-soft lg:border">
+          <div className="flex items-center justify-between h-14 lg:h-16 px-4 lg:px-6">
             {/* Left: Mobile Toggle & Search */}
             <div className="flex items-center gap-3 flex-1 max-w-md">
               <button
