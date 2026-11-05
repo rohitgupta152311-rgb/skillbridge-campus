@@ -73,7 +73,7 @@ export function DashboardLayout() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/discover?q=${encodeURIComponent(searchQuery.trim())}`);
+      navigate(`/explore?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
@@ -103,6 +103,7 @@ export function DashboardLayout() {
         title: 'CAMPUS NETWORK & EXCHANGE',
         items: [
           { label: 'Campus Feed', icon: Newspaper, path: '/feed' },
+          { label: 'Explore Campus', icon: Compass, path: '/explore', highlight: true },
           {
             label: 'Skill Exchange',
             icon: ArrowLeftRight,
@@ -417,22 +418,34 @@ export function DashboardLayout() {
                     <div className="space-y-1 mt-1">
                       {[
                         {
-                          email: 'alex.student@campus.edu',
-                          name: 'Alex Chen (Student A)',
-                          role: 'React / TS Lead → Wants Python / ML',
-                          status: 'Mutual 96% Match with Sarah',
+                          email: 'rohit.gupta@campus.edu',
+                          name: 'Rohit Gupta (DTU - Student A)',
+                          role: 'React / TS Lead → Wants Python & ML',
+                          status: 'Mutual 96% Match with Ananya',
                         },
                         {
-                          email: 'sarah.mentor@campus.edu',
-                          name: 'Sarah Jenkins (Student B)',
-                          role: 'Python / ML Lead → Wants React / TS',
-                          status: 'Mutual 96% Match with Alex',
+                          email: 'ananya.singh@campus.edu',
+                          name: 'Ananya Singh (BITS - Student B)',
+                          role: 'Python / ML Lead → Wants React & UI',
+                          status: 'Mutual 96% Match with Rohit',
                         },
                         {
-                          email: 'marcus.iot@campus.edu',
-                          name: 'Marcus Vance (Student C)',
+                          email: 'akash.das@campus.edu',
+                          name: 'Akash Das (NIT Silchar)',
                           role: 'IoT Hardware Lead • AgriPulse Project Owner',
                           status: 'Recruiting Web & ML Contributors',
+                        },
+                        {
+                          email: 'aarav.sharma@campus.edu',
+                          name: 'Aarav Sharma (IIT Delhi)',
+                          role: 'Competitive Programmer • C++ & DSA',
+                          status: 'System Design & Algorithm Mentor',
+                        },
+                        {
+                          email: 'sneha.patel@campus.edu',
+                          name: 'Sneha Patel (NID / MIT Pune)',
+                          role: 'Product Designer • Figma & UI/UX',
+                          status: 'Design Systems & App Prototyping',
                         },
                       ].map((persona) => {
                         const isCurrent = user.email === persona.email;

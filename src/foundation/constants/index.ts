@@ -3,9 +3,11 @@ export const APP_TAGLINE = 'Learn Together. Grow Together.';
 export const APP_DESCRIPTION = 'Smart Peer-to-Peer Tutoring & Mentorship Matchmaker';
 
 export const DEMO_CREDENTIALS = {
-  mentee: { email: 'alex.student@campus.edu', password: 'demo1234' },
-  mentor: { email: 'sarah.mentor@campus.edu', password: 'demo1234' },
+  mentee: { email: 'rohit.gupta@campus.edu', password: 'demo1234' },
+  mentor: { email: 'ananya.singh@campus.edu', password: 'demo1234' },
   admin: { email: 'admin@campus.edu', password: 'admin1234' },
+  legacyMentee: { email: 'alex.student@campus.edu', password: 'demo1234' },
+  legacyMentor: { email: 'sarah.mentor@campus.edu', password: 'demo1234' },
 };
 
 export const MATCH_WEIGHTS = {

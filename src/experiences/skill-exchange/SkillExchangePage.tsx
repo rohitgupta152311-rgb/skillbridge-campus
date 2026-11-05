@@ -298,7 +298,10 @@ export function SkillExchangePage() {
                 </span>
                 <p className="text-[10px] font-bold text-violet-200 tracking-wider uppercase mt-0.5">Reciprocal Match</p>
               </div>
-              <p className="text-[10px] text-slate-300 max-w-[200px] leading-tight">
+              <div className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[11px] font-bold shadow-xs">
+                ✨ "Perfect opportunity to grow together."
+              </div>
+              <p className="text-[10px] text-slate-300 max-w-[220px] leading-tight">
                 Zero financial cost. 2x learning velocity through mutual peer exchange.
               </p>
             </div>

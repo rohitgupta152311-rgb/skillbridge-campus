@@ -77,8 +77,12 @@ export function CommunitiesPage() {
             <Card key={club.id} padding="lg" className="border border-slate-200 flex flex-col justify-between hover:border-violet-300 transition-colors">
               <div>
                 <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-2xl bg-violet-50 text-2xl flex items-center justify-center flex-shrink-0">
-                    {club.icon}
+                  <div className="w-12 h-12 rounded-2xl bg-violet-50 overflow-hidden flex items-center justify-center flex-shrink-0 border border-slate-100 shadow-xs">
+                    {club.avatar ? (
+                      <img src={club.avatar} alt={club.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xl">{club.icon || '🌐'}</span>
+                    )}
                   </div>
                   <Button
                     size="sm"
@@ -102,7 +106,7 @@ export function CommunitiesPage() {
                   <Users className="w-3.5 h-3.5 text-slate-400" /> {club.membersCount} members
                 </span>
                 <span className="flex items-center gap-1 font-medium">
-                  <MessageSquare className="w-3.5 h-3.5 text-slate-400" /> {club.postsCount} posts
+                  <MessageSquare className="w-3.5 h-3.5 text-slate-400" /> {club.postsCount || Math.floor(club.membersCount / 5)} discussions
                 </span>
               </div>
             </Card>

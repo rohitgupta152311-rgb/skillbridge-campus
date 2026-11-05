@@ -19,6 +19,9 @@ import { Post, PostType } from '../../foundation/types';
 
 export function ActivityFeedPage() {
   const { user } = useAuthStore();
+  const hour = new Date().getHours();
+  const timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const firstName = user?.fullName ? user.fullName.split(' ')[0] : 'Rohit';
   const navigate = useNavigate();
   const { addToast } = useToastStore();
 
@@ -264,13 +267,16 @@ export function ActivityFeedPage() {
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Campus Communities</h4>
             <div className="space-y-2">
               <Link to="/communities" className="flex items-center gap-2.5 text-xs text-slate-700 hover:text-violet-600 font-medium transition-colors">
-                <span className="text-sm">💻</span> Computer Science Hub
+                <span className="text-sm">🇮🇳</span> Indian Student Developers
               </Link>
               <Link to="/communities" className="flex items-center gap-2.5 text-xs text-slate-700 hover:text-violet-600 font-medium transition-colors">
-                <span className="text-sm">🤖</span> AI & Machine Learning Club
+                <span className="text-sm">🤖</span> AI Builders India
               </Link>
               <Link to="/communities" className="flex items-center gap-2.5 text-xs text-slate-700 hover:text-violet-600 font-medium transition-colors">
-                <span className="text-sm">🌐</span> Web & Cloud Dev Society
+                <span className="text-sm">⚡</span> IoT & Embedded Systems India
+              </Link>
+              <Link to="/communities" className="flex items-center gap-2.5 text-xs text-slate-700 hover:text-violet-600 font-medium transition-colors">
+                <span className="text-sm">👩‍💻</span> Women in Technology
               </Link>
             </div>
             <div className="pt-2 border-t border-slate-100">
@@ -283,6 +289,34 @@ export function ActivityFeedPage() {
 
         {/* ── CENTER COLUMN (Rich Activity Feed) ── */}
         <div className="lg:col-span-6 space-y-5">
+          {/* Dynamic Personalized Welcome Banner */}
+          <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-violet-950 rounded-2xl p-5 text-white shadow-lg border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-violet-500/20 text-violet-200 text-[11px] font-semibold border border-violet-400/30">
+                <Sparkles className="w-3 h-3 text-violet-400" />
+                <span>SkillBridge Community &bull; {user.university || 'Campus'}</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+                {timeGreeting}, {firstName}. What are you learning or building today?
+              </h2>
+              <p className="text-xs text-slate-300">
+                "Everyone has something to teach, something to learn, and something valuable to share."
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Link to="/exchange">
+                <Button size="sm" className="bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-md">
+                  Skill Barter ⚡
+                </Button>
+              </Link>
+              <Link to="/explore">
+                <Button variant="outline" size="sm" className="!border-white/20 !text-white hover:!bg-white/10 text-xs font-semibold">
+                  Explore
+                </Button>
+              </Link>
+            </div>
+          </div>
+
           {/* Post Creation Box */}
           <Card padding="md" className="border border-slate-200 shadow-xs">
             <div className="flex gap-3 items-start mb-3">

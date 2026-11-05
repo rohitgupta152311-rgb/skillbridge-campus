@@ -1,3 +1,4 @@
+import { ExplorePage } from '../experiences/explore/ExplorePage';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { DashboardLayout } from '../shared/layouts/DashboardLayout';
 import { ProtectedRoute, RoleRedirect } from '../identity/authorization/ProtectedRoute';
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
         element: <DashboardLayout />,
         children: [
           { path: '/feed', element: <ActivityFeedPage /> },
+          { path: '/explore', element: <ExplorePage /> },
           { path: '/exchange', element: <SkillExchangePage /> },
           { path: '/projects', element: <ProjectSpacePage /> },
           { path: '/projects/:id', element: <ProjectDetailPage /> },

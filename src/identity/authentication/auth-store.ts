@@ -33,7 +33,19 @@ export const useAuthStore = create<AuthState>((set) => {
   const stored = localStorage.getItem(AUTH_KEY);
   let initialUser: User | null = null;
   if (stored) {
-    try { initialUser = JSON.parse(stored); } catch { /* ignore */ }
+    try {
+      const parsed = JSON.parse(stored);
+      if (parsed && parsed.email !== 'alex.student@campus.edu') {
+        initialUser = parsed;
+      }
+    } catch { /* ignore */ }
+  }
+  // Default to Rohit Gupta for authentic Indian campus community experience
+  if (!initialUser) {
+    initialUser = getUserByEmail('rohit.gupta@campus.edu') || null;
+    if (initialUser) {
+      localStorage.setItem(AUTH_KEY, JSON.stringify(initialUser));
+    }
   }
 
   return {

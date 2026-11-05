@@ -287,15 +287,17 @@ export interface SkillItem {
 export interface CommunityItem {
   id: string;
   name: string;
-  slug: string;
+  slug?: string;
   description: string;
   category?: string;
   coverImage?: string;
   avatarImage?: string;
+  avatar?: string;
   icon?: string;
   membersCount: number;
-  postsCount: number;
+  postsCount?: number;
   isMember?: boolean;
+  isJoined?: boolean;
 }
 
 // ─── SkillBridge 4.0: Two-Way Skill Exchange & ProjectSpace Types ───
