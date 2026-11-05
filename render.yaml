@@ -5,7 +5,7 @@ services:
     env: node
     plan: starter # $7/mo - Always On (No cold starts / sleep), 0.5 CPU, 512MB RAM
     rootDir: server
-    buildCommand: npm install --include=dev && npx prisma generate && npm run build
+    buildCommand: npm install --include=dev && npx prisma generate && npx prisma migrate deploy && npm run build
     startCommand: npm start
     healthCheckPath: /health
     envVars:
@@ -29,19 +29,19 @@ services:
       - key: GOOGLE_CLIENT_SECRET
         value: placeholder
       - key: GOOGLE_CALLBACK_URL
-        value: https://skillbridge-backend.onrender.com/api/v1/auth/google/callback
+        value: https://skillbridge-backend-f5a7.onrender.com/api/v1/auth/google/callback
       - key: GITHUB_CLIENT_ID
         value: placeholder
       - key: GITHUB_CLIENT_SECRET
         value: placeholder
       - key: GITHUB_CALLBACK_URL
-        value: https://skillbridge-backend.onrender.com/api/v1/auth/github/callback
+        value: https://skillbridge-backend-f5a7.onrender.com/api/v1/auth/github/callback
       - key: LINKEDIN_CLIENT_ID
         value: placeholder
       - key: LINKEDIN_CLIENT_SECRET
         value: placeholder
       - key: LINKEDIN_CALLBACK_URL
-        value: https://skillbridge-backend.onrender.com/api/v1/auth/linkedin/callback
+        value: https://skillbridge-backend-f5a7.onrender.com/api/v1/auth/linkedin/callback
       # Cloud Object Storage:
       - key: CLOUDINARY_CLOUD_NAME
         value: placeholder
@@ -62,9 +62,9 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://skillbridge-backend.onrender.com/api/v1
+        value: https://skillbridge-backend-f5a7.onrender.com/api/v1
       - key: VITE_WS_URL
-        value: https://skillbridge-backend.onrender.com
+        value: https://skillbridge-backend-f5a7.onrender.com
 
 # 3. Managed PostgreSQL Database
 databases:
