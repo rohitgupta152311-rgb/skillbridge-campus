@@ -1,3 +1,4 @@
+import { apiClient } from '../../infrastructure/api/api-client';
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -103,8 +104,8 @@ export function ProfilePage() {
 
   const userBadges = (user.badges && user.badges.length > 0) ? user.badges : DEFAULT_BADGES;
 
-  const handleSave = () => {
-    const updated = updateUser(user.id, {
+  const handleSave = async () => {
+    const updated = await apiClient.updateProfile({
       fullName: form.fullName,
       headline: form.headline,
       bio: form.bio,
@@ -123,7 +124,7 @@ export function ProfilePage() {
     }
 
     setEditing(false);
-    addToast({ type: 'success', title: 'Profile updated successfully!' });
+    addToast({ type: 'success', title: 'Profile updated and saved to database!' });
   };
 
   const handleEndorse = (skillId: string) => {

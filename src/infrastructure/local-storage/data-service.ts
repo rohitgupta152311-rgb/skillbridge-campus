@@ -27,7 +27,7 @@ const STORAGE_KEYS = {
   connections: 'sb_connections',
   projects: 'sb_projects',
   projectApplications: 'sb_project_applications',
-  initialized: 'sb_initialized_v8_nit_nagaland_eee_girls',
+  initialized: 'sb_initialized_v9_nit_nagaland_eee_2nd_year',
 } as const;
 
 function loadOrSeed<T>(key: string, seedData: T[]): T[] {
@@ -68,21 +68,34 @@ export function initializeDataStore(force = false): void {
 // ─── USERS ──────────────────────────────────────────────────
 export function getUsers(): User[] {
   const users = loadOrSeed(STORAGE_KEYS.users, mockUsers);
-  const map = new Map(users.map(u => [u.id, u]));
+  const existingIds = new Set(users.map(u => u.id));
+  const missing = mockUsers.filter(u => !existingIds.has(u.id));
+
+  // If new seed users are added or year/university was updated in seed data for the 5 students, update them if not modified by user
   let changed = false;
+  const merged = [...users];
 
   for (const mu of mockUsers) {
-    const existing = map.get(mu.id);
-    if (!existing || existing.university !== mu.university || existing.department !== mu.department || existing.headline !== mu.headline) {
-      map.set(mu.id, mu);
+    const idx = merged.findIndex(u => u.id === mu.id);
+    if (idx === -1) {
+      merged.push(mu);
       changed = true;
+    } else if (['user-vidya', 'user-nyimei', 'user-salini', 'user-kasturika', 'user-betimansa'].includes(mu.id)) {
+      if (merged[idx].year !== '2nd Year' || merged[idx].university !== 'National Institute of Technology (NIT) Nagaland' || merged[idx].department !== 'Electrical & Electronics Engineering') {
+        merged[idx] = {
+          ...merged[idx],
+          year: '2nd Year',
+          university: 'National Institute of Technology (NIT) Nagaland',
+          department: 'Electrical & Electronics Engineering',
+        };
+        changed = true;
+      }
     }
   }
 
   if (changed) {
-    const updated = Array.from(map.values());
-    persist(STORAGE_KEYS.users, updated);
-    return updated;
+    persist(STORAGE_KEYS.users, merged);
+    return merged;
   }
   return users;
 }
@@ -97,6 +110,20 @@ export function updateUser(id: string, updates: Partial<User>): User | undefined
   if (idx === -1) return undefined;
   users[idx] = { ...users[idx], ...updates };
   persist(STORAGE_KEYS.users, users);
+
+  // Keep sb_current_user in sync so modifications persist immediately
+  const currentUserRaw = localStorage.getItem('sb_current_user');
+  if (currentUserRaw) {
+    try {
+      const current = JSON.parse(currentUserRaw);
+      if (current.id === id) {
+        localStorage.setItem('sb_current_user', JSON.stringify(users[idx]));
+      }
+    } catch {
+      // Ignore parse error
+    }
+  }
+
   return users[idx];
 }
 

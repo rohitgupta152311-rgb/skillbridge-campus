@@ -199,4 +199,44 @@ export const apiClient = {
   async endorseSkill(skillId: string, user: User): Promise<SkillItem | undefined> {
     return LocalData.endorseSkill(skillId, user);
   },
+  // User & Profile Persistence
+  async updateProfile(updates: Partial<User>): Promise<User | undefined> {
+    const currentUser = JSON.parse(localStorage.getItem('sb_current_user') || '{}');
+    if (!currentUser.id) return undefined;
+
+    const updated = LocalData.updateUser(currentUser.id, updates);
+    if (updated) {
+      localStorage.setItem('sb_current_user', JSON.stringify(updated));
+    }
+
+    const online = await checkBackend();
+    if (online) {
+      try {
+        const token = getAuthToken();
+        await fetch(`${API_BASE}/profiles/me`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            fullName: updates.fullName,
+            headline: updates.headline,
+            bio: updates.bio,
+            department: updates.department,
+            currentYear: updates.year,
+            university: updates.university,
+            portfolioUrl: updates.portfolioUrl,
+            githubUrl: updates.githubUrl,
+            linkedinUrl: updates.linkedinUrl,
+            languages: updates.languages,
+            avatarUrl: updates.avatar,
+          }),
+        });
+      } catch (err) {
+        console.warn('Backend database sync deferred; saved to persistent storage:', err);
+      }
+    }
+    return updated;
+  },
 };

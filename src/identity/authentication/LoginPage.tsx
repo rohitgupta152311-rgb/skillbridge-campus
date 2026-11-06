@@ -199,7 +199,7 @@ export function LoginPage() {
     // Official Google OAuth 2.0 redirect
     const params = new URLSearchParams({
       client_id: OFFICIAL_GOOGLE_CLIENT_ID,
-      redirect_uri: 'http://localhost:5000/api/v1/auth/google/callback',
+      redirect_uri: `${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1')}/auth/google/callback`,
       response_type: 'code',
       scope: 'openid email profile',
       prompt: 'select_account',
