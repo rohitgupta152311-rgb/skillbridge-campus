@@ -188,7 +188,7 @@ export function LandingPage() {
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.12] font-heading">
             Empowering Campus Engineers Through{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-700 via-indigo-600 to-slate-900">
-              Reciprocal Skill Barter
+              Direct Peer Skill Barter
             </span>
           </h1>
 

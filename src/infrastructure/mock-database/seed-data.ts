@@ -605,9 +605,10 @@ export const mockUsers: User[] = [
       { skillName: 'Control Systems', proficiency: 'intermediate', yearsExperience: 1.5 },
     ],
     skillsWanted: [
+      { skillName: 'Embedded C', proficiency: 'beginner', yearsExperience: 0 },
+      { skillName: 'Microcontrollers', proficiency: 'beginner', yearsExperience: 0 },
       { skillName: 'Python', proficiency: 'beginner', yearsExperience: 0 },
       { skillName: 'ReactJS', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'Web Development', proficiency: 'beginner', yearsExperience: 0 },
     ],
     availableDays: ['tuesday', 'thursday', 'saturday'],
     badges: [
@@ -642,9 +643,9 @@ export const mockUsers: User[] = [
       { skillName: 'IoT', proficiency: 'advanced', yearsExperience: 2 },
     ],
     skillsWanted: [
+      { skillName: 'Power Electronics', proficiency: 'beginner', yearsExperience: 0 },
+      { skillName: 'MATLAB', proficiency: 'beginner', yearsExperience: 0 },
       { skillName: 'Python', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'FastAPI', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'Git', proficiency: 'beginner', yearsExperience: 0 },
     ],
     availableDays: ['monday', 'wednesday', 'saturday'],
     badges: [

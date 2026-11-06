@@ -27,42 +27,80 @@ const STORAGE_KEYS = {
   connections: 'sb_connections',
   projects: 'sb_projects',
   projectApplications: 'sb_project_applications',
-  initialized: 'sb_initialized_v12_spelling_updates',
+  initialized: 'sb_initialized_v13_reciprocal_skills',
 } as const;
 
+// Isomorphic storage fallback for SSR, headless Node environments, and testing
+const memoryStore = new Map<string, string>();
+const safeStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        return window.localStorage.getItem(key);
+      }
+    } catch {
+      // Fall through
+    }
+    return memoryStore.get(key) ?? null;
+  },
+  setItem: (key: string, val: string): void => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(key, val);
+        return;
+      }
+    } catch {
+      // Fall through
+    }
+    memoryStore.set(key, val);
+  },
+  removeItem: (key: string): void => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.removeItem(key);
+        return;
+      }
+    } catch {
+      // Fall through
+    }
+    memoryStore.delete(key);
+  },
+};
+
+
 function loadOrSeed<T>(key: string, seedData: T[]): T[] {
-  const stored = localStorage.getItem(key);
+  const stored = safeStorage.getItem(key);
   if (stored) {
     try { return JSON.parse(stored); }
     catch { /* fall through to seed */ }
   }
-  localStorage.setItem(key, JSON.stringify(seedData));
+  safeStorage.setItem(key, JSON.stringify(seedData));
   return seedData;
 }
 
 function persist<T>(key: string, data: T[]): void {
-  localStorage.setItem(key, JSON.stringify(data));
+  safeStorage.setItem(key, JSON.stringify(data));
 }
 
 /** Initialize (or re-initialize) all data stores from seed data. */
 export function initializeDataStore(force = false): void {
-  if (!force && localStorage.getItem(STORAGE_KEYS.initialized)) return;
-  localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(mockUsers));
-  localStorage.setItem(STORAGE_KEYS.expertise, JSON.stringify(mockExpertise));
-  localStorage.setItem(STORAGE_KEYS.availability, JSON.stringify(mockAvailability));
-  localStorage.setItem(STORAGE_KEYS.sessions, JSON.stringify(mockSessions));
-  localStorage.setItem(STORAGE_KEYS.conversations, JSON.stringify(mockConversations));
-  localStorage.setItem(STORAGE_KEYS.messages, JSON.stringify(mockMessages));
-  localStorage.setItem(STORAGE_KEYS.reviews, JSON.stringify(mockReviews));
-  localStorage.setItem(STORAGE_KEYS.notifications, JSON.stringify(mockNotifications));
-  localStorage.setItem(STORAGE_KEYS.reports, JSON.stringify(mockReports));
-  localStorage.setItem(STORAGE_KEYS.posts, JSON.stringify(mockPosts));
-  localStorage.setItem(STORAGE_KEYS.communities, JSON.stringify(mockCommunities));
-  localStorage.setItem(STORAGE_KEYS.skills, JSON.stringify(mockSkills));
-  localStorage.setItem(STORAGE_KEYS.connections, JSON.stringify(mockConnections));
-  localStorage.setItem(STORAGE_KEYS.projects, JSON.stringify(mockProjects));
-  localStorage.setItem(STORAGE_KEYS.projectApplications, JSON.stringify(mockProjectApplications));
-  localStorage.setItem(STORAGE_KEYS.initialized, 'true');
+  if (!force && safeStorage.getItem(STORAGE_KEYS.initialized)) return;
+  safeStorage.setItem(STORAGE_KEYS.users, JSON.stringify(mockUsers));
+  safeStorage.setItem(STORAGE_KEYS.expertise, JSON.stringify(mockExpertise));
+  safeStorage.setItem(STORAGE_KEYS.availability, JSON.stringify(mockAvailability));
+  safeStorage.setItem(STORAGE_KEYS.sessions, JSON.stringify(mockSessions));
+  safeStorage.setItem(STORAGE_KEYS.conversations, JSON.stringify(mockConversations));
+  safeStorage.setItem(STORAGE_KEYS.messages, JSON.stringify(mockMessages));
+  safeStorage.setItem(STORAGE_KEYS.reviews, JSON.stringify(mockReviews));
+  safeStorage.setItem(STORAGE_KEYS.notifications, JSON.stringify(mockNotifications));
+  safeStorage.setItem(STORAGE_KEYS.reports, JSON.stringify(mockReports));
+  safeStorage.setItem(STORAGE_KEYS.posts, JSON.stringify(mockPosts));
+  safeStorage.setItem(STORAGE_KEYS.communities, JSON.stringify(mockCommunities));
+  safeStorage.setItem(STORAGE_KEYS.skills, JSON.stringify(mockSkills));
+  safeStorage.setItem(STORAGE_KEYS.connections, JSON.stringify(mockConnections));
+  safeStorage.setItem(STORAGE_KEYS.projects, JSON.stringify(mockProjects));
+  safeStorage.setItem(STORAGE_KEYS.projectApplications, JSON.stringify(mockProjectApplications));
+  safeStorage.setItem(STORAGE_KEYS.initialized, 'true');
 }
 
 // ─── USERS ──────────────────────────────────────────────────
@@ -125,12 +163,12 @@ export function updateUser(id: string, updates: Partial<User>): User | undefined
   persist(STORAGE_KEYS.users, users);
 
   // Keep sb_current_user in sync so modifications persist immediately
-  const currentUserRaw = localStorage.getItem('sb_current_user');
+  const currentUserRaw = safeStorage.getItem('sb_current_user');
   if (currentUserRaw) {
     try {
       const current = JSON.parse(currentUserRaw);
       if (current.id === id) {
-        localStorage.setItem('sb_current_user', JSON.stringify(users[idx]));
+        safeStorage.setItem('sb_current_user', JSON.stringify(users[idx]));
       }
     } catch {
       // Ignore parse error
