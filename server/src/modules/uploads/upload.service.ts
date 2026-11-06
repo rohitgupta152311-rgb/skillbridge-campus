@@ -18,7 +18,7 @@ export class UploadService {
     folder: 'avatars' | 'covers' | 'posts' | 'projects' = 'posts'
   ): Promise<UploadResult> {
     // Validate DataURI
-    const matches = fileDataUri.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    const matches = fileDataUri.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
     if (!matches || matches.length !== 3) {
       throw new Error('Invalid image format. Expected base64 data URI.');
     }
