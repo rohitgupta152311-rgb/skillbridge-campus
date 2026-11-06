@@ -596,8 +596,8 @@ export function LoginPage() {
                   className="p-2.5 rounded-xl bg-slate-50 hover:bg-violet-50/60 border border-slate-200/80 hover:border-violet-300 text-left transition-all group/btn"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] font-bold text-slate-900 group-hover/btn:text-violet-700">Dean / Admin</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 font-semibold">Faculty</span>
+                    <span className="text-[11px] font-bold text-slate-900 group-hover/btn:text-violet-700">Dr. Rajesh Sharma</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 font-semibold">Admin</span>
                   </div>
                   <p className="text-[10px] text-slate-500 font-mono truncate">admin@campus.edu</p>
                 </button>
