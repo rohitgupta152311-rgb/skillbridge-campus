@@ -90,17 +90,7 @@ export function LandingPage() {
       avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=faces',
       rating: 4.9,
     },
-    {
-      id: 'rohit',
-      name: 'Rohit Gupta',
-      university: 'DTU Delhi',
-      dept: 'Computer Science & Engineering',
-      year: '3rd Year',
-      teaches: 'ReactJS, TypeScript & Node',
-      seeks: 'Power Electronics & MATLAB',
-      avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&h=200&fit=crop&crop=faces',
-      rating: 5.0,
-    },
+
   ];
 
   const pillars = [
@@ -297,7 +287,7 @@ export function LandingPage() {
                       </div>
                       <div className="p-2 rounded-lg bg-violet-50 border border-violet-100/80">
                         <p className="text-[9px] uppercase font-bold text-violet-700">Learning</p>
-                        <p className="font-semibold text-violet-950 mt-0.5">React &amp; Web Systems</p>
+                        <p className="font-semibold text-violet-950 mt-0.5">Embedded Systems &amp; 8051</p>
                       </div>
                     </div>
                   </div>
@@ -309,30 +299,30 @@ export function LandingPage() {
                     </div>
                   </div>
 
-                  {/* Student 2: Rohit Gupta */}
+                  {/* Student 2: Nyimei C Konyak */}
                   <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
                     <div className="flex items-center gap-3">
                       <Avatar
-                        name="Rohit Gupta"
-                        src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&h=200&fit=crop&crop=faces"
+                        name="Nyimei C Konyak"
+                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces"
                         size="md"
                       />
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="text-xs font-bold text-slate-900">Rohit Gupta</p>
-                          <span className="px-1.5 py-0.2 rounded-sm bg-blue-100 text-blue-800 text-[10px] font-semibold">Mentee</span>
+                          <p className="text-xs font-bold text-slate-900">Nyimei C Konyak</p>
+                          <span className="px-1.5 py-0.2 rounded-sm bg-emerald-100 text-emerald-800 text-[10px] font-semibold">Peer Mentor</span>
                         </div>
-                        <p className="text-[11px] text-slate-500">DTU Delhi &bull; 3rd Year CS</p>
+                        <p className="text-[11px] text-slate-500">NIT Nagaland &bull; 2nd Year EEE</p>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
                       <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-100/80">
                         <p className="text-[9px] uppercase font-bold text-emerald-700">Teaches</p>
-                        <p className="font-semibold text-emerald-950 mt-0.5">ReactJS, TypeScript &amp; APIs</p>
+                        <p className="font-semibold text-emerald-950 mt-0.5">Embedded Systems &amp; 8051</p>
                       </div>
                       <div className="p-2 rounded-lg bg-violet-50 border border-violet-100/80">
                         <p className="text-[9px] uppercase font-bold text-violet-700">Learning</p>
-                        <p className="font-semibold text-violet-950 mt-0.5">Circuit Simulation in MATLAB</p>
+                        <p className="font-semibold text-violet-950 mt-0.5">Power Electronics &amp; MATLAB</p>
                       </div>
                     </div>
                   </div>
@@ -551,19 +541,19 @@ export function LandingPage() {
                   <p className="font-bold text-slate-900">Vidya Gupta</p>
                   <p className="text-[10px] text-slate-500">NIT Nagaland &bull; 2nd Year EEE</p>
                   <p className="text-[11px] text-emerald-700 font-medium">Offers: Power Electronics</p>
-                  <p className="text-[11px] text-violet-700 font-medium">Wants: React &amp; Web Dev</p>
+                  <p className="text-[11px] text-violet-700 font-medium">Wants: Embedded Systems</p>
                 </div>
 
                 <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-1">
-                  <p className="font-bold text-slate-900">Rohit Gupta</p>
-                  <p className="text-[10px] text-slate-500">DTU Delhi &bull; 3rd Year CS</p>
-                  <p className="text-[11px] text-emerald-700 font-medium">Offers: React &amp; Web Dev</p>
+                  <p className="font-bold text-slate-900">Nyimei C Konyak</p>
+                  <p className="text-[10px] text-slate-500">NIT Nagaland &bull; 2nd Year EEE</p>
+                  <p className="text-[11px] text-emerald-700 font-medium">Offers: Embedded Systems</p>
                   <p className="text-[11px] text-violet-700 font-medium">Wants: Power Electronics</p>
                 </div>
               </div>
 
               <div className="p-3 bg-violet-50 rounded-xl border border-violet-100 text-xs text-violet-900 text-center font-medium">
-                ⚡ Reciprocal Equilibrium: Both students swap exactly what the other needs with verified zero fees.
+                ⚡ Intra-Department Equilibrium: Both NIT Nagaland EEE 2nd Year students swap complementary core engineering subjects with zero cash fees.
               </div>
 
               <Button
