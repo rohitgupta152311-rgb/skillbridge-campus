@@ -4,82 +4,13 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding StudyBridge 2.0 PostgreSQL database...');
+  console.log('Seeding SkillBridge PostgreSQL database with NIT Nagaland cohort...');
 
   const passwordHash = await bcrypt.hash('demo1234', 10);
   const adminPasswordHash = await bcrypt.hash('admin1234', 10);
 
-  // 1. Mentee: Alex Turner
-  const alex = await prisma.user.upsert({
-    where: { email: 'alex.student@campus.edu' },
-    update: {},
-    create: {
-      email: 'alex.student@campus.edu',
-      passwordHash,
-      role: UserRole.MENTEE,
-      isVerified: true,
-      profile: {
-        create: {
-          fullName: 'Alex Turner',
-          department: 'Computer Science',
-          currentYear: '2nd Year',
-          university: 'State Technological University',
-          headline: 'Aspiring Full-Stack Software Engineer | React & Systems',
-          bio: 'Sophomore CS student passionate about building performant web apps and mastering data structures. Currently working on open source projects.',
-          portfolioUrl: 'https://alexturner.dev',
-          githubUrl: 'https://github.com/alexturner',
-          linkedinUrl: 'https://linkedin.com/in/alexturner',
-          languages: ['English', 'Spanish'],
-          learningPreferences: ['visual', 'kinesthetic'],
-          onlineStatus: 'available',
-        },
-      },
-    },
-  });
-
-  // 2. Mentor: Sarah Chen
-  const sarah = await prisma.user.upsert({
-    where: { email: 'sarah.mentor@campus.edu' },
-    update: {},
-    create: {
-      email: 'sarah.mentor@campus.edu',
-      passwordHash,
-      role: UserRole.MENTOR,
-      isVerified: true,
-      profile: {
-        create: {
-          fullName: 'Sarah Chen',
-          department: 'Computer Science',
-          currentYear: '4th Year',
-          university: 'State Technological University',
-          headline: 'Senior CS Student & Frontend Architect | Incoming SWE Intern',
-          bio: 'Passionate about teaching web development and helping juniors build real-world projects. Full-stack developer with internship experience at two tech startups.',
-          portfolioUrl: 'https://sarahchen.me',
-          githubUrl: 'https://github.com/sarahchen',
-          linkedinUrl: 'https://linkedin.com/in/sarahchen',
-          languages: ['English', 'Mandarin'],
-          onlineStatus: 'available',
-        },
-      },
-      mentorExpertise: {
-        create: [
-          { topic: 'ReactJS', category: 'technical', proficiencyLevel: 5, yearsOfExperience: 3.0 },
-          { topic: 'Web Development', category: 'technical', proficiencyLevel: 5, yearsOfExperience: 3.0 },
-          { topic: 'TypeScript', category: 'technical', proficiencyLevel: 4, yearsOfExperience: 2.0 },
-        ],
-      },
-      mentorAvailability: {
-        create: [
-          { dayOfWeek: 'monday', startTime: '10:00', endTime: '12:00' },
-          { dayOfWeek: 'wednesday', startTime: '14:00', endTime: '16:00' },
-          { dayOfWeek: 'friday', startTime: '09:00', endTime: '11:00' },
-        ],
-      },
-    },
-  });
-
-  // 3. Admin: Admin Officer
-  await prisma.user.upsert({
+  // 0. Administrator: Dr. Rajesh Sharma (Dean of Student Affairs, NIT Nagaland)
+  const admin = await prisma.user.upsert({
     where: { email: 'admin@campus.edu' },
     update: {},
     create: {
@@ -89,11 +20,176 @@ async function main() {
       isVerified: true,
       profile: {
         create: {
-          fullName: 'Campus Admin Officer',
-          department: 'Academic Affairs',
-          currentYear: 'Faculty',
-          university: 'State Technological University',
-          headline: 'Platform Administrator & Campus Safety Director',
+          fullName: 'Dr. Rajesh Sharma',
+          department: 'Academic Administration & Safety',
+          currentYear: 'Faculty / Dean',
+          university: 'National Institute of Technology (NIT) Nagaland',
+          headline: 'System Administrator & Dean of Student Affairs | NIT Nagaland',
+          bio: 'Oversees campus technical mentorship exchange, academic governance, safety compliance, and inter-departmental skill barter integrity.',
+          languages: ['English', 'Hindi'],
+          onlineStatus: 'available',
+        },
+      },
+    },
+  });
+
+  // 1. Vidya Gupta (2nd Year, NIT Nagaland, EEE)
+  const vidya = await prisma.user.upsert({
+    where: { email: 'vidya.gupta@campus.edu' },
+    update: {},
+    create: {
+      email: 'vidya.gupta@campus.edu',
+      passwordHash,
+      role: UserRole.MENTOR,
+      isVerified: true,
+      profile: {
+        create: {
+          fullName: 'Vidya Gupta',
+          department: 'Electrical & Electronics Engineering',
+          currentYear: '2nd Year',
+          university: 'National Institute of Technology (NIT) Nagaland',
+          headline: 'EEE Student | NIT Nagaland | Power Electronics & MATLAB Simulink',
+          bio: 'Electrical & Electronics Engineering student at NIT Nagaland. Passionate about power electronics, circuit simulations in MATLAB, and control systems.',
+          githubUrl: 'https://github.com/vidyagupta-dev',
+          linkedinUrl: 'https://linkedin.com/in/vidyagupta-nitn',
+          languages: ['English', 'Hindi'],
+          learningPreferences: ['visual', 'reading'],
+          onlineStatus: 'available',
+        },
+      },
+      mentorExpertise: {
+        create: [
+          { topic: 'Power Electronics', category: 'technical', proficiencyLevel: 5, yearsOfExperience: 2.5 },
+          { topic: 'MATLAB', category: 'technical', proficiencyLevel: 5, yearsOfExperience: 2.0 },
+          { topic: 'Circuit Analysis', category: 'technical', proficiencyLevel: 5, yearsOfExperience: 2.5 },
+        ],
+      },
+      mentorAvailability: {
+        create: [
+          { dayOfWeek: 'tuesday', startTime: '10:00', endTime: '12:00' },
+          { dayOfWeek: 'thursday', startTime: '14:00', endTime: '16:00' },
+          { dayOfWeek: 'saturday', startTime: '09:00', endTime: '11:00' },
+        ],
+      },
+    },
+  });
+
+  // 2. Nyimei C Konyak (2nd Year, NIT Nagaland, EEE)
+  const nyimei = await prisma.user.upsert({
+    where: { email: 'nyimei.konyak@campus.edu' },
+    update: {},
+    create: {
+      email: 'nyimei.konyak@campus.edu',
+      passwordHash,
+      role: UserRole.MENTOR,
+      isVerified: true,
+      profile: {
+        create: {
+          fullName: 'Nyimei C Konyak',
+          department: 'Electrical & Electronics Engineering',
+          currentYear: '2nd Year',
+          university: 'National Institute of Technology (NIT) Nagaland',
+          headline: 'EEE Student | NIT Nagaland | Embedded Systems & Microcontrollers',
+          bio: 'Electrical & Electronics Engineering student at NIT Nagaland. Specializing in microcontrollers (8051, ARM), embedded C programming, and smart grid automation.',
+          githubUrl: 'https://github.com/nyimei-konyak',
+          linkedinUrl: 'https://linkedin.com/in/nyimei-konyak',
+          languages: ['English', 'Hindi', 'Nagamese'],
+          learningPreferences: ['kinesthetic', 'visual'],
+          onlineStatus: 'available',
+        },
+      },
+      mentorExpertise: {
+        create: [
+          { topic: 'Embedded C', category: 'technical', proficiencyLevel: 5, yearsOfExperience: 2.5 },
+          { topic: 'Microcontrollers', category: 'technical', proficiencyLevel: 5, yearsOfExperience: 2.0 },
+          { topic: 'Circuit Analysis', category: 'technical', proficiencyLevel: 5, yearsOfExperience: 2.5 },
+        ],
+      },
+      mentorAvailability: {
+        create: [
+          { dayOfWeek: 'monday', startTime: '10:00', endTime: '12:00' },
+          { dayOfWeek: 'wednesday', startTime: '14:00', endTime: '16:00' },
+          { dayOfWeek: 'saturday', startTime: '13:00', endTime: '15:00' },
+        ],
+      },
+    },
+  });
+
+  // 3. Devrapalli Salini (2nd Year, NIT Nagaland, EEE)
+  await prisma.user.upsert({
+    where: { email: 'devrapalli.salini@campus.edu' },
+    update: {},
+    create: {
+      email: 'devrapalli.salini@campus.edu',
+      passwordHash,
+      role: UserRole.MENTOR,
+      isVerified: true,
+      profile: {
+        create: {
+          fullName: 'Devrapalli Salini',
+          department: 'Electrical & Electronics Engineering',
+          currentYear: '2nd Year',
+          university: 'National Institute of Technology (NIT) Nagaland',
+          headline: 'EEE Student | NIT Nagaland | Renewable Energy & Solar PV Systems',
+          bio: 'Electrical & Electronics Engineering student at NIT Nagaland. Researching solar microgrid controllers, battery energy storage systems, and power quality analysis.',
+          githubUrl: 'https://github.com/salini-devrapalli',
+          linkedinUrl: 'https://linkedin.com/in/devrapalli-salini',
+          languages: ['English', 'Telugu', 'Hindi'],
+          learningPreferences: ['visual', 'reading'],
+          onlineStatus: 'available',
+        },
+      },
+    },
+  });
+
+  // 4. Kasturika Nargary (2nd Year, NIT Nagaland, EEE)
+  await prisma.user.upsert({
+    where: { email: 'kasturika.nargary@campus.edu' },
+    update: {},
+    create: {
+      email: 'kasturika.nargary@campus.edu',
+      passwordHash,
+      role: UserRole.MENTOR,
+      isVerified: true,
+      profile: {
+        create: {
+          fullName: 'Kasturika Nargary',
+          department: 'Electrical & Electronics Engineering',
+          currentYear: '2nd Year',
+          university: 'National Institute of Technology (NIT) Nagaland',
+          headline: 'EEE Student | NIT Nagaland | VLSI Design & Digital Electronics',
+          bio: 'Electrical & Electronics Engineering student at NIT Nagaland. Passionate about digital logic design, Verilog RTL, FPGA prototyping, and PCB layout design.',
+          githubUrl: 'https://github.com/kasturika-nargary',
+          linkedinUrl: 'https://linkedin.com/in/kasturika-nargary',
+          languages: ['English', 'Assamese', 'Hindi'],
+          learningPreferences: ['visual', 'kinesthetic'],
+          onlineStatus: 'available',
+        },
+      },
+    },
+  });
+
+  // 5. Betimansa S Chang (2nd Year, NIT Nagaland, EEE)
+  await prisma.user.upsert({
+    where: { email: 'betimansa.chang@campus.edu' },
+    update: {},
+    create: {
+      email: 'betimansa.chang@campus.edu',
+      passwordHash,
+      role: UserRole.MENTOR,
+      isVerified: true,
+      profile: {
+        create: {
+          fullName: 'Betimansa S Chang',
+          department: 'Electrical & Electronics Engineering',
+          currentYear: '2nd Year',
+          university: 'National Institute of Technology (NIT) Nagaland',
+          headline: 'EEE Student | NIT Nagaland | Electric Vehicle BMS & IoT Hardware',
+          bio: 'Electrical & Electronics Engineering student at NIT Nagaland. Building battery management systems (BMS) for electric vehicles and sensor telemetry with ESP32.',
+          githubUrl: 'https://github.com/betimansa-chang',
+          linkedinUrl: 'https://linkedin.com/in/betimansa-chang',
+          languages: ['English', 'Nagamese', 'Hindi'],
+          learningPreferences: ['kinesthetic', 'visual'],
           onlineStatus: 'available',
         },
       },
@@ -101,49 +197,50 @@ async function main() {
   });
 
   // Communities
-  const csCommunity = await prisma.community.upsert({
-    where: { slug: 'cs-community' },
+  const eeeCommunity = await prisma.community.upsert({
+    where: { slug: 'eee-nit-nagaland' },
     update: {},
     create: {
-      name: 'Computer Science & Engineering',
-      slug: 'cs-community',
-      description: 'The official campus hub for algorithms, systems, software engineering, and hackathon project teams.',
-      iconImage: '💻',
+      name: 'Electrical & Electronics Engineering (NIT Nagaland)',
+      slug: 'eee-nit-nagaland',
+      description: 'Official department exchange for power electronics, microcontrollers, VLSI, and EV battery management systems.',
+      iconImage: '⚡',
     },
   });
 
-  const aiClub = await prisma.community.upsert({
-    where: { slug: 'ai-ml-club' },
+  const embeddedClub = await prisma.community.upsert({
+    where: { slug: 'embedded-systems-robotics' },
     update: {},
     create: {
-      name: 'AI & Machine Learning Club',
-      slug: 'ai-ml-club',
-      description: 'Discussing neural networks, PyTorch, computer vision, and foundation model research papers.',
-      iconImage: '🤖',
+      name: 'Embedded Systems & Hardware Club',
+      slug: 'embedded-systems-robotics',
+      description: 'Microcontroller programming, PCB design, sensors, and IoT prototyping circle.',
+      iconImage: '🔌',
     },
   });
 
   // Sample Posts in Feed
   await prisma.post.create({
     data: {
-      authorId: sarah.id,
-      communityId: csCommunity.id,
-      content: 'Excited to announce our upcoming campus workshop on "Building Full-Stack TypeScript Apps with React & Node.js"! We will be walking through production deployment patterns and clean architecture. Who is interested in joining?',
+      authorId: vidya.id,
+      communityId: eeeCommunity.id,
+      content: 'Leading a peer study sprint on MATLAB Simulink modeling for power electronic DC-DC converters this Wednesday. Happy to swap with anyone working on Python control system scripts!',
       postType: 'ACHIEVEMENT',
-      tags: ['WebDev', 'TypeScript', 'CampusWorkshop', 'React'],
+      tags: ['MATLAB', 'PowerElectronics', 'NITNagaland', 'EEE'],
     },
   });
 
   await prisma.post.create({
     data: {
-      authorId: alex.id,
-      content: 'Just deployed my first open-source data structures visualizer using React and Canvas! Huge thanks to Sarah Chen for the mentorship sessions on state architecture. Check out the demo and let me know your thoughts!',
+      authorId: nyimei.id,
+      communityId: embeddedClub.id,
+      content: 'Successfully flashed custom FreeRTOS firmware on our ARM Cortex-M board for the campus weather telemetry node. Shoutout to Vidya Gupta for the circuit analysis review!',
       postType: 'PROJECT_SHOWCASE',
-      tags: ['OpenSource', 'React', 'MentorshipWins', 'DataStructures'],
+      tags: ['EmbeddedSystems', 'ARM', 'FreeRTOS', 'PeerReview'],
     },
   });
 
-  console.log('Seeding completed successfully!');
+  console.log('SkillBridge NIT Nagaland database seeding completed successfully!');
 }
 
 main()

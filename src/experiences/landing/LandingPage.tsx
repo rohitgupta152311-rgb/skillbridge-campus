@@ -25,7 +25,6 @@ import {
   Building2,
   Award,
   Check,
-  Shield,
   Clock,
   Compass,
 } from 'lucide-react';
@@ -155,10 +154,7 @@ export function LandingPage() {
             <a href="#cohort" className="hover:text-slate-900 transition-colors">Featured Cohort</a>
             <a href="#algorithm" className="hover:text-slate-900 transition-colors">Matchmaking Engine</a>
             <a href="#institutions" className="hover:text-slate-900 transition-colors">Campus Partners</a>
-            <Link to="/admin" className="text-violet-700 font-bold hover:text-violet-900 flex items-center gap-1">
-              <Shield className="w-3.5 h-3.5" />
-              <span>Admin Console</span>
-            </Link>
+
           </nav>
 
           {/* Action CTAs */}
@@ -222,14 +218,7 @@ export function LandingPage() {
                 >
                   Browse Mentors &amp; Talent
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  className="text-violet-700 hover:bg-violet-50 font-bold text-xs sm:text-sm px-4 py-3.5 rounded-xl"
-                  onClick={() => navigate('/admin')}
-                >
-                  Staff Portal
-                </Button>
+
               </div>
 
               {/* Institutional Assurances */}
@@ -619,7 +608,7 @@ export function LandingPage() {
             <Link to="/exchange" className="hover:text-slate-900">Skill Exchange</Link>
             <Link to="/projects" className="hover:text-slate-900">ProjectSpace</Link>
             <Link to="/login" className="hover:text-slate-900">Sign In</Link>
-            <Link to="/admin" className="text-violet-700 font-semibold hover:text-violet-900">Admin Governance</Link>
+            <Link to="/login" className="text-violet-700 font-semibold hover:text-violet-900">Faculty & Staff Access</Link>
           </div>
 
           <p className="text-[11px] text-slate-400">

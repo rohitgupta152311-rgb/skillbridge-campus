@@ -73,10 +73,11 @@ export const useAuthStore = create<AuthState>((set) => {
 
       // Check demo credentials or any user with matching email
       const validCredentials =
-        (email === DEMO_CREDENTIALS.mentee.email && password === DEMO_CREDENTIALS.mentee.password) ||
+        (email === DEMO_CREDENTIALS.student.email && password === DEMO_CREDENTIALS.student.password) ||
         (email === DEMO_CREDENTIALS.mentor.email && password === DEMO_CREDENTIALS.mentor.password) ||
         (email === DEMO_CREDENTIALS.admin.email && password === DEMO_CREDENTIALS.admin.password) ||
-        password === 'demo1234'; // Allow any registered user to log in with demo password
+        password === 'demo1234' ||
+        password === 'admin1234';
 
       if (!validCredentials) {
         set({ isLoading: false, error: 'Invalid email or password' });

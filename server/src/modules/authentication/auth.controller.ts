@@ -220,8 +220,8 @@ export async function handleLinkedInCallback(req: Request, res: Response) {
     // 2. Fetch OIDC user info
     const userInfo = await LinkedInService.fetchUserInfo(accessToken);
 
-    // 3. Map into StudyBridge format
-    const profileImport = LinkedInService.mapToStudyBridgeProfile(userInfo);
+    // 3. Map into SkillBridge format
+    const profileImport = LinkedInService.mapToSkillBridgeProfile(userInfo);
 
     // Check if account already exists
     const existingAccount = await prisma.account.findUnique({
@@ -270,7 +270,7 @@ export async function exchangeOAuthCode(req: Request, res: Response, next: NextF
     if (provider === 'linkedin') {
       const { accessToken } = await LinkedInService.exchangeCodeForToken(code, redirectUri);
       const userInfo = await LinkedInService.fetchUserInfo(accessToken);
-      profileData = LinkedInService.mapToStudyBridgeProfile(userInfo);
+      profileData = LinkedInService.mapToSkillBridgeProfile(userInfo);
     } else if (provider === 'google') {
       const { accessToken } = await GoogleService.exchangeCodeForToken(code, redirectUri);
       const userInfo = await GoogleService.fetchUserInfo(accessToken);
@@ -550,7 +550,7 @@ export function getSystemVersion(_req: Request, res: Response) {
   return res.json({
     success: true,
     data: {
-      platform: 'StudyBridge 3.0 Campus Ecosystem',
+      platform: 'SkillBridge Campus Ecosystem',
       currentVersion: '3.0.0',
       minNativeVersion: '3.0.0',
       latestNativeVersion: '3.0.0',

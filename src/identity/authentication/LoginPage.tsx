@@ -25,15 +25,15 @@ import {
 } from 'lucide-react';
 import { Button, Input } from '../../shared/components';
 import { useAuthStore, OAuthProfileData } from './auth-store';
-import { DEMO_CREDENTIALS } from '../../foundation/constants';
 import { useToastStore } from '../../shared/notifications/toast-store';
 import {
   LinkedInImportModal,
   LinkedInPreviewData,
 } from '../../experiences/personal-profile/LinkedInImportModal';
 
-// OFFICIAL GOOGLE CLIENT ID CONFIGURED BY USER
-const OFFICIAL_GOOGLE_CLIENT_ID = '647527528972-e6hov032q5igkbfdu3af9vmpdq3t53ag.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID =
+  import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+  '647527528972-e6hov032q5igkbfdu3af9vmpdq3t53ag.apps.googleusercontent.com';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -67,7 +67,11 @@ export function LoginPage() {
     data: null,
   });
 
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+  const apiUrl =
+    import.meta.env.VITE_API_URL ||
+    (window.location.hostname === 'localhost'
+      ? 'http://localhost:5000/api/v1'
+      : 'https://skillbridge-backend-15a7.onrender.com/api/v1');
 
   // Decode and handle Google Identity Services (GIS) Response
   const handleGoogleCredentialResponse = async (response: any) => {
@@ -112,7 +116,7 @@ export function LoginPage() {
     const initGsi = () => {
       if (typeof window !== 'undefined' && (window as any).google?.accounts?.id) {
         (window as any).google.accounts.id.initialize({
-          client_id: OFFICIAL_GOOGLE_CLIENT_ID,
+          client_id: GOOGLE_CLIENT_ID,
           callback: handleGoogleCredentialResponse,
           auto_select: false,
           cancel_on_tap_outside: true,
@@ -199,7 +203,7 @@ export function LoginPage() {
   const handleLaunchRealGoogleRedirect = () => {
     // Official Google OAuth 2.0 redirect
     const params = new URLSearchParams({
-      client_id: OFFICIAL_GOOGLE_CLIENT_ID,
+      client_id: GOOGLE_CLIENT_ID,
       redirect_uri: `${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1')}/auth/google/callback`,
       response_type: 'code',
       scope: 'openid email profile',
@@ -210,8 +214,7 @@ export function LoginPage() {
   };
 
   const handleLaunchRealGitHubAuth = () => {
-    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
-    window.location.href = backendUrl + '/auth/github';
+    window.location.href = `${apiUrl}/auth/github`;
   };
 
   const handleConfirmLinkedInImport = async (finalData: any) => {
@@ -243,11 +246,11 @@ export function LoginPage() {
       data: {
         provider: 'linkedin',
         providerAccountId: 'urn:li:person:9872149b',
-        fullName: 'Ananya Singh',
-        email: 'ananya.singh@campus.edu',
-        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300',
-        headline: 'AI & Data Science Student | BITS Pilani | LinkedIn Verified',
-        linkedinUrl: 'https://www.linkedin.com/in/ananya-singh-campus',
+        fullName: 'Vidya Gupta',
+        email: 'vidya.gupta@campus.edu',
+        avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300',
+        headline: 'EEE Student | NIT Nagaland | Power Electronics & MATLAB Simulink',
+        linkedinUrl: 'https://www.linkedin.com/in/vidyagupta-nitn',
         verifiedEmail: true,
       },
     });
@@ -324,15 +327,7 @@ export function LoginPage() {
     }
   };
 
-  const handleDemoLogin = async (role: 'mentee' | 'mentor' | 'admin') => {
-    const creds = DEMO_CREDENTIALS[role];
-    setEmail(creds.email);
-    setPassword(creds.password);
-    const success = await login(creds.email, creds.password);
-    if (success) {
-      navigate('/feed');
-    }
-  };
+
 
   const handleOAuthClick = (provider: 'Google' | 'GitHub' | 'LinkedIn') => {
     if (provider === 'Google') {
@@ -580,32 +575,31 @@ export function LoginPage() {
             </Link>
           </p>
 
-          {/* Institutional Credentials Reference */}
-          <div className="mt-6 pt-5 border-t border-slate-200">
-            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-violet-600" />
-                  Campus Access Credentials
+          {/* Institutional Fast-Fill Helper (Expandable) */}
+          <div className="mt-6 pt-4 border-t border-slate-200">
+            <details className="group">
+              <summary className="text-[11px] font-semibold text-slate-500 hover:text-slate-800 cursor-pointer flex items-center justify-between list-none py-1">
+                <span className="flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-slate-400 group-hover:text-violet-600 transition-colors" />
+                  Institutional Evaluation Accounts
                 </span>
-                <span className="text-[10px] text-slate-400 font-medium">Click to fill</span>
-              </div>
+                <span className="text-[10px] text-slate-400 font-medium group-open:rotate-180 transition-transform">▼</span>
+              </summary>
 
-              <div className="grid grid-cols-2 gap-1.5 text-xs">
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                 <button
                   type="button"
                   onClick={() => {
                     setEmail('admin@campus.edu');
                     setPassword('admin1234');
                   }}
-                  className="p-2 rounded-xl bg-white border border-slate-200 hover:border-violet-400 hover:bg-violet-50/50 text-left transition-all shadow-2xs group"
+                  className="p-2.5 rounded-xl bg-slate-50 hover:bg-violet-50/60 border border-slate-200/80 hover:border-violet-300 text-left transition-all group/btn"
                 >
-                  <p className="font-bold text-slate-900 text-[11px] group-hover:text-violet-700 flex items-center justify-between">
-                    <span>Admin Panel</span>
-                    <span className="text-[9px] px-1.5 py-0.2 rounded-sm bg-purple-100 text-purple-700 font-semibold">Dean</span>
-                  </p>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] font-bold text-slate-900 group-hover/btn:text-violet-700">Dean / Admin</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 font-semibold">Faculty</span>
+                  </div>
                   <p className="text-[10px] text-slate-500 font-mono truncate">admin@campus.edu</p>
-                  <p className="text-[9px] text-slate-400">Pass: admin1234</p>
                 </button>
 
                 <button
@@ -614,49 +608,46 @@ export function LoginPage() {
                     setEmail('vidya.gupta@campus.edu');
                     setPassword('demo1234');
                   }}
-                  className="p-2 rounded-xl bg-white border border-slate-200 hover:border-violet-400 hover:bg-violet-50/50 text-left transition-all shadow-2xs group"
+                  className="p-2.5 rounded-xl bg-slate-50 hover:bg-violet-50/60 border border-slate-200/80 hover:border-violet-300 text-left transition-all group/btn"
                 >
-                  <p className="font-bold text-slate-900 text-[11px] group-hover:text-violet-700 flex items-center justify-between">
-                    <span>NIT Nagaland</span>
-                    <span className="text-[9px] px-1.5 py-0.2 rounded-sm bg-emerald-100 text-emerald-700 font-semibold">2nd Yr</span>
-                  </p>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] font-bold text-slate-900 group-hover/btn:text-violet-700">Vidya Gupta</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">NIT Nagaland</span>
+                  </div>
                   <p className="text-[10px] text-slate-500 font-mono truncate">vidya.gupta@campus.edu</p>
-                  <p className="text-[9px] text-slate-400">Pass: demo1234</p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => {
-                    setEmail('rohit.gupta@campus.edu');
+                    setEmail('nyimei.konyak@campus.edu');
                     setPassword('demo1234');
                   }}
-                  className="p-2 rounded-xl bg-white border border-slate-200 hover:border-violet-400 hover:bg-violet-50/50 text-left transition-all shadow-2xs group"
+                  className="p-2.5 rounded-xl bg-slate-50 hover:bg-violet-50/60 border border-slate-200/80 hover:border-violet-300 text-left transition-all group/btn"
                 >
-                  <p className="font-bold text-slate-900 text-[11px] group-hover:text-violet-700 flex items-center justify-between">
-                    <span>Student Mentee</span>
-                    <span className="text-[9px] px-1.5 py-0.2 rounded-sm bg-blue-100 text-blue-700 font-semibold">DTU CS</span>
-                  </p>
-                  <p className="text-[10px] text-slate-500 font-mono truncate">rohit.gupta@campus.edu</p>
-                  <p className="text-[9px] text-slate-400">Pass: demo1234</p>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] font-bold text-slate-900 group-hover/btn:text-violet-700">Nyimei C Konyak</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">NIT Nagaland</span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 font-mono truncate">nyimei.konyak@campus.edu</p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => {
-                    setEmail('ananya.singh@campus.edu');
+                    setEmail('devrapalli.salini@campus.edu');
                     setPassword('demo1234');
                   }}
-                  className="p-2 rounded-xl bg-white border border-slate-200 hover:border-violet-400 hover:bg-violet-50/50 text-left transition-all shadow-2xs group"
+                  className="p-2.5 rounded-xl bg-slate-50 hover:bg-violet-50/60 border border-slate-200/80 hover:border-violet-300 text-left transition-all group/btn"
                 >
-                  <p className="font-bold text-slate-900 text-[11px] group-hover:text-violet-700 flex items-center justify-between">
-                    <span>Peer Mentor</span>
-                    <span className="text-[9px] px-1.5 py-0.2 rounded-sm bg-violet-100 text-violet-700 font-semibold">AI/DS</span>
-                  </p>
-                  <p className="text-[10px] text-slate-500 font-mono truncate">ananya.singh@campus.edu</p>
-                  <p className="text-[9px] text-slate-400">Pass: demo1234</p>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] font-bold text-slate-900 group-hover/btn:text-violet-700">Devrapalli Salini</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">NIT Nagaland</span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 font-mono truncate">devrapalli.salini@campus.edu</p>
                 </button>
               </div>
-            </div>
+            </details>
           </div>
         </div>
       </div>

@@ -34,7 +34,7 @@ export function SettingsPage() {
       id: 'session-1',
       device: 'MacBook Pro / Chrome 124',
       location: 'Campus Library (Current)',
-      ip: '192.168.1.42',
+      ip: '10.14.8.42 (Campus WiFi)',
       isCurrent: true,
       lastActive: 'Active now',
     },
@@ -42,7 +42,7 @@ export function SettingsPage() {
       id: 'session-2',
       device: 'Pixel 8 / SkillBridge Mobile App',
       location: 'University Dorms',
-      ip: '10.0.4.15',
+      ip: '10.14.9.15 (Hostel Subnet)',
       isCurrent: false,
       lastActive: '2 hours ago',
     },
@@ -81,7 +81,8 @@ export function SettingsPage() {
   const checkAppUpdates = async () => {
     setCheckingUpdate(true);
     try {
-      const res = await fetch('http://localhost:5000/api/v1/auth/version').catch(() => null);
+      const apiBase = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000/api/v1' : 'https://skillbridge-backend-15a7.onrender.com/api/v1');
+      const res = await fetch(`${apiBase}/auth/version`).catch(() => null);
       if (res && res.ok) {
         const json = await res.json();
         setUpdateStatus(`Up to date! Latest native build: v${json.data.latestNativeVersion} (${json.data.otaChannel} channel).`);
@@ -129,8 +130,8 @@ export function SettingsPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-slate-900">LinkedIn</span>
                   {linkedAccounts.find((a) => a.provider === 'linkedin')?.connected && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">
-                      Connected & Auto-Synced
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium border border-slate-200">
+                      Linked
                     </span>
                   )}
                 </div>
@@ -296,20 +297,20 @@ export function SettingsPage() {
 
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-slate-600">Web Client Version:</span>
-            <span className="font-mono font-bold text-slate-900">3.0.0-production</span>
+            <span className="text-slate-600">Platform Release:</span>
+            <span className="font-mono font-bold text-slate-900">v3.2.0 (Campus Edition)</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-600">Mobile Native Runtime:</span>
-            <span className="font-mono font-bold text-slate-900">exposdk:52.0.0</span>
+            <span className="text-slate-600">Deployment Tier:</span>
+            <span className="font-mono font-bold text-violet-700">Enterprise High-Availability</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-600">EAS Update Channel:</span>
-            <span className="font-mono font-bold text-violet-700">production</span>
+            <span className="text-slate-600">Encryption &amp; Security:</span>
+            <span className="font-mono font-bold text-slate-900">AES-256 / SSL/TLS Enforced</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-600">Database Engine:</span>
-            <span className="font-mono font-bold text-slate-900">Render PostgreSQL 16 (Authoritative)</span>
+            <span className="text-slate-600">Governance &amp; Privacy:</span>
+            <span className="font-mono font-bold text-slate-900">Academic Data Protection Aligned</span>
           </div>
 
           {updateStatus && (

@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../../identity/authentication/auth-store';
 import { Avatar, Badge } from '../../shared/components';
-import { getNotificationsByUser, getUsers } from '../../infrastructure/local-storage/data-service';
+import { getNotificationsByUser } from '../../infrastructure/local-storage/data-service';
 import { useToastStore } from '../../shared/notifications/toast-store';
 import clsx from 'clsx';
 import { UserRole, User } from '../../foundation/types';
@@ -77,21 +77,7 @@ export function DashboardLayout() {
     }
   };
 
-  // Demo Persona Switcher handler
-  const handleSwitchPersona = (targetEmail: string) => {
-    const allUsers = getUsers();
-    const targetUser = allUsers.find(u => u.email === targetEmail);
-    if (targetUser) {
-      localStorage.setItem('sb_current_user', JSON.stringify(targetUser));
-      useAuthStore.setState({ user: targetUser, isAuthenticated: true });
-      addToast({
-        type: 'info',
-        title: `Switched Persona to ${targetUser.fullName}`,
-        message: `Now viewing platform as ${targetUser.headline || targetUser.role}`,
-      });
-      setPersonaMenuOpen(false);
-    }
-  };
+
 
   // Build role-specific navigation sections
   const getNavSections = (): NavSection[] => {
@@ -278,7 +264,7 @@ export function DashboardLayout() {
           </Link>
         </div>
 
-        {/* Floating SkillSwap Metric Card (as seen in theme reference) */}
+        {/* Floating SkillBridge Metric Card */}
         <div className="p-3 mb-2 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-600 font-bold">
@@ -306,7 +292,7 @@ export function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-[#EEF2F9]">
-      {/* Desktop Floating Sidebar matching SkillSwap theme */}
+      {/* Desktop Floating Sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:fixed lg:top-4 lg:bottom-4 lg:left-4 lg:w-[260px] bg-white rounded-3xl shadow-soft border border-slate-200/70 z-40 overflow-hidden">
         <SidebarContent />
       </aside>

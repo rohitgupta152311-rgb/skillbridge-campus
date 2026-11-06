@@ -1,7 +1,7 @@
 import { Post, CommunityItem, SkillItem, Connection, User, MentorProfile } from '../../foundation/types';
 import * as LocalData from '../local-storage/data-service';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+const API_BASE = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:5000/api/v1' : 'https://skillbridge-backend-15a7.onrender.com/api/v1');
 
 let isBackendAvailable: boolean | null = null;
 

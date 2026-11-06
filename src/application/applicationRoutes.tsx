@@ -114,7 +114,7 @@ const router = createBrowserRouter([
   },
 
   // Catch-all
-  { path: '*', element: <Navigate to="/feed" replace /> },
+  { path: '*', element: <Navigate to="/" replace /> },
 ]);
 
 export function ApplicationRoutes() {

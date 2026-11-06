@@ -66,7 +66,7 @@ export function createApplication() {
     return res.status(httpStatus).json({
       status,
       timestamp: new Date().toISOString(),
-      service: 'studybridge-server',
+      service: 'skillbridge-server',
       version: '3.0.0',
       database: isDbConnected ? 'CONNECTED' : 'DISCONNECTED',
       uptime: process.uptime(),

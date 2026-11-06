@@ -160,7 +160,7 @@ export async function bookSession(req: Request, res: Response, next: NextFunctio
         duration: data.duration,
         sessionType: data.sessionType,
         location: data.location,
-        meetingLink: data.meetingLink || 'https://meet.studybridge.campus/' + Math.random().toString(36).substring(7),
+        meetingLink: data.meetingLink || 'https://meet.skillbridge.campus/' + Math.random().toString(36).substring(7),
         status: 'PENDING',
       },
       include: {

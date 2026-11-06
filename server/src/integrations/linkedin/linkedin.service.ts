@@ -100,9 +100,9 @@ export class LinkedInService {
   }
 
   /**
-   * Maps LinkedIn OpenID Connect claims into a standardized StudyBridge profile preview
+   * Maps LinkedIn OpenID Connect claims into a standardized SkillBridge profile preview
    */
-  static mapToStudyBridgeProfile(userInfo: LinkedInUserInfo): OAuthImportProfile {
+  static mapToSkillBridgeProfile(userInfo: LinkedInUserInfo): OAuthImportProfile {
     return {
       provider: 'linkedin',
       providerAccountId: userInfo.sub,
