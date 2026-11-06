@@ -27,7 +27,7 @@ const STORAGE_KEYS = {
   connections: 'sb_connections',
   projects: 'sb_projects',
   projectApplications: 'sb_project_applications',
-  initialized: 'sb_initialized_v13_reciprocal_skills',
+  initialized: 'sb_initialized_v14_active_messaging',
 } as const;
 
 // Isomorphic storage fallback for SSR, headless Node environments, and testing

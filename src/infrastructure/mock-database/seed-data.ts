@@ -1296,6 +1296,22 @@ export const mockConversations: Conversation[] = [
     createdAt: '2026-11-05T16:45:00Z',
     unreadCount: { 'user-kabir': 0, 'user-ananya': 1 },
   },
+  {
+    id: 'conv-2',
+    participantIds: ['user-vidya', 'user-nyoimei'],
+    lastMessage: 'That sounds perfect, Nyoimei! Let\'s connect on Saturday for the Power Electronics & 8051 exchange.',
+    lastMessageAt: '2026-11-06T10:30:00Z',
+    createdAt: '2026-11-06T09:15:00Z',
+    unreadCount: { 'user-vidya': 0, 'user-nyoimei': 0 },
+  },
+  {
+    id: 'conv-3',
+    participantIds: ['user-vidya', 'user-salini'],
+    lastMessage: 'Yes, I have MATLAB simulations for the solar inverter microgrid ready.',
+    lastMessageAt: '2026-11-06T11:15:00Z',
+    createdAt: '2026-11-06T10:00:00Z',
+    unreadCount: { 'user-vidya': 0, 'user-salini': 1 },
+  },
 ];
 
 export const mockMessages: Message[] = [
@@ -1313,6 +1329,38 @@ export const mockMessages: Message[] = [
     senderId: 'user-ananya',
     content: 'That would be awesome Kabir! Looking forward to our skill barter session on Wednesday!',
     timestamp: '2026-11-05T17:00:00Z',
+    isRead: false,
+  },
+  {
+    id: 'msg-3',
+    conversationId: 'conv-2',
+    senderId: 'user-nyoimei',
+    content: 'Hi Vidya! I reviewed your notes on MATLAB Simulink power converters. I can help you with 8051 timers and Embedded C anytime you are ready!',
+    timestamp: '2026-11-06T09:20:00Z',
+    isRead: true,
+  },
+  {
+    id: 'msg-4',
+    conversationId: 'conv-2',
+    senderId: 'user-vidya',
+    content: 'That sounds perfect, Nyoimei! Let\'s connect on Saturday for the Power Electronics & 8051 exchange.',
+    timestamp: '2026-11-06T10:30:00Z',
+    isRead: true,
+  },
+  {
+    id: 'msg-5',
+    conversationId: 'conv-3',
+    senderId: 'user-salini',
+    content: 'Hey Vidya, do you have the MATLAB Simulink model files for the grid-tied PV inverter from our 2nd year lab?',
+    timestamp: '2026-11-06T10:10:00Z',
+    isRead: true,
+  },
+  {
+    id: 'msg-6',
+    conversationId: 'conv-3',
+    senderId: 'user-vidya',
+    content: 'Yes, I have MATLAB simulations for the solar inverter microgrid ready.',
+    timestamp: '2026-11-06T11:15:00Z',
     isRead: false,
   },
 ];

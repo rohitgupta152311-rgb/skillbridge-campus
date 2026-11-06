@@ -26,6 +26,7 @@ import {
   calculateSkillExchangeMatches,
   scheduleExchangeSessions,
   updateUser,
+  getOrCreateConversation,
 } from '../../infrastructure/local-storage/data-service';
 import { useToastStore } from '../../shared/notifications/toast-store';
 import { TwoWayMatch, SkillExchangeEntry } from '../../foundation/types';
@@ -417,7 +418,10 @@ export function SkillExchangePage() {
                     {/* Action Buttons */}
                     <div className="flex items-center gap-2 shrink-0">
                       <button
-                        onClick={() => navigate('/messages')}
+                        onClick={() => {
+                          const conv = getOrCreateConversation(user?.id || 'user-vidya', match.partnerId);
+                          navigate(`/messages/${conv.id}`);
+                        }}
                         className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
                       >
                         <MessageSquare className="w-3.5 h-3.5" />
