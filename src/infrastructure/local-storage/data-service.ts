@@ -27,7 +27,7 @@ const STORAGE_KEYS = {
   connections: 'sb_connections',
   projects: 'sb_projects',
   projectApplications: 'sb_project_applications',
-  initialized: 'sb_initialized_v7_indian_profiles',
+  initialized: 'sb_initialized_v8_nit_nagaland_eee_girls',
 } as const;
 
 function loadOrSeed<T>(key: string, seedData: T[]): T[] {
@@ -68,12 +68,21 @@ export function initializeDataStore(force = false): void {
 // ─── USERS ──────────────────────────────────────────────────
 export function getUsers(): User[] {
   const users = loadOrSeed(STORAGE_KEYS.users, mockUsers);
-  const existingIds = new Set(users.map(u => u.id));
-  const missing = mockUsers.filter(u => !existingIds.has(u.id));
-  if (missing.length > 0) {
-    const merged = [...users, ...missing];
-    persist(STORAGE_KEYS.users, merged);
-    return merged;
+  const map = new Map(users.map(u => [u.id, u]));
+  let changed = false;
+
+  for (const mu of mockUsers) {
+    const existing = map.get(mu.id);
+    if (!existing || existing.university !== mu.university || existing.department !== mu.department || existing.headline !== mu.headline) {
+      map.set(mu.id, mu);
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    const updated = Array.from(map.values());
+    persist(STORAGE_KEYS.users, updated);
+    return updated;
   }
   return users;
 }
