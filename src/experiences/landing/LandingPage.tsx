@@ -139,9 +139,7 @@ export function LandingPage() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xl font-bold tracking-tight text-slate-900 font-heading">SkillBridge</span>
-                <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-50 text-violet-700 border border-violet-100">
-                  Institutional Node
-                </span>
+
               </div>
               <p className="text-[10px] text-slate-500 font-medium hidden sm:block">Campus Peer-to-Peer Exchange</p>
             </div>
@@ -180,10 +178,7 @@ export function LandingPage() {
       {/* ── HERO SECTION ── */}
       <section className="relative pt-16 pb-20 lg:pt-24 lg:pb-28 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 border-b border-slate-200/70">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 border border-violet-100 text-violet-800 text-xs font-semibold shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Institutional Technical Peer Exchange &bull; NIT Nagaland Node</span>
-          </div>
+
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.12] font-heading">
             Empowering Campus Engineers Through{' '}
@@ -215,21 +210,7 @@ export function LandingPage() {
             </Button>
           </div>
 
-          {/* Institutional Assurances */}
-          <div className="pt-8 border-t border-slate-200/80 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs text-slate-600 font-medium">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Verified Campus Emails</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Zero Monetary Paywalls</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Institutional Oversight</span>
-            </div>
-          </div>
+
         </div>
       </section>
 
@@ -237,7 +218,7 @@ export function LandingPage() {
       <section id="institutions" className="py-8 bg-slate-50 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
-            Participating Collegiate Nodes &amp; Academic Communities
+            Collegiate Communities &amp; Networks
           </p>
           <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-semibold text-slate-600">
             {institutions.map((inst, i) => (
@@ -255,9 +236,7 @@ export function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-violet-700 bg-violet-50 px-3 py-1 rounded-full border border-violet-100">
-                Verified Campus Directory
-              </span>
+
               <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight font-heading mt-2">
                 Featured Engineering Mentors
               </h2>
@@ -331,9 +310,7 @@ export function LandingPage() {
       <section id="features" className="py-20 bg-slate-50 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14 space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-violet-700 bg-violet-50 px-3 py-1 rounded-full border border-violet-100">
-              Collegiate Value Pillars
-            </span>
+
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight font-heading">
               Why SkillBridge Works on Campus
             </h2>
@@ -382,9 +359,7 @@ export function LandingPage() {
           <div className="grid lg:grid-cols-12 gap-12 items-center">
             
             <div className="lg:col-span-6 space-y-5">
-              <span className="text-xs font-bold uppercase tracking-wider text-violet-700 bg-violet-50 px-3 py-1 rounded-full border border-violet-100">
-                Scientific Matching Engine
-              </span>
+
               <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight leading-snug font-heading">
                 Mathematical 5-Factor Peer Compatibility Scoring
               </h2>
@@ -498,7 +473,7 @@ export function LandingPage() {
             </div>
             <div>
               <p className="font-bold text-slate-900">SkillBridge Platform</p>
-              <p className="text-[11px] text-slate-400">NIT Nagaland Institutional Campus Node</p>
+              <p className="text-[11px] text-slate-400">SkillBridge Campus Network</p>
             </div>
           </div>
 

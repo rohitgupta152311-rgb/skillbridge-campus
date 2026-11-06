@@ -68,16 +68,7 @@ export function AdminHeader() {
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-6 shadow-lg border border-slate-800">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-violet-500/20 text-violet-300 border border-violet-500/30">
-                <Shield className="w-3.5 h-3.5 text-violet-400" />
-                Institutional Governance Console
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                NIT Nagaland Node Active
-              </span>
-            </div>
+
             <h1 className="text-2xl font-bold tracking-tight text-white">SkillBridge Campus Administration</h1>
             <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl">
               Platform governance, student safety enforcement, verified academic credentialing, and real-time exchange telemetry.
@@ -588,7 +579,7 @@ export function AdminUsersPage() {
                   </td>
                   <td className="px-4 py-3">
                     <p className="font-medium text-slate-800 text-xs">{u.department || 'General Engineering'}</p>
-                    <p className="text-[10px] text-slate-400 truncate max-w-xs">{u.university || 'Campus Node'}</p>
+                    <p className="text-[10px] text-slate-400 truncate max-w-xs">{u.university || 'Campus'}</p>
                   </td>
                   <td className="px-4 py-3 font-semibold text-slate-700">{u.year || 'N/A'}</td>
                   <td className="px-4 py-3">
