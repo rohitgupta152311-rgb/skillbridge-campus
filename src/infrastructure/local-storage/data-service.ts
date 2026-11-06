@@ -27,7 +27,7 @@ const STORAGE_KEYS = {
   connections: 'sb_connections',
   projects: 'sb_projects',
   projectApplications: 'sb_project_applications',
-  initialized: 'sb_initialized_v10_admin_and_reports',
+  initialized: 'sb_initialized_v11_nit_nagaland_cohort',
 } as const;
 
 function loadOrSeed<T>(key: string, seedData: T[]): T[] {
@@ -74,6 +74,14 @@ export function getUsers(): User[] {
   // If new seed users are added or year/university was updated in seed data for the 5 students, update them if not modified by user
   let changed = false;
   const merged = [...users];
+
+  // Evict any legacy non-current profiles from cached local storage
+  const validIds = new Set(mockUsers.map(m => m.id));
+  const legacyIdx = merged.findIndex(u => !validIds.has(u.id));
+  if (legacyIdx !== -1) {
+    merged.splice(legacyIdx, 1);
+    changed = true;
+  }
 
   for (const mu of mockUsers) {
     const idx = merged.findIndex(u => u.id === mu.id);
@@ -681,10 +689,10 @@ export function calculateSkillExchangeMatches(currentUserId: string): {
       Math.round(skillCompatScore + scheduleScore + proficiencyScore * 0.9 + prefScore * 0.8 + reputationScore * 0.8 + (isMutual ? 10 : 0))
     );
 
-    // Specific demonstration between Rohit Gupta and Ananya Singh (Student A and Student B):
+    // Specific demonstration between Vidya Gupta and Nyimei C Konyak (NIT Nagaland 2nd Year EEE):
     if (
-      (currentUser.email === 'rohit.gupta@campus.edu' && other.email === 'ananya.singh@campus.edu') ||
-      (currentUser.email === 'ananya.singh@campus.edu' && other.email === 'rohit.gupta@campus.edu')
+      (currentUser.email === 'vidya.gupta@campus.edu' && other.email === 'nyimei.konyak@campus.edu') ||
+      (currentUser.email === 'nyimei.konyak@campus.edu' && other.email === 'vidya.gupta@campus.edu')
     ) {
       totalScore = 96;
     }

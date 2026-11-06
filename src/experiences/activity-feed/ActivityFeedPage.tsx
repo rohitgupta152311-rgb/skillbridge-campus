@@ -21,7 +21,7 @@ export function ActivityFeedPage() {
   const { user } = useAuthStore();
   const hour = new Date().getHours();
   const timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  const firstName = user?.fullName ? user.fullName.split(' ')[0] : 'Rohit';
+  const firstName = user?.fullName ? user.fullName.split(' ')[0] : 'Vidya';
   const navigate = useNavigate();
   const { addToast } = useToastStore();
 

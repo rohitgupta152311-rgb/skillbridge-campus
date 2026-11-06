@@ -157,7 +157,7 @@ export function FindMyTeamModal({ isOpen, onClose, onApply }: FindMyTeamModalPro
           <div className="space-y-4">
             <div className="p-3 bg-violet-50/60 rounded-xl border border-violet-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-violet-900">
               <div className="flex items-center gap-2">
-                <Avatar name={user?.fullName || 'Rohit Gupta'} src={user?.avatar} size="sm" />
+                <Avatar name={user?.fullName || 'Vidya Gupta'} src={user?.avatar} size="sm" />
                 <span>
                   Matching based on your offered: <strong>{myOfferedSkillNames.slice(0, 3).join(', ')}</strong> &bull; wants to learn: <strong>{myWantedSkillNames.slice(0, 2).join(', ')}</strong>
                 </span>

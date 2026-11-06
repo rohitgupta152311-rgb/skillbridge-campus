@@ -37,11 +37,11 @@ export const mockUsers: User[] = [
       { id: 'b-admin', title: 'Campus Dean', icon: 'Shield', tier: 'gold', description: 'Chief Platform Administrator & Safety Lead', earnedAt: '2023-01-01' },
     ],
   },
-  // 1. Primary Logged-in Student: Rohit Gupta (North India - CS)
+  // 1. Kabir Sen (North India - CS)
   {
-    id: 'user-rohit',
-    email: 'rohit.gupta@campus.edu',
-    fullName: 'Rohit Gupta',
+    id: 'user-kabir',
+    email: 'kabir.sen@campus.edu',
+    fullName: 'Kabir Sen',
     avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&h=200&fit=crop&crop=faces',
     role: 'mentee',
     department: 'Computer Science & Engineering',
@@ -55,8 +55,8 @@ export const mockUsers: User[] = [
     learningPreferences: ['visual', 'kinesthetic'],
     languages: ['English', 'Hindi'],
     onlineStatus: 'available',
-    githubUrl: 'https://github.com/rohitgupta-dev',
-    linkedinUrl: 'https://linkedin.com/in/rohitgupta-sample',
+    githubUrl: 'https://github.com/kabirsen-dev',
+    linkedinUrl: 'https://linkedin.com/in/kabirsen-sample',
     skillsOffered: [
       { skillName: 'ReactJS', proficiency: 'advanced', yearsExperience: 2.5 },
       { skillName: 'TypeScript', proficiency: 'advanced', yearsExperience: 2 },
@@ -1122,8 +1122,8 @@ Looking for a peer collaborator to help build a lightweight React web dashboard 
   },
   {
     id: 'post-1',
-    authorId: 'user-rohit',
-    authorName: 'Rohit Gupta',
+    authorId: 'user-kabir',
+    authorName: 'Kabir Sen',
     authorAvatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&h=200&fit=crop&crop=faces',
     authorHeadline: 'Full-Stack Developer | React & TypeScript | DTU',
     authorDepartment: 'Computer Science & Engineering',
@@ -1142,7 +1142,7 @@ Looking for a peer collaborator to help build a lightweight React web dashboard 
         authorId: 'user-ananya',
         authorName: 'Ananya Singh',
         authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces',
-        content: 'Rohit! This is an exact 100% reciprocal match. I have been building PyTorch models and FastAPI backends for 2 years, but my frontend UI skills are zero. Would love to trade sessions this Wednesday or Friday!',
+        content: 'Kabir! This is an exact 100% reciprocal match. I have been building PyTorch models and FastAPI backends for 2 years, but my frontend UI skills are zero. Would love to trade sessions this Wednesday or Friday!',
         createdAt: '2026-11-05T16:45:00Z',
       },
       {
@@ -1151,7 +1151,7 @@ Looking for a peer collaborator to help build a lightweight React web dashboard 
         authorId: 'user-aarav',
         authorName: 'Aarav Sharma',
         authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces',
-        content: 'This reciprocal model is brilliant. I did a similar exchange with Sneha last month for Figma and frontend. Highly recommend partnering up with Rohit!',
+        content: 'This reciprocal model is brilliant. I did a similar exchange with Sneha last month for Figma and frontend. Highly recommend partnering up with Kabir!',
         createdAt: '2026-11-05T17:05:00Z',
       },
     ],
@@ -1266,9 +1266,9 @@ export const mockSessions: TutoringSession[] = [
   {
     id: 'sess-1',
     mentorId: 'user-ananya',
-    menteeId: 'user-rohit',
+    menteeId: 'user-kabir',
     topic: 'Python Async & FastAPI Setup',
-    description: 'Reciprocal Exchange Session 1: Rohit teaches React custom hooks; Ananya walks through FastAPI async endpoints.',
+    description: 'Reciprocal Exchange Session 1: Kabir teaches React custom hooks; Ananya walks through FastAPI async endpoints.',
     date: '2026-11-07',
     startTime: '16:00',
     duration: 60,
@@ -1282,18 +1282,18 @@ export const mockSessions: TutoringSession[] = [
 ];
 
 export const mockReviews: SessionReview[] = [
-  { id: 'rev-1', sessionId: 'sess-prev', mentorId: 'user-ananya', menteeId: 'user-rohit', overallRating: 5, teachingQuality: 5, communication: 5, subjectKnowledge: 5, review: 'Ananya explained Python generators and async await with crystal clarity. Super helpful session!', createdAt: '2026-11-01T17:00:00Z' },
-  { id: 'rev-2', sessionId: 'sess-prev2', mentorId: 'user-aarav', menteeId: 'user-rohit', overallRating: 5, teachingQuality: 5, communication: 5, subjectKnowledge: 5, review: 'Aarav is an absolute master of dynamic programming. Helped me solve LeetCode Hard graph problems easily.', createdAt: '2026-10-28T15:00:00Z' },
+  { id: 'rev-1', sessionId: 'sess-prev', mentorId: 'user-ananya', menteeId: 'user-kabir', overallRating: 5, teachingQuality: 5, communication: 5, subjectKnowledge: 5, review: 'Ananya explained Python generators and async await with crystal clarity. Super helpful session!', createdAt: '2026-11-01T17:00:00Z' },
+  { id: 'rev-2', sessionId: 'sess-prev2', mentorId: 'user-aarav', menteeId: 'user-kabir', overallRating: 5, teachingQuality: 5, communication: 5, subjectKnowledge: 5, review: 'Aarav is an absolute master of dynamic programming. Helped me solve LeetCode Hard graph problems easily.', createdAt: '2026-10-28T15:00:00Z' },
 ];
 
 export const mockConversations: Conversation[] = [
   {
     id: 'conv-1',
-    participantIds: ['user-rohit', 'user-ananya'],
+    participantIds: ['user-kabir', 'user-ananya'],
     lastMessage: 'Looking forward to our skill barter session on Wednesday!',
     lastMessageAt: '2026-11-05T17:00:00Z',
     createdAt: '2026-11-05T16:45:00Z',
-    unreadCount: { 'user-rohit': 0, 'user-ananya': 1 },
+    unreadCount: { 'user-kabir': 0, 'user-ananya': 1 },
   },
 ];
 
@@ -1301,7 +1301,7 @@ export const mockMessages: Message[] = [
   {
     id: 'msg-1',
     conversationId: 'conv-1',
-    senderId: 'user-rohit',
+    senderId: 'user-kabir',
     content: 'Hi Ananya! Saw your Python notes on the feed. I can definitely help you wire up your ML model with a React interface.',
     timestamp: '2026-11-05T16:48:00Z',
     isRead: true,
@@ -1310,7 +1310,7 @@ export const mockMessages: Message[] = [
     id: 'msg-2',
     conversationId: 'conv-1',
     senderId: 'user-ananya',
-    content: 'That would be awesome Rohit! Looking forward to our skill barter session on Wednesday!',
+    content: 'That would be awesome Kabir! Looking forward to our skill barter session on Wednesday!',
     timestamp: '2026-11-05T17:00:00Z',
     isRead: false,
   },
@@ -1319,7 +1319,7 @@ export const mockMessages: Message[] = [
 export const mockNotifications: Notification[] = [
   {
     id: 'notif-1',
-    userId: 'user-rohit',
+    userId: 'user-kabir',
     type: 'connection_request',
     title: 'Reciprocal Skill Match! ⚡',
     message: 'Ananya Singh accepted your skill exchange proposal (ReactJS ↔ Python).',
@@ -1328,7 +1328,7 @@ export const mockNotifications: Notification[] = [
   },
   {
     id: 'notif-2',
-    userId: 'user-rohit',
+    userId: 'user-kabir',
     type: 'session_accepted',
     title: 'Skill Session Confirmed',
     message: 'Upcoming: Python & FastAPI Barter with Ananya on Wednesday at 4:00 PM.',
@@ -1349,9 +1349,9 @@ export const mockSkills: SkillItem[] = [
 ];
 
 export const mockConnections: Connection[] = [
-  { id: 'conn-1', senderId: 'user-rohit', receiverId: 'user-ananya', status: 'ACCEPTED', createdAt: '2026-11-01T00:00:00Z' },
-  { id: 'conn-2', senderId: 'user-rohit', receiverId: 'user-aarav', status: 'ACCEPTED', createdAt: '2026-10-25T00:00:00Z' },
-  { id: 'conn-3', senderId: 'user-rohit', receiverId: 'user-akash', status: 'ACCEPTED', createdAt: '2026-11-02T00:00:00Z' },
+  { id: 'conn-1', senderId: 'user-kabir', receiverId: 'user-ananya', status: 'ACCEPTED', createdAt: '2026-11-01T00:00:00Z' },
+  { id: 'conn-2', senderId: 'user-kabir', receiverId: 'user-aarav', status: 'ACCEPTED', createdAt: '2026-10-25T00:00:00Z' },
+  { id: 'conn-3', senderId: 'user-kabir', receiverId: 'user-akash', status: 'ACCEPTED', createdAt: '2026-11-02T00:00:00Z' },
 ];
 
 export const mockProjectApplications: ProjectApplication[] = [
@@ -1380,7 +1380,7 @@ export const mockReports: UserReport[] = [
   {
     id: 'rep-1',
     reporterId: 'user-vidya',
-    reportedUserId: 'user-rohit',
+    reportedUserId: 'user-kabir',
     reason: 'Unverified commercial solicitation during peer review',
     description: 'During our scheduled peer review on MATLAB Simulink, user posted external commercial promotion links.',
     status: 'pending',

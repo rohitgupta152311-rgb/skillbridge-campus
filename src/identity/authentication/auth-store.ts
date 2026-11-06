@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { User, UserRole } from '../../foundation/types';
-import { getUserByEmail, addUser, initializeDataStore } from '../../infrastructure/local-storage/data-service';
+import { getUserByEmail, getUserById, addUser, initializeDataStore } from '../../infrastructure/local-storage/data-service';
 import { DEMO_CREDENTIALS } from '../../foundation/constants';
 
 export interface OAuthProfileData {
@@ -47,14 +47,14 @@ export const useAuthStore = create<AuthState>((set) => {
   if (stored) {
     try {
       const parsed = JSON.parse(stored);
-      if (parsed && parsed.email !== 'alex.student@campus.edu') {
+      if (parsed && parsed.id && getUserById(parsed.id)) {
         initialUser = parsed;
       }
     } catch { /* ignore */ }
   }
-  // Default to Rohit Gupta for authentic Indian campus community experience
+  // Default to Vidya Gupta (NIT Nagaland 2nd Year EEE)
   if (!initialUser) {
-    initialUser = getUserByEmail('rohit.gupta@campus.edu') || null;
+    initialUser = getUserByEmail('vidya.gupta@campus.edu') || null;
     if (initialUser) {
       localStorage.setItem(AUTH_KEY, JSON.stringify(initialUser));
     }
