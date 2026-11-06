@@ -21,14 +21,13 @@ import {
   Rocket,
   Layers,
   Sparkles,
-  ArrowLeftRight,
   Building2,
   Award,
   Check,
   Clock,
   Compass,
 } from 'lucide-react';
-import { Avatar, Badge, Button } from '../../shared/components';
+import { Avatar, Button } from '../../shared/components';
 
 export function LandingPage() {
   const navigate = useNavigate();
@@ -179,157 +178,57 @@ export function LandingPage() {
       </header>
 
       {/* ── HERO SECTION ── */}
-      <section className="relative pt-12 pb-20 lg:pt-20 lg:pb-28 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 border-b border-slate-200/70">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-12 gap-12 lg:gap-14 items-center">
-            
-            {/* Left Content Column */}
-            <div className="lg:col-span-7 space-y-6 text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-50 border border-violet-100 text-violet-800 text-xs font-semibold shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Institutional Technical Peer Exchange &bull; NIT Nagaland Node</span>
-              </div>
+      <section className="relative pt-16 pb-20 lg:pt-24 lg:pb-28 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 border-b border-slate-200/70">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 border border-violet-100 text-violet-800 text-xs font-semibold shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Institutional Technical Peer Exchange &bull; NIT Nagaland Node</span>
+          </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.12] font-heading">
-                Empowering Campus Engineers Through{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-700 via-indigo-600 to-slate-900">
-                  Reciprocal Skill Barter
-                </span>
-              </h1>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.12] font-heading">
+            Empowering Campus Engineers Through{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-700 via-indigo-600 to-slate-900">
+              Reciprocal Skill Barter
+            </span>
+          </h1>
 
-              <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed font-normal">
-                A structured, academic skill exchange where students trade technical proficiencies—from Power Electronics and VLSI to Full-Stack Web Development—without commercial barriers.
-              </p>
+          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed font-normal">
+            A structured, academic skill exchange where students trade technical proficiencies—from Power Electronics and VLSI to Full-Stack Web Development—without commercial barriers.
+          </p>
 
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Button
-                  size="lg"
-                  className="bg-slate-900 hover:bg-black text-white font-bold text-xs sm:text-sm px-6 py-3.5 rounded-xl shadow-md transition-all flex items-center gap-2"
-                  onClick={() => navigate('/register')}
-                >
-                  <span>Join Campus Network</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs sm:text-sm px-5 py-3.5 rounded-xl shadow-2xs"
-                  onClick={() => navigate('/explore')}
-                >
-                  Browse Mentors &amp; Talent
-                </Button>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <Button
+              size="lg"
+              className="bg-slate-900 hover:bg-black text-white font-bold text-xs sm:text-sm px-6 py-3.5 rounded-xl shadow-md transition-all flex items-center gap-2"
+              onClick={() => navigate('/register')}
+            >
+              <span>Join Campus Network</span>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              className="border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs sm:text-sm px-5 py-3.5 rounded-xl shadow-2xs"
+              onClick={() => navigate('/explore')}
+            >
+              Browse Mentors &amp; Talent
+            </Button>
+          </div>
 
-              </div>
-
-              {/* Institutional Assurances */}
-              <div className="pt-6 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-slate-600 font-medium">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Verified Campus Emails</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Zero Monetary Paywalls</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Institutional Oversight</span>
-                </div>
-              </div>
+          {/* Institutional Assurances */}
+          <div className="pt-8 border-t border-slate-200/80 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs text-slate-600 font-medium">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Verified Campus Emails</span>
             </div>
-
-            {/* Right Graphic Column: Live Reciprocal Barter Showcase */}
-            <div className="lg:col-span-5 relative">
-              <div className="relative mx-auto max-w-md bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-xl space-y-5">
-                
-                {/* Header Badge */}
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-                    <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">Live Reciprocal Match</span>
-                  </div>
-                  <Badge variant="success">98% Compatibility</Badge>
-                </div>
-
-                {/* Reciprocal Barter Cards */}
-                <div className="space-y-3">
-                  {/* Student 1: Vidya Gupta */}
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
-                    <div className="flex items-center gap-3">
-                      <Avatar
-                        name="Vidya Gupta"
-                        src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=faces"
-                        size="md"
-                      />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-xs font-bold text-slate-900">Vidya Gupta</p>
-                          <span className="px-1.5 py-0.2 rounded-sm bg-violet-100 text-violet-800 text-[10px] font-semibold">Mentor</span>
-                        </div>
-                        <p className="text-[11px] text-slate-500">NIT Nagaland &bull; 2nd Year EEE</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
-                      <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-100/80">
-                        <p className="text-[9px] uppercase font-bold text-emerald-700">Teaches</p>
-                        <p className="font-semibold text-emerald-950 mt-0.5">Power Electronics &amp; MATLAB</p>
-                      </div>
-                      <div className="p-2 rounded-lg bg-violet-50 border border-violet-100/80">
-                        <p className="text-[9px] uppercase font-bold text-violet-700">Learning</p>
-                        <p className="font-semibold text-violet-950 mt-0.5">Embedded Systems &amp; 8051</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Transfer Exchange Icon */}
-                  <div className="flex items-center justify-center">
-                    <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-xs">
-                      <ArrowLeftRight className="w-4 h-4 text-white" />
-                    </div>
-                  </div>
-
-                  {/* Student 2: Nyoimei C Konyak */}
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
-                    <div className="flex items-center gap-3">
-                      <Avatar
-                        name="Nyoimei C Konyak"
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces"
-                        size="md"
-                      />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-xs font-bold text-slate-900">Nyoimei C Konyak</p>
-                          <span className="px-1.5 py-0.2 rounded-sm bg-emerald-100 text-emerald-800 text-[10px] font-semibold">Peer Mentor</span>
-                        </div>
-                        <p className="text-[11px] text-slate-500">NIT Nagaland &bull; 2nd Year EEE</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
-                      <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-100/80">
-                        <p className="text-[9px] uppercase font-bold text-emerald-700">Teaches</p>
-                        <p className="font-semibold text-emerald-950 mt-0.5">Embedded Systems &amp; 8051</p>
-                      </div>
-                      <div className="p-2 rounded-lg bg-violet-50 border border-violet-100/80">
-                        <p className="text-[9px] uppercase font-bold text-violet-700">Learning</p>
-                        <p className="font-semibold text-violet-950 mt-0.5">Power Electronics &amp; MATLAB</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer Action */}
-                <div className="pt-2">
-                  <Button
-                    size="sm"
-                    className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs py-2.5 rounded-xl shadow-xs"
-                    onClick={() => navigate('/exchange')}
-                  >
-                    View Matching Algorithm &rarr;
-                  </Button>
-                </div>
-              </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Zero Monetary Paywalls</span>
             </div>
-
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Institutional Oversight</span>
+            </div>
           </div>
         </div>
       </section>
