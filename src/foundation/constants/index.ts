@@ -1,13 +1,13 @@
 export const APP_NAME = 'SkillBridge';
-export const APP_TAGLINE = 'Learn Together. Grow Together.';
-export const APP_DESCRIPTION = 'Smart Peer-to-Peer Tutoring & Mentorship Matchmaker';
+export const APP_TAGLINE = 'Learn Together. Build Together. Grow Together.';
+export const APP_DESCRIPTION = 'Peer-to-Peer Campus Skill Exchange & Collaborative Community';
 
 export const DEMO_CREDENTIALS = {
   mentee: { email: 'rohit.gupta@campus.edu', password: 'demo1234' },
   mentor: { email: 'ananya.singh@campus.edu', password: 'demo1234' },
   admin: { email: 'admin@campus.edu', password: 'admin1234' },
-  legacyMentee: { email: 'alex.student@campus.edu', password: 'demo1234' },
-  legacyMentor: { email: 'sarah.mentor@campus.edu', password: 'demo1234' },
+  legacyMentee: { email: 'rohit.gupta@campus.edu', password: 'demo1234' },
+  legacyMentor: { email: 'ananya.singh@campus.edu', password: 'demo1234' },
 };
 
 export const MATCH_WEIGHTS = {

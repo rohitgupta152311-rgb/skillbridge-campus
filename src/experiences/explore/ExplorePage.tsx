@@ -162,7 +162,7 @@ export function ExplorePage() {
         <div className="relative z-10 max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/20 border border-violet-400/30 text-violet-200 text-xs font-semibold">
             <Compass className="w-3.5 h-3.5 text-violet-400" />
-            <span>Campus Community Discovery &bull; CIH-008</span>
+            <span>Campus Community Discovery</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">

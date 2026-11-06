@@ -188,7 +188,7 @@ export function DashboardLayout() {
           <div>
             <div className="flex items-center gap-1.5">
               <span className="text-base font-bold tracking-tight text-slate-900">SkillBridge</span>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700">4.0</span>
+              
             </div>
             <p className="text-[11px] text-slate-500">Peer Network & Exchange</p>
           </div>
@@ -408,107 +408,59 @@ export function DashboardLayout() {
                 )}
               </Link>
 
-              {/* ── DEMO PERSONA SWITCHER ── */}
+              {/* Professional Profile Menu */}
               <div className="relative">
                 <button
                   onClick={() => setPersonaMenuOpen(!personaMenuOpen)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-violet-50 hover:bg-violet-100 border border-violet-200 text-xs font-semibold text-violet-800 transition-colors"
-                  title="Switch Demo Persona"
+                  className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200/80 hover:opacity-90 transition-opacity"
                 >
-                  <span className="hidden sm:inline text-violet-600 font-normal">Persona:</span>
-                  <span className="truncate max-w-[80px] sm:max-w-none">{user.fullName.split(' ')[0]}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-violet-600" />
+                  <Avatar name={user.fullName} size="sm" showStatus status={user.onlineStatus} />
+                  <div className="hidden xl:block text-left">
+                    <p className="text-xs font-bold text-slate-800 leading-tight">{user.fullName}</p>
+                    <p className="text-[10px] text-slate-500 capitalize">{user.role || 'Student'}</p>
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
                 </button>
 
                 {personaMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 p-2 z-50 animate-fade-in">
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 p-2 z-50 animate-fade-in">
                     <div className="px-3 py-2 border-b border-slate-100">
-                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                        Demo Personas (SkillBridge 4.0)
-                      </p>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        Test 2-way skill exchange & project collaboration
-                      </p>
+                      <p className="text-xs font-bold text-slate-900">{user.fullName}</p>
+                      <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
                     </div>
-
-                    <div className="space-y-1 mt-1">
-                      {[
-                        {
-                          email: 'rohit.gupta@campus.edu',
-                          name: 'Rohit Gupta (DTU - Student A)',
-                          role: 'React / TS Lead → Wants Python & ML',
-                          status: 'Mutual 96% Match with Ananya',
-                        },
-                        {
-                          email: 'ananya.singh@campus.edu',
-                          name: 'Ananya Singh (BITS - Student B)',
-                          role: 'Python / ML Lead → Wants React & UI',
-                          status: 'Mutual 96% Match with Rohit',
-                        },
-                        {
-                          email: 'akash.das@campus.edu',
-                          name: 'Akash Das (NIT Silchar)',
-                          role: 'IoT Hardware Lead • AgriPulse Project Owner',
-                          status: 'Recruiting Web & ML Contributors',
-                        },
-                        {
-                          email: 'aarav.sharma@campus.edu',
-                          name: 'Aarav Sharma (IIT Delhi)',
-                          role: 'Competitive Programmer • C++ & DSA',
-                          status: 'System Design & Algorithm Mentor',
-                        },
-                        {
-                          email: 'sneha.patel@campus.edu',
-                          name: 'Sneha Patel (NID / MIT Pune)',
-                          role: 'Product Designer • Figma & UI/UX',
-                          status: 'Design Systems & App Prototyping',
-                        },
-                      ].map((persona) => {
-                        const isCurrent = user.email === persona.email;
-                        return (
-                          <button
-                            key={persona.email}
-                            onClick={() => handleSwitchPersona(persona.email)}
-                            className={clsx(
-                              'w-full text-left p-2.5 rounded-xl transition-all flex items-start justify-between gap-2',
-                              isCurrent
-                                ? 'bg-violet-50 border border-violet-200'
-                                : 'hover:bg-slate-50'
-                            )}
-                          >
-                            <div className="min-w-0">
-                              <p className="text-xs font-bold text-slate-900 truncate">
-                                {persona.name}
-                              </p>
-                              <p className="text-[11px] text-violet-600 font-medium truncate">
-                                {persona.role}
-                              </p>
-                              <p className="text-[10px] text-slate-500 truncate mt-0.5">
-                                {persona.status}
-                              </p>
-                            </div>
-                            {isCurrent && (
-                              <Check className="w-4 h-4 text-violet-600 shrink-0 mt-0.5" />
-                            )}
-                          </button>
-                        );
-                      })}
+                    <div className="py-1">
+                      <Link
+                        to="/profile"
+                        onClick={() => setPersonaMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 rounded-xl"
+                      >
+                        <UserIcon className="w-3.5 h-3.5 text-slate-500" />
+                        <span>View Profile</span>
+                      </Link>
+                      <Link
+                        to="/settings"
+                        onClick={() => setPersonaMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 rounded-xl"
+                      >
+                        <Settings className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Account Settings</span>
+                      </Link>
+                    </div>
+                    <div className="pt-1 border-t border-slate-100">
+                      <button
+                        onClick={() => {
+                          setPersonaMenuOpen(false);
+                          handleLogout();
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-xl text-left"
+                      >
+                        <LogOut className="w-3.5 h-3.5 text-rose-500" />
+                        <span>Sign Out</span>
+                      </button>
                     </div>
                   </div>
                 )}
               </div>
-
-              {/* Profile Pill */}
-              <Link
-                to="/profile"
-                className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200/80 hover:opacity-85 transition-opacity"
-              >
-                <Avatar name={user.fullName} size="sm" showStatus status={user.onlineStatus} />
-                <div className="hidden xl:block text-left">
-                  <p className="text-xs font-semibold text-slate-800 leading-tight">{user.fullName}</p>
-                  <p className="text-[10px] text-slate-500 capitalize">{user.role}</p>
-                </div>
-              </Link>
             </div>
           </div>
         </header>

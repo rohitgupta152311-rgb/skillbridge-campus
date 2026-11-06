@@ -625,10 +625,10 @@ export function calculateSkillExchangeMatches(currentUserId: string): {
       Math.round(skillCompatScore + scheduleScore + proficiencyScore * 0.9 + prefScore * 0.8 + reputationScore * 0.8 + (isMutual ? 10 : 0))
     );
 
-    // Specific demonstration between Alex Chen and Sarah Jenkins (Student A and Student B):
+    // Specific demonstration between Rohit Gupta and Ananya Singh (Student A and Student B):
     if (
-      (currentUser.email === 'alex.student@campus.edu' && other.email === 'sarah.mentor@campus.edu') ||
-      (currentUser.email === 'sarah.mentor@campus.edu' && other.email === 'alex.student@campus.edu')
+      (currentUser.email === 'rohit.gupta@campus.edu' && other.email === 'ananya.singh@campus.edu') ||
+      (currentUser.email === 'ananya.singh@campus.edu' && other.email === 'rohit.gupta@campus.edu')
     ) {
       totalScore = 96;
     }

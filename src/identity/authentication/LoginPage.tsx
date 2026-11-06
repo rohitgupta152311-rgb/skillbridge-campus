@@ -208,6 +208,11 @@ export function LoginPage() {
     window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   };
 
+  const handleLaunchRealGitHubAuth = () => {
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+    window.location.href = backendUrl + '/auth/github';
+  };
+
   const handleConfirmLinkedInImport = async (finalData: any) => {
     const success = await loginWithOAuth({
       provider: 'linkedin',
@@ -360,7 +365,7 @@ export function LoginPage() {
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold tracking-tight">SkillBridge</span>
                 <span className="text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-violet-500/30 text-violet-200 border border-violet-400/30">
-                  Campus 2.0
+                  Campus Network
                 </span>
               </div>
               <p className="text-xs text-slate-400">Professional Networking & Mentorship Platform</p>
@@ -412,43 +417,6 @@ export function LoginPage() {
             Enter your campus credentials or sign in with Google.
           </p>
 
-          {/* 1-Click Demo Personas */}
-          <div className="mb-6 p-3.5 rounded-xl bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-100">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold text-violet-900 uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-violet-600" />
-                1-Click Indian Demo Personas
-              </span>
-              <span className="text-[10px] text-violet-600 font-medium">Ready to test</span>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => handleDemoLogin('mentee')}
-                className="py-1.5 px-2 rounded-lg bg-white hover:bg-violet-600 hover:text-white border border-violet-200 text-violet-800 text-xs font-semibold shadow-2xs transition-all text-center truncate"
-                title="Log in as Rohit Gupta (DTU CS)"
-              >
-                Rohit (Student)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDemoLogin('mentor')}
-                className="py-1.5 px-2 rounded-lg bg-white hover:bg-indigo-600 hover:text-white border border-indigo-200 text-indigo-800 text-xs font-semibold shadow-2xs transition-all text-center truncate"
-                title="Log in as Ananya Singh (BITS Pilani AI)"
-              >
-                Ananya (Mentor)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDemoLogin('admin')}
-                className="py-1.5 px-2 rounded-lg bg-white hover:bg-slate-800 hover:text-white border border-slate-200 text-slate-800 text-xs font-semibold shadow-2xs transition-all text-center truncate"
-                title="Log in as Campus Administrator"
-              >
-                Admin Console
-              </button>
-            </div>
-          </div>
-
           {/* Social OAuth Buttons */}
           <div className="space-y-2.5 mb-6">
             {/* Real Google Button Container for GIS */}
@@ -477,9 +445,7 @@ export function LoginPage() {
                   />
                 </svg>
                 <span>Continue with Google</span>
-                <span className="text-[10px] uppercase font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 ml-auto">
-                  Live Active
-                </span>
+                
               </button>
             </div>
 
@@ -498,9 +464,7 @@ export function LoginPage() {
                   />
                 </svg>
                 <span>GitHub</span>
-                <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-1 py-0.2 rounded border border-indigo-200">
-                  Dev
-                </span>
+                
               </button>
 
               {/* LinkedIn */}
@@ -513,9 +477,7 @@ export function LoginPage() {
                   <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
                 </svg>
                 <span>LinkedIn</span>
-                <span className="text-[9px] font-bold text-sky-600 bg-sky-50 px-1 py-0.2 rounded border border-sky-200">
-                  OIDC
-                </span>
+                
               </button>
             </div>
           </div>
@@ -541,7 +503,7 @@ export function LoginPage() {
             <Input
               label="Campus Email"
               type="email"
-              placeholder="rohit.gupta@campus.edu"
+              placeholder="you@campus.edu"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -666,104 +628,15 @@ export function LoginPage() {
               </button>
             </div>
 
-            {/* Quick 1-Click Verified Student Accounts (Instant) */}
-            <div className="pt-2 border-t border-slate-200">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  Instant Google Verified Student Profiles
-                </span>
-                <span className="text-[10px] text-slate-400">1-Click Test</span>
-              </div>
-
-              <div className="space-y-2 mb-3">
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleGoogleSignIn({
-                      email: 'rohit.gupta@campus.edu',
-                      fullName: 'Rohit Gupta',
-                      department: 'Computer Science',
-                      year: '3rd Year',
-                      avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200',
-                    })
-                  }
-                  className="w-full flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition-all text-left group"
-                >
-                  <img
-                    src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200"
-                    alt="Rohit"
-                    className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/20"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-slate-900 group-hover:text-blue-700">Rohit Gupta</p>
-                    <p className="text-[11px] text-slate-500 truncate">rohit.gupta@campus.edu • DTU CS</p>
-                  </div>
-                  <span className="text-[10px] font-bold text-blue-600 bg-blue-100/60 px-2 py-0.5 rounded-full">
-                    Sign In
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleGoogleSignIn({
-                      email: 'ananya.singh@campus.edu',
-                      fullName: 'Ananya Singh',
-                      department: 'AI & Data Science',
-                      year: '3rd Year',
-                      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200',
-                    })
-                  }
-                  className="w-full flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition-all text-left group"
-                >
-                  <img
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"
-                    alt="Ananya"
-                    className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/20"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-slate-900 group-hover:text-blue-700">Ananya Singh</p>
-                    <p className="text-[11px] text-slate-500 truncate">ananya.singh@campus.edu • BITS AI</p>
-                  </div>
-                  <span className="text-[10px] font-bold text-blue-600 bg-blue-100/60 px-2 py-0.5 rounded-full">
-                    Sign In
-                  </span>
-                </button>
-              </div>
-
-              {/* Custom Google Email */}
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="Enter custom student Google email..."
-                  value={customGoogleEmail}
-                  onChange={(e) => setCustomGoogleEmail(e.target.value)}
-                  className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500"
-                />
-                <button
-                  type="button"
-                  disabled={!customGoogleEmail.includes('@')}
-                  onClick={() => {
-                    const namePart = customGoogleEmail.split('@')[0].replace('.', ' ');
-                    const capitalName = namePart
-                      .split(' ')
-                      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                      .join(' ');
-                    handleGoogleSignIn({
-                      email: customGoogleEmail,
-                      fullName: capitalName || 'Google User',
-                      department: 'Computer Science',
-                      year: '2nd Year',
-                      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200',
-                    });
-                  }}
-                  className="px-3 py-1.5 bg-[#4285F4] hover:bg-blue-600 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-colors"
-                >
-                  Sign In
-                </button>
-              </div>
+            <div className="pt-4 border-t border-slate-100 text-center">
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                SkillBridge securely verifies student identities via Google OAuth 2.0 without accessing your personal password.
+              </p>
             </div>
+          </div>
+        </div>
+      )}
+      {/*
           </div>
         </div>
       )}
@@ -794,111 +667,23 @@ export function LoginPage() {
               </div>
             </div>
 
-            {/* Quick-Pick Developer Profiles */}
-            <div className="pt-2">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-                  Instant Student Developer Profiles
-                </span>
-                <span className="text-[10px] text-slate-400">Ready to test</span>
-              </div>
-
-              <div className="space-y-2 mb-3">
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleGithubSignIn({
-                      username: 'arjunmehta-dev',
-                      email: 'arjun.mehta@campus.edu',
-                      fullName: 'Arjun Mehta',
-                      department: 'Mechanical & Robotics',
-                      year: '4th Year',
-                      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
-                      bio: 'Robotics & FreeRTOS Drone Lead',
-                    })
-                  }
-                  className="w-full flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 hover:border-slate-800 hover:bg-slate-50 transition-all text-left group"
-                >
-                  <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200"
-                    alt="Arjun"
-                    className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-800/20"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-xs font-bold text-slate-900 group-hover:text-violet-700">Arjun Mehta</p>
-                      <span className="text-[10px] text-slate-400 font-mono">@arjunmehta-dev</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 truncate">IIT Bombay • AeroQuad Drone Lead</p>
-                  </div>
-                  <span className="text-[10px] font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-full">
-                    Authorize
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleGithubSignIn({
-                      username: 'rohitgupta-dev',
-                      email: 'rohit.gupta@campus.edu',
-                      fullName: 'Rohit Gupta',
-                      department: 'Computer Science',
-                      year: '3rd Year',
-                      avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200',
-                      bio: 'React & TypeScript Developer',
-                    })
-                  }
-                  className="w-full flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 hover:border-slate-800 hover:bg-slate-50 transition-all text-left group"
-                >
-                  <img
-                    src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200"
-                    alt="Rohit"
-                    className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-800/20"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-xs font-bold text-slate-900 group-hover:text-violet-700">Rohit Gupta</p>
-                      <span className="text-[10px] text-slate-400 font-mono">@rohitgupta-dev</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 truncate">DTU • Full-Stack Developer</p>
-                  </div>
-                  <span className="text-[10px] font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-full">
-                    Authorize
-                  </span>
-                </button>
-              </div>
-
-              {/* Custom GitHub Username */}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Enter custom GitHub handle..."
-                  value={customGithubUser}
-                  onChange={(e) => setCustomGithubUser(e.target.value)}
-                  className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-slate-800"
-                />
-                <button
-                  type="button"
-                  disabled={!customGithubUser.trim()}
-                  onClick={() => {
-                    const handle = customGithubUser.trim().replace('@', '');
-                    handleGithubSignIn({
-                      username: handle,
-                      email: `${handle}@users.noreply.github.com`,
-                      fullName: handle.charAt(0).toUpperCase() + handle.slice(1),
-                      department: 'Computer Science',
-                      year: '3rd Year',
-                      avatar: `https://github.com/${handle}.png`,
-                      bio: `Developer on GitHub (@${handle})`,
-                    });
-                  }}
-                  className="px-3 py-1.5 bg-slate-900 hover:bg-black disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-colors"
-                >
-                  Authorize
-                </button>
-              </div>
+            <div className="space-y-4">
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Connect your GitHub account to showcase your repositories, tech stacks, and open-source contributions on your campus profile.
+              </p>
+              <button
+                type="button"
+                onClick={handleLaunchRealGitHubAuth}
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2"
+              >
+                <span>Authorize with GitHub</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <div className="pt-4 border-t border-slate-100 text-center">
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Read-only profile verification for campus developer portfolios.
+              </p>
             </div>
           </div>
         </div>
@@ -941,7 +726,7 @@ export function LoginPage() {
                   <Input
                     label="Email address"
                     type="email"
-                    placeholder="rohit.gupta@campus.edu"
+                    placeholder="you@campus.edu"
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
                     required

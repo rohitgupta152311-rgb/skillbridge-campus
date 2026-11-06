@@ -63,9 +63,7 @@ export function LandingPage() {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xl font-extrabold tracking-tight text-[#151e4e]">SkillBridge</span>
-              <span className="hidden sm:inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 text-[#151e4e] border border-indigo-100">
-                CIH-008
-              </span>
+              <span className="hidden sm:inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 text-[#151e4e] border border-indigo-100">Campus Community</span>
             </div>
           </Link>
 
@@ -105,7 +103,7 @@ export function LandingPage() {
             <div className="lg:col-span-7 space-y-6 text-left">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-100/80 text-[#151e4e] text-xs font-bold shadow-2xs">
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span>Smart Campus Peer-to-Peer Community &bull; Challenge CIH-008</span>
+                <span>Smart Campus Peer-to-Peer Community &bull; Peer Skill Exchange</span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.12]">
@@ -364,7 +362,7 @@ export function LandingPage() {
             <span>Swap Skills, Spark Growth</span>
           </div>
           <p>
-            Challenge ID: <strong>CIH-008</strong> &bull; Smart Peer-to-Peer Tutoring &amp; Mentorship Matchmaker
+            <strong>SkillBridge Platform</strong> &bull; Peer-to-Peer Learning &amp; Collaborative Skill Exchange
           </p>
         </footer>
 

@@ -117,7 +117,7 @@ export function FindMyTeamModal({ isOpen, onClose, onApply }: FindMyTeamModalPro
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-violet-100 text-violet-700 text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5 text-violet-600" />
-              <span>CIH-008 Algorithmic Team Matchmaker</span>
+              <span>Algorithmic Team Matchmaker</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
               Find My Team &amp; Collaborators
@@ -157,7 +157,7 @@ export function FindMyTeamModal({ isOpen, onClose, onApply }: FindMyTeamModalPro
           <div className="space-y-4">
             <div className="p-3 bg-violet-50/60 rounded-xl border border-violet-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-violet-900">
               <div className="flex items-center gap-2">
-                <Avatar name={user?.fullName || 'Alex Chen'} src={user?.avatar} size="sm" />
+                <Avatar name={user?.fullName || 'Rohit Gupta'} src={user?.avatar} size="sm" />
                 <span>
                   Matching based on your offered: <strong>{myOfferedSkillNames.slice(0, 3).join(', ')}</strong> &bull; wants to learn: <strong>{myWantedSkillNames.slice(0, 2).join(', ')}</strong>
                 </span>
