@@ -1401,6 +1401,13 @@ export const mockConnections: Connection[] = [
   { id: 'conn-1', senderId: 'user-kabir', receiverId: 'user-ananya', status: 'ACCEPTED', createdAt: '2026-11-01T00:00:00Z' },
   { id: 'conn-2', senderId: 'user-kabir', receiverId: 'user-aarav', status: 'ACCEPTED', createdAt: '2026-10-25T00:00:00Z' },
   { id: 'conn-3', senderId: 'user-kabir', receiverId: 'user-akash', status: 'ACCEPTED', createdAt: '2026-11-02T00:00:00Z' },
+  // NIT Nagaland Cohort Active Peer Connections
+  { id: 'conn-101', senderId: 'user-vidya', receiverId: 'user-nyoimei', status: 'ACCEPTED', createdAt: '2026-11-02T10:00:00Z' },
+  { id: 'conn-102', senderId: 'user-vidya', receiverId: 'user-salini', status: 'ACCEPTED', createdAt: '2026-11-03T11:30:00Z' },
+  { id: 'conn-103', senderId: 'user-vidya', receiverId: 'user-kasturika', status: 'ACCEPTED', createdAt: '2026-11-04T09:15:00Z' },
+  { id: 'conn-104', senderId: 'user-vidya', receiverId: 'user-betimansa', status: 'ACCEPTED', createdAt: '2026-11-05T14:20:00Z' },
+  { id: 'conn-105', senderId: 'user-nyoimei', receiverId: 'user-kasturika', status: 'ACCEPTED', createdAt: '2026-11-04T12:00:00Z' },
+  { id: 'conn-106', senderId: 'user-salini', receiverId: 'user-betimansa', status: 'ACCEPTED', createdAt: '2026-11-05T08:00:00Z' },
 ];
 
 export const mockProjectApplications: ProjectApplication[] = [

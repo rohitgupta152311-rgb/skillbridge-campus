@@ -27,7 +27,7 @@ const STORAGE_KEYS = {
   connections: 'sb_connections',
   projects: 'sb_projects',
   projectApplications: 'sb_project_applications',
-  initialized: 'sb_initialized_v14_active_messaging',
+  initialized: 'sb_initialized_v15_connected_messaging',
 } as const;
 
 // Isomorphic storage fallback for SSR, headless Node environments, and testing
@@ -394,6 +394,38 @@ export function removeConnection(connectionId: string) {
   const filtered = all.filter(c => c.id !== connectionId);
   persist(STORAGE_KEYS.connections, filtered);
 }
+
+export function getConnectedUsers(userId: string): User[] {
+  const connections = getConnections();
+  const accepted = connections.filter(
+    c => c.status === 'ACCEPTED' && (
+      c.senderId === userId || c.receiverId === userId ||
+      c.userId === userId || c.connectedUserId === userId
+    )
+  );
+  const userIds = accepted
+    .map(c => {
+      if (c.senderId === userId) return c.receiverId;
+      if (c.receiverId === userId) return c.senderId;
+      if (c.userId === userId) return c.connectedUserId;
+      return c.userId;
+    })
+    .filter((id): id is string => !!id);
+  const uniqueIds = Array.from(new Set(userIds));
+  return uniqueIds
+    .map(id => getUserById(id))
+    .filter((u): u is User => !!u);
+}
+
+export function isUserConnected(userId1: string, userId2: string): boolean {
+  const connections = getConnections();
+  return connections.some(
+    c => c.status === 'ACCEPTED' &&
+    (((c.senderId === userId1 || c.userId === userId1) && (c.receiverId === userId2 || c.connectedUserId === userId2)) ||
+     ((c.senderId === userId2 || c.userId === userId2) && (c.receiverId === userId1 || c.connectedUserId === userId1)))
+  );
+}
+
 
 // ─── EXPERTISE ──────────────────────────────────────────────
 export function getExpertise(): MentorExpertise[] { return loadOrSeed(STORAGE_KEYS.expertise, mockExpertise); }
