@@ -590,9 +590,9 @@ export function LoginPage() {
             </button>
 
             {/* Google Brand Header */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-11 h-11 rounded-2xl bg-white border border-slate-200/80 flex items-center justify-center shadow-xs">
-                <svg className="w-6 h-6" viewBox="0 0 24 24">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center shadow-xs">
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
@@ -600,30 +600,23 @@ export function LoginPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900 tracking-tight">Official Google Authentication</h3>
-                <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  Client ID Connected: 647527528972-...
-                </p>
+                <h3 className="text-base font-bold text-slate-900 tracking-tight">Sign in with Google</h3>
+                <p className="text-xs text-slate-500">Choose your campus Google account to continue</p>
               </div>
             </div>
 
-            {/* Official Google Identity Services Render Container */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 mb-5">
-              <span className="text-xs font-bold text-blue-950 block mb-2">
-                Click below to sign in with your real Google Account:
-              </span>
-              
+            {/* Google Identity Services Render Container */}
+            <div className="space-y-3 mb-5">
               {/* Native Google Identity Services Button */}
-              <div id="googleSignInRealBtn" className="flex justify-center mb-3 min-h-[44px]"></div>
+              <div id="googleSignInRealBtn" className="flex justify-center min-h-[44px]"></div>
 
               {/* Direct Redirect to Google Accounts */}
               <button
                 type="button"
                 onClick={handleLaunchRealGoogleRedirect}
-                className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl bg-[#4285F4] hover:bg-blue-600 text-white text-xs font-bold shadow-md transition-all"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#151e4e] hover:bg-[#0f1638] text-white text-xs font-semibold shadow-xs transition-all"
               >
-                <span>Launch Google Web Login (accounts.google.com)</span>
+                <span>Continue with Google Account</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -633,10 +626,6 @@ export function LoginPage() {
                 SkillBridge securely verifies student identities via Google OAuth 2.0 without accessing your personal password.
               </p>
             </div>
-          </div>
-        </div>
-      )}
-      {/*
           </div>
         </div>
       )}

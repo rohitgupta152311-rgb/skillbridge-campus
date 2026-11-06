@@ -27,7 +27,7 @@ const STORAGE_KEYS = {
   connections: 'sb_connections',
   projects: 'sb_projects',
   projectApplications: 'sb_project_applications',
-  initialized: 'sb_initialized_v5_indian_community',
+  initialized: 'sb_initialized_v7_indian_profiles',
 } as const;
 
 function loadOrSeed<T>(key: string, seedData: T[]): T[] {
@@ -66,7 +66,17 @@ export function initializeDataStore(force = false): void {
 }
 
 // ─── USERS ──────────────────────────────────────────────────
-export function getUsers(): User[] { return loadOrSeed(STORAGE_KEYS.users, mockUsers); }
+export function getUsers(): User[] {
+  const users = loadOrSeed(STORAGE_KEYS.users, mockUsers);
+  const existingIds = new Set(users.map(u => u.id));
+  const missing = mockUsers.filter(u => !existingIds.has(u.id));
+  if (missing.length > 0) {
+    const merged = [...users, ...missing];
+    persist(STORAGE_KEYS.users, merged);
+    return merged;
+  }
+  return users;
+}
 export function getUserById(id: string): User | undefined { return getUsers().find(u => u.id === id); }
 export function getUserByEmail(email: string): User | undefined { return getUsers().find(u => u.email === email); }
 export function getMentors(): User[] { return getUsers().filter(u => u.role === 'mentor' && !u.isSuspended); }
@@ -91,7 +101,17 @@ export function addUser(user: Omit<User, 'id' | 'joinedAt'>): User {
 
 // ─── POSTS & FEED (SkillBridge 2.0) ─────────────────────────
 export function getPosts(): Post[] {
-  return loadOrSeed(STORAGE_KEYS.posts, mockPosts).sort(
+  const posts = loadOrSeed(STORAGE_KEYS.posts, mockPosts);
+  const existingIds = new Set(posts.map(p => p.id));
+  const missing = mockPosts.filter(p => !existingIds.has(p.id));
+  if (missing.length > 0) {
+    const merged = [...posts, ...missing];
+    persist(STORAGE_KEYS.posts, merged);
+    return merged.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+  return posts.sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 }
