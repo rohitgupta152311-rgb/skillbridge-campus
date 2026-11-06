@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   X,
   ExternalLink,
+  Shield,
   ShieldCheck,
   Sparkles,
   HelpCircle,
@@ -314,7 +315,12 @@ export function LoginPage() {
     e.preventDefault();
     const success = await login(email, password);
     if (success) {
-      navigate('/feed');
+      const currentUser = useAuthStore.getState().user;
+      if (currentUser?.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/feed');
+      }
     }
   };
 
@@ -573,6 +579,85 @@ export function LoginPage() {
               Create account
             </Link>
           </p>
+
+          {/* Institutional Credentials Reference */}
+          <div className="mt-6 pt-5 border-t border-slate-200">
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-violet-600" />
+                  Campus Access Credentials
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium">Click to fill</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-1.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('admin@campus.edu');
+                    setPassword('admin1234');
+                  }}
+                  className="p-2 rounded-xl bg-white border border-slate-200 hover:border-violet-400 hover:bg-violet-50/50 text-left transition-all shadow-2xs group"
+                >
+                  <p className="font-bold text-slate-900 text-[11px] group-hover:text-violet-700 flex items-center justify-between">
+                    <span>Admin Panel</span>
+                    <span className="text-[9px] px-1.5 py-0.2 rounded-sm bg-purple-100 text-purple-700 font-semibold">Dean</span>
+                  </p>
+                  <p className="text-[10px] text-slate-500 font-mono truncate">admin@campus.edu</p>
+                  <p className="text-[9px] text-slate-400">Pass: admin1234</p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('vidya.gupta@campus.edu');
+                    setPassword('demo1234');
+                  }}
+                  className="p-2 rounded-xl bg-white border border-slate-200 hover:border-violet-400 hover:bg-violet-50/50 text-left transition-all shadow-2xs group"
+                >
+                  <p className="font-bold text-slate-900 text-[11px] group-hover:text-violet-700 flex items-center justify-between">
+                    <span>NIT Nagaland</span>
+                    <span className="text-[9px] px-1.5 py-0.2 rounded-sm bg-emerald-100 text-emerald-700 font-semibold">2nd Yr</span>
+                  </p>
+                  <p className="text-[10px] text-slate-500 font-mono truncate">vidya.gupta@campus.edu</p>
+                  <p className="text-[9px] text-slate-400">Pass: demo1234</p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('rohit.gupta@campus.edu');
+                    setPassword('demo1234');
+                  }}
+                  className="p-2 rounded-xl bg-white border border-slate-200 hover:border-violet-400 hover:bg-violet-50/50 text-left transition-all shadow-2xs group"
+                >
+                  <p className="font-bold text-slate-900 text-[11px] group-hover:text-violet-700 flex items-center justify-between">
+                    <span>Student Mentee</span>
+                    <span className="text-[9px] px-1.5 py-0.2 rounded-sm bg-blue-100 text-blue-700 font-semibold">DTU CS</span>
+                  </p>
+                  <p className="text-[10px] text-slate-500 font-mono truncate">rohit.gupta@campus.edu</p>
+                  <p className="text-[9px] text-slate-400">Pass: demo1234</p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('ananya.singh@campus.edu');
+                    setPassword('demo1234');
+                  }}
+                  className="p-2 rounded-xl bg-white border border-slate-200 hover:border-violet-400 hover:bg-violet-50/50 text-left transition-all shadow-2xs group"
+                >
+                  <p className="font-bold text-slate-900 text-[11px] group-hover:text-violet-700 flex items-center justify-between">
+                    <span>Peer Mentor</span>
+                    <span className="text-[9px] px-1.5 py-0.2 rounded-sm bg-violet-100 text-violet-700 font-semibold">AI/DS</span>
+                  </p>
+                  <p className="text-[10px] text-slate-500 font-mono truncate">ananya.singh@campus.edu</p>
+                  <p className="text-[9px] text-slate-400">Pass: demo1234</p>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

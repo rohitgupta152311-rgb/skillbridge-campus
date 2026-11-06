@@ -17,7 +17,7 @@ import { ConversationCenterPage } from '../experiences/conversation-center/Conve
 import { FeedbackPage } from '../experiences/feedback-center/FeedbackPage';
 import { MentorReviewsPage } from '../experiences/feedback-center/MentorReviewsPage';
 import { ProfilePage } from '../experiences/personal-profile/ProfilePage';
-import { AdminDashboard, AdminUsersPage, AdminReportsPage } from '../experiences/admin-panel/AdminPages';
+import { AdminDashboard, AdminUsersPage, AdminReportsPage, AdminSettingsPage } from '../experiences/admin-panel/AdminPages';
 
 // SkillBridge 2.0 Ecosystem Pages
 import { ActivityFeedPage } from '../experiences/activity-feed/ActivityFeedPage';
@@ -107,38 +107,7 @@ const router = createBrowserRouter([
           { path: '/admin', element: <AdminDashboard /> },
           { path: '/admin/users', element: <AdminUsersPage /> },
           { path: '/admin/reports', element: <AdminReportsPage /> },
-          {
-            path: '/admin/settings',
-            element: (
-              <div className="max-w-4xl mx-auto p-6 animate-fade-in">
-                <h1 className="text-2xl font-bold text-slate-900">Platform Settings & Governance</h1>
-                <p className="text-slate-500 mt-2">Manage campus SSO, OAuth integrations, safety thresholds, and AI matchmaker weights.</p>
-                <div className="mt-6 p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                    <div>
-                      <h3 className="font-semibold text-slate-800">Auto-verify Student Campus Email</h3>
-                      <p className="text-xs text-slate-500">Require @campus.edu email domain verification on registration</p>
-                    </div>
-                    <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">Enabled</span>
-                  </div>
-                  <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                    <div>
-                      <h3 className="font-semibold text-slate-800">AI Matchmaking Engine (5-factor weighting)</h3>
-                      <p className="text-xs text-slate-500">Active weights: Topic 35%, Skill 25%, Schedule 20%, Rating 15%, College 5%</p>
-                    </div>
-                    <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-violet-100 text-violet-800">Active</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold text-slate-800">Render Production Backend</h3>
-                      <p className="text-xs text-slate-500">PostgreSQL + Socket.IO Web Service Status</p>
-                    </div>
-                    <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Ready</span>
-                  </div>
-                </div>
-              </div>
-            ),
-          },
+          { path: '/admin/settings', element: <AdminSettingsPage /> },
         ],
       },
     ],

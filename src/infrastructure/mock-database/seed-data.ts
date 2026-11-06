@@ -1,6 +1,6 @@
 import {
   User, MentorExpertise, TimeSlot, TutoringSession,
-  Conversation, Message, SessionReview, Notification,
+  Conversation, Message, SessionReview, Notification, UserReport,
   Post, CommunityItem, SkillItem, Connection, Project, ProjectApplication
 } from '../../foundation/types';
 
@@ -9,6 +9,34 @@ import {
 // Representing diverse regions, genders, and engineering/non-engineering disciplines
 // ==========================================
 export const mockUsers: User[] = [
+  // 0. Campus System Administrator: Dr. Rajesh Sharma
+  {
+    id: 'user-admin',
+    email: 'admin@campus.edu',
+    fullName: 'Dr. Rajesh Sharma',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces',
+    role: 'admin',
+    department: 'Academic Administration & Safety',
+    year: 'Faculty / Administration',
+    university: 'National Institute of Technology (NIT) Nagaland',
+    headline: 'System Administrator & Dean of Student Affairs | NIT Nagaland',
+    bio: 'Oversees campus technical mentorship exchange, academic governance, safety compliance, and inter-departmental skill barter integrity.',
+    joinedAt: '2023-01-01T00:00:00Z',
+    isVerified: true,
+    isSuspended: false,
+    learningPreferences: ['reading'],
+    languages: ['English', 'Hindi'],
+    onlineStatus: 'available',
+    skillsOffered: [
+      { skillName: 'Campus Governance', proficiency: 'expert', yearsExperience: 10 },
+      { skillName: 'Academic Mentorship', proficiency: 'expert', yearsExperience: 8 },
+    ],
+    skillsWanted: [],
+    availableDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+    badges: [
+      { id: 'b-admin', title: 'Campus Dean', icon: 'Shield', tier: 'gold', description: 'Chief Platform Administrator & Safety Lead', earnedAt: '2023-01-01' },
+    ],
+  },
   // 1. Primary Logged-in Student: Rohit Gupta (North India - CS)
   {
     id: 'user-rohit',
@@ -1342,5 +1370,42 @@ export const mockProjectApplications: ProjectApplication[] = [
     relevantSkills: ['Figma', 'UI/UX Design', 'Design Systems'],
     status: 'pending',
     appliedAt: '2026-11-05T14:30:00Z',
+  },
+];
+
+// ============================================================================
+// MOCK SAFETY & MODERATION REPORTS
+// ============================================================================
+export const mockReports: UserReport[] = [
+  {
+    id: 'rep-1',
+    reporterId: 'user-vidya',
+    reportedUserId: 'user-rohit',
+    reason: 'Unverified commercial solicitation during peer review',
+    description: 'During our scheduled peer review on MATLAB Simulink, user posted external commercial promotion links.',
+    status: 'pending',
+    createdAt: '2026-11-04T14:30:00Z',
+  },
+  {
+    id: 'rep-2',
+    reporterId: 'user-salini',
+    reportedUserId: 'user-ananya',
+    reason: 'No-show for confirmed hardware telemetry exchange',
+    description: 'Confirmed session was missed without prior cancellation. Requested exchange credit balance adjustment.',
+    status: 'resolved',
+    createdAt: '2026-11-01T09:15:00Z',
+    resolvedAt: '2026-11-02T11:00:00Z',
+    resolvedBy: 'user-admin',
+  },
+  {
+    id: 'rep-3',
+    reporterId: 'user-nyimei',
+    reportedUserId: 'user-kasturika',
+    reason: 'Profile title formatting clarification',
+    description: 'Minor inquiry regarding department designation formatting. Resolved via direct peer messaging.',
+    status: 'dismissed',
+    createdAt: '2026-10-28T16:20:00Z',
+    resolvedAt: '2026-10-29T10:00:00Z',
+    resolvedBy: 'user-admin',
   },
 ];

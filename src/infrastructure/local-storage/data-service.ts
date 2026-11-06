@@ -3,7 +3,7 @@ import {
   Conversation, Message, SessionReview, Notification, UserReport,
   Post, CommunityItem, SkillItem, Connection, Project, ProjectApplication, TwoWayMatch, SkillExchangeEntry,
 } from '../../foundation/types';
-import {
+import { mockReports,
   mockUsers, mockExpertise, mockAvailability, mockSessions,
   mockConversations, mockMessages, mockReviews, mockNotifications,
   mockPosts, mockCommunities, mockSkills, mockConnections,
@@ -27,7 +27,7 @@ const STORAGE_KEYS = {
   connections: 'sb_connections',
   projects: 'sb_projects',
   projectApplications: 'sb_project_applications',
-  initialized: 'sb_initialized_v9_nit_nagaland_eee_2nd_year',
+  initialized: 'sb_initialized_v10_admin_and_reports',
 } as const;
 
 function loadOrSeed<T>(key: string, seedData: T[]): T[] {
@@ -55,7 +55,7 @@ export function initializeDataStore(force = false): void {
   localStorage.setItem(STORAGE_KEYS.messages, JSON.stringify(mockMessages));
   localStorage.setItem(STORAGE_KEYS.reviews, JSON.stringify(mockReviews));
   localStorage.setItem(STORAGE_KEYS.notifications, JSON.stringify(mockNotifications));
-  localStorage.setItem(STORAGE_KEYS.reports, JSON.stringify([]));
+  localStorage.setItem(STORAGE_KEYS.reports, JSON.stringify(mockReports));
   localStorage.setItem(STORAGE_KEYS.posts, JSON.stringify(mockPosts));
   localStorage.setItem(STORAGE_KEYS.communities, JSON.stringify(mockCommunities));
   localStorage.setItem(STORAGE_KEYS.skills, JSON.stringify(mockSkills));

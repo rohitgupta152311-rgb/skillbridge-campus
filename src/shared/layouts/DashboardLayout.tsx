@@ -429,6 +429,16 @@ export function DashboardLayout() {
                       <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
                     </div>
                     <div className="py-1">
+                      {user.role === 'admin' && (
+                        <Link
+                          to="/admin"
+                          onClick={() => setPersonaMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-xl mb-1"
+                        >
+                          <Shield className="w-3.5 h-3.5 text-violet-600" />
+                          <span>Admin Console</span>
+                        </Link>
+                      )}
                       <Link
                         to="/profile"
                         onClick={() => setPersonaMenuOpen(false)}
