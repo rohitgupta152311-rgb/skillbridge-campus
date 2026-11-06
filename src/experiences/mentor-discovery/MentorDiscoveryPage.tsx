@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Search, Filter, SlidersHorizontal, MapPin, Globe, ChevronDown } from 'lucide-react';
+import { Search, Filter, SlidersHorizontal, MapPin, Globe, ChevronDown, MessageSquare } from 'lucide-react';
 import { Card, Avatar, Badge, Button, StarRating, Input, EmptyState } from '../../shared/components';
 import { useAuthStore } from '../../identity/authentication/auth-store';
 import { computeMatchScores, getAllMentorProfiles } from '../../domain/matching-engine';
 import { getMatchScoreLabel, formatTime, getDayName } from '../../foundation/helpers';
+import { getOrCreateConversation } from '../../infrastructure/local-storage/data-service';
 import { ALL_TOPICS, LANGUAGES, DAYS_OF_WEEK, DAY_LABELS } from '../../foundation/constants';
 import type { FilterOptions, MentorProfile, SessionType, DayOfWeek } from '../../foundation/types';
 
@@ -150,6 +151,21 @@ export function MentorDiscoveryPage() {
                     <span className="text-xs text-slate-400">({mentor.totalReviews})</span>
                   </div>
                   <span className="text-xs text-slate-500">{mentor.completedSessions} sessions</span>
+                </div>
+                <div className="mt-2.5 pt-2 border-t border-slate-100">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full text-xs hover:bg-violet-50 hover:text-violet-700 hover:border-violet-300 font-semibold"
+                    leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const conv = getOrCreateConversation(user?.id || 'user-vidya', mentor.id);
+                      navigate(`/messages/${conv.id}`);
+                    }}
+                  >
+                    Start Messaging
+                  </Button>
                 </div>
               </Card>
             );

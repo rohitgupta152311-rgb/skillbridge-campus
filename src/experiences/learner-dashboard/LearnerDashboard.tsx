@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, MessageSquare, Search, BookOpen, Clock, ArrowRight, TrendingUp, Users } from 'lucide-react';
 import { useAuthStore } from '../../identity/authentication/auth-store';
 import { Card, Avatar, Badge, Button, StarRating, EmptyState } from '../../shared/components';
-import { getSessionsByUser, getConversationsByUser, getUserById } from '../../infrastructure/local-storage/data-service';
+import { getSessionsByUser, getConversationsByUser, getUserById, getOrCreateConversation } from '../../infrastructure/local-storage/data-service';
 import { computeMatchScores, getAllMentorProfiles } from '../../domain/matching-engine';
 import { formatDate, formatTime, getMatchScoreLabel } from '../../foundation/helpers';
 import type { MentorProfile } from '../../foundation/types';
@@ -116,9 +116,24 @@ export function LearnerDashboard() {
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {mentor.expertise.slice(0, 3).map(e => <Badge key={e.id} variant="violet">{e.topic}</Badge>)}
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-slate-500">
+                  <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
                     <span className="flex items-center gap-1"><StarRating rating={mentor.averageRating} size="sm" /> {mentor.averageRating || 'New'}</span>
                     <span>{mentor.completedSessions} sessions</span>
+                  </div>
+                  <div className="mt-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full text-xs hover:bg-violet-50 hover:text-violet-700 hover:border-violet-300 font-semibold"
+                      leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const conv = getOrCreateConversation(user?.id || 'user-vidya', mentor.id);
+                        navigate(`/messages/${conv.id}`);
+                      }}
+                    >
+                      Start Messaging
+                    </Button>
                   </div>
                 </Card>
               );
@@ -134,7 +149,7 @@ export function LearnerDashboard() {
               {[
                 { icon: Search, label: 'Find a Mentor', path: '/discover', color: 'text-violet-600' },
                 { icon: Calendar, label: 'My Sessions', path: '/sessions', color: 'text-blue-600' },
-                { icon: MessageSquare, label: 'Messages', path: '/messages', color: 'text-emerald-600' },
+                { icon: MessageSquare, label: 'Start Messaging', path: '/messages', color: 'text-emerald-600' },
                 { icon: TrendingUp, label: 'Smart Matching', path: '/match', color: 'text-amber-600' },
               ].map(action => (
                 <button key={action.path} onClick={() => navigate(action.path)}

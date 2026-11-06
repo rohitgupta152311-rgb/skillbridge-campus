@@ -115,9 +115,17 @@ export function NetworkPage() {
             Campus Professional Network
           </Badge>
           <h1 className="text-2xl md:text-3xl font-bold mb-2">Build Your Campus Network</h1>
-          <p className="text-slate-300 text-sm leading-relaxed">
+          <p className="text-slate-300 text-sm leading-relaxed mb-4">
             Connect with fellow students, senior mentors, and departmental alumni. Share project opportunities and collaborate across university faculties.
           </p>
+          <Button
+            size="sm"
+            onClick={() => navigate('/messages')}
+            leftIcon={<MessageSquare className="w-4 h-4 text-violet-700" />}
+            className="bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs shadow-sm"
+          >
+            Start Messaging with Peers
+          </Button>
         </div>
       </div>
 
@@ -229,7 +237,7 @@ export function NetworkPage() {
                         leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
                         onClick={() => handleStartChat(other.id)}
                       >
-                        Message
+                        Start Messaging
                       </Button>
                       <Button
                         size="sm"
@@ -336,23 +344,22 @@ export function NetworkPage() {
                 <div className="mt-4 pt-3 border-t border-slate-100 flex gap-2">
                   <Button
                     size="sm"
+                    variant="primary"
+                    className="flex-1 text-xs bg-slate-900 hover:bg-black text-white"
+                    leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
+                    onClick={() => handleStartChat(peer.id)}
+                  >
+                    Start Messaging
+                  </Button>
+                  <Button
+                    size="sm"
                     variant="outline"
-                    className="flex-1 text-xs hover:bg-violet-50 hover:text-violet-700 hover:border-violet-300"
+                    className="text-xs hover:bg-violet-50 hover:text-violet-700 hover:border-violet-300"
                     leftIcon={<UserPlus className="w-3.5 h-3.5" />}
                     onClick={() => handleSendRequest(peer.id)}
                   >
                     Connect
                   </Button>
-                  {peer.role === 'mentor' && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-xs"
-                      onClick={() => navigate(`/book/${peer.id}`)}
-                    >
-                      Book Session
-                    </Button>
-                  )}
                 </div>
               </Card>
             ))}

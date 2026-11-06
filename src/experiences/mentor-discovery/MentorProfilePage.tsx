@@ -64,9 +64,9 @@ export function MentorProfilePage() {
                 <span key={l} className="flex items-center gap-1 text-xs text-slate-500"><Globe className="w-3 h-3" />{l}</span>
               ))}
             </div>
-            <div className="flex gap-3 mt-4">
+            <div className="flex flex-wrap gap-3 mt-4">
               <Button onClick={handleBookSession} leftIcon={<Calendar className="w-4 h-4" />}>Book Session</Button>
-              <Button variant="outline" onClick={handleMessage} leftIcon={<MessageSquare className="w-4 h-4" />}>Message</Button>
+              <Button variant="outline" onClick={handleMessage} leftIcon={<MessageSquare className="w-4 h-4" />} className="border-violet-300 text-violet-700 hover:bg-violet-50">Start Messaging</Button>
             </div>
           </div>
           <div className="flex sm:flex-col gap-4 sm:gap-3 text-center">

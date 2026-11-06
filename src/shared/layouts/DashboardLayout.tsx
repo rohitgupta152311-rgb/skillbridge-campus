@@ -124,7 +124,7 @@ export function DashboardLayout() {
               ]
             : []),
           {
-            label: 'Messages',
+            label: 'Start Messaging',
             icon: MessageSquare,
             path: '/messages',
             badge: 2,
@@ -373,8 +373,21 @@ export function DashboardLayout() {
               {/* Messages Shortcut */}
               <Link
                 to="/messages"
-                className="relative p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
-                title="Direct Messages"
+                className={clsx(
+                  'hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs',
+                  isActive('/messages')
+                    ? 'bg-violet-600 text-white'
+                    : 'bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-200'
+                )}
+                title="Start Messaging with Peers"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Start Messaging</span>
+              </Link>
+              <Link
+                to="/messages"
+                className="relative p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors sm:hidden"
+                title="Start Messaging"
               >
                 <MessageSquare className="w-5 h-5 text-slate-500" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-violet-600 ring-2 ring-white" />

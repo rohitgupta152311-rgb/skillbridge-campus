@@ -9,7 +9,7 @@ import {
 import { Card, Button, Badge, Avatar } from '../../shared/components';
 import { useAuthStore } from '../../identity/authentication/auth-store';
 import {
-  getUsers, getProjects, getCommunities, calculateSkillExchangeMatches
+  getUsers, getProjects, getCommunities, calculateSkillExchangeMatches, getOrCreateConversation
 } from '../../infrastructure/local-storage/data-service';
 import { useToastStore } from '../../shared/notifications/toast-store';
 
@@ -324,10 +324,14 @@ export function ExplorePage() {
                   <Button
                     variant="primary"
                     size="sm"
-                    className="text-xs flex-1 bg-violet-600 hover:bg-violet-700 text-white font-semibold"
-                    onClick={() => handleConnect(peer)}
+                    className="text-xs flex-1 bg-slate-900 hover:bg-black text-white font-semibold flex items-center justify-center gap-1"
+                    onClick={() => {
+                      const conv = getOrCreateConversation(user?.id || 'user-vidya', peer.id);
+                      navigate(`/messages/${conv.id}`);
+                    }}
                   >
-                    Connect
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>Start Messaging</span>
                   </Button>
                 </div>
               </div>

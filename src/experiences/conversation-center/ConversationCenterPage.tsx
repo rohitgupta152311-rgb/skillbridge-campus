@@ -137,7 +137,7 @@ function ConversationList({
             leftIcon={<Plus className="w-3.5 h-3.5" />}
             className="text-xs font-semibold py-1.5 px-2.5 rounded-xl border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-700 hover:text-violet-700"
           >
-            New Chat
+            Start Messaging
           </Button>
         </div>
 
@@ -561,7 +561,7 @@ function ConnectedPeersDashboard({
                       leftIcon={<Send className="w-3.5 h-3.5" />}
                       className="bg-slate-900 hover:bg-black text-white text-xs font-semibold rounded-xl"
                     >
-                      Message
+                      Start Messaging
                     </Button>
                   </div>
                 </div>
