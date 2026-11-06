@@ -46,8 +46,8 @@ export function LandingPage() {
       rating: 4.9,
     },
     {
-      id: 'nyimei',
-      name: 'Nyimei C Konyak',
+      id: 'nyoimei',
+      name: 'Nyoimei C Konyak',
       university: 'NIT Nagaland',
       dept: 'Electrical & Electronics Engineering',
       year: '2nd Year',
@@ -69,7 +69,7 @@ export function LandingPage() {
     },
     {
       id: 'kasturika',
-      name: 'Kasturika Nargary',
+      name: 'Kasturika Narzary',
       university: 'NIT Nagaland',
       dept: 'Electrical & Electronics Engineering',
       year: '2nd Year',
@@ -288,17 +288,17 @@ export function LandingPage() {
                     </div>
                   </div>
 
-                  {/* Student 2: Nyimei C Konyak */}
+                  {/* Student 2: Nyoimei C Konyak */}
                   <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
                     <div className="flex items-center gap-3">
                       <Avatar
-                        name="Nyimei C Konyak"
+                        name="Nyoimei C Konyak"
                         src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces"
                         size="md"
                       />
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="text-xs font-bold text-slate-900">Nyimei C Konyak</p>
+                          <p className="text-xs font-bold text-slate-900">Nyoimei C Konyak</p>
                           <span className="px-1.5 py-0.2 rounded-sm bg-emerald-100 text-emerald-800 text-[10px] font-semibold">Peer Mentor</span>
                         </div>
                         <p className="text-[11px] text-slate-500">NIT Nagaland &bull; 2nd Year EEE</p>
@@ -534,7 +534,7 @@ export function LandingPage() {
                 </div>
 
                 <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-1">
-                  <p className="font-bold text-slate-900">Nyimei C Konyak</p>
+                  <p className="font-bold text-slate-900">Nyoimei C Konyak</p>
                   <p className="text-[10px] text-slate-500">NIT Nagaland &bull; 2nd Year EEE</p>
                   <p className="text-[11px] text-emerald-700 font-medium">Offers: Embedded Systems</p>
                   <p className="text-[11px] text-violet-700 font-medium">Wants: Power Electronics</p>

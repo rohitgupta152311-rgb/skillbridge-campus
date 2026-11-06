@@ -615,11 +615,11 @@ export const mockUsers: User[] = [
     ],
   },
 
-  // 19. Nyimei C Konyak (NIT Nagaland - Electrical & Electronics Engineering)
+  // 19. Nyoimei C Konyak (NIT Nagaland - Electrical & Electronics Engineering)
   {
-    id: 'user-nyimei',
-    email: 'nyimei.konyak@campus.edu',
-    fullName: 'Nyimei C Konyak',
+    id: 'user-nyoimei',
+    email: 'nyoimei.konyak@campus.edu',
+    fullName: 'Nyoimei C Konyak',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces',
     role: 'mentor',
     department: 'Electrical & Electronics Engineering',
@@ -633,8 +633,8 @@ export const mockUsers: User[] = [
     learningPreferences: ['kinesthetic', 'visual'],
     languages: ['English', 'Hindi', 'Nagamese'],
     onlineStatus: 'available',
-    githubUrl: 'https://github.com/nyimei-konyak',
-    linkedinUrl: 'https://linkedin.com/in/nyimei-konyak',
+    githubUrl: 'https://github.com/nyoimei-konyak',
+    linkedinUrl: 'https://linkedin.com/in/nyoimei-konyak',
     skillsOffered: [
       { skillName: 'Embedded C', proficiency: 'expert', yearsExperience: 2.5 },
       { skillName: 'Microcontrollers', proficiency: 'advanced', yearsExperience: 2 },
@@ -689,11 +689,11 @@ export const mockUsers: User[] = [
     ],
   },
 
-  // 21. Kasturika Nargary (NIT Nagaland - Electrical & Electronics Engineering)
+  // 21. Kasturika Narzary (NIT Nagaland - Electrical & Electronics Engineering)
   {
     id: 'user-kasturika',
-    email: 'kasturika.nargary@campus.edu',
-    fullName: 'Kasturika Nargary',
+    email: 'kasturika.narzary@campus.edu',
+    fullName: 'Kasturika Narzary',
     avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&h=200&fit=crop&crop=faces',
     role: 'mentor',
     department: 'Electrical & Electronics Engineering',
@@ -707,8 +707,8 @@ export const mockUsers: User[] = [
     learningPreferences: ['visual', 'kinesthetic'],
     languages: ['English', 'Assamese', 'Hindi', 'Bodo'],
     onlineStatus: 'available',
-    githubUrl: 'https://github.com/kasturika-nargary',
-    linkedinUrl: 'https://linkedin.com/in/kasturika-nargary',
+    githubUrl: 'https://github.com/kasturika-narzary',
+    linkedinUrl: 'https://linkedin.com/in/kasturika-narzary',
     skillsOffered: [
       { skillName: 'Digital Electronics', proficiency: 'expert', yearsExperience: 2.5 },
       { skillName: 'Verilog', proficiency: 'advanced', yearsExperience: 2 },
@@ -1102,8 +1102,8 @@ In exchange, I want to learn ReactJS or Python programming fundamentals for buil
   },
   {
     id: 'post-7',
-    authorId: 'user-nyimei',
-    authorName: 'Nyimei C Konyak',
+    authorId: 'user-nyoimei',
+    authorName: 'Nyoimei C Konyak',
     authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces',
     authorHeadline: 'EEE Student | NIT Nagaland',
     authorDepartment: 'Electrical & Electronics Engineering',
@@ -1238,7 +1238,7 @@ Looking for a peer collaborator to help build a lightweight React web dashboard 
 // ==========================================
 export const mockExpertise: MentorExpertise[] = [
   { id: 'exp-9', mentorId: 'user-vidya', topic: 'Power Electronics & MATLAB Simulink', category: 'technical', proficiencyLevel: 5, description: 'Power semiconductor converters, inverter modeling, and MATLAB simulations', yearsOfExperience: 2.5 },
-  { id: 'exp-10', mentorId: 'user-nyimei', topic: 'Embedded Microcontrollers & C', category: 'technical', proficiencyLevel: 5, description: '8051 and ARM microcontroller interfacing, timers, interrupts, and sensors', yearsOfExperience: 2.5 },
+  { id: 'exp-10', mentorId: 'user-nyoimei', topic: 'Embedded Microcontrollers & C', category: 'technical', proficiencyLevel: 5, description: '8051 and ARM microcontroller interfacing, timers, interrupts, and sensors', yearsOfExperience: 2.5 },
   { id: 'exp-11', mentorId: 'user-salini', topic: 'Renewable Solar PV & Smart Grid Systems', category: 'technical', proficiencyLevel: 5, description: 'Solar microgrid architectures, MPPT algorithms, and power quality', yearsOfExperience: 3 },
   { id: 'exp-12', mentorId: 'user-kasturika', topic: 'Digital Logic & Verilog RTL Design', category: 'technical', proficiencyLevel: 5, description: 'FPGA programming, FSM state machines, combinational logic, and KiCAD PCB layout', yearsOfExperience: 2.5 },
   { id: 'exp-13', mentorId: 'user-betimansa', topic: 'Electric Vehicle BMS & IoT Hardware', category: 'technical', proficiencyLevel: 5, description: 'Lithium battery pack monitoring, ESP32 telemetry, and CAN-bus protocol', yearsOfExperience: 3 },
@@ -1399,7 +1399,7 @@ export const mockReports: UserReport[] = [
   },
   {
     id: 'rep-3',
-    reporterId: 'user-nyimei',
+    reporterId: 'user-nyoimei',
     reportedUserId: 'user-kasturika',
     reason: 'Profile title formatting clarification',
     description: 'Minor inquiry regarding department designation formatting. Resolved via direct peer messaging.',

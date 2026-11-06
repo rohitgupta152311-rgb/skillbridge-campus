@@ -620,16 +620,16 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setEmail('nyimei.konyak@campus.edu');
+                    setEmail('nyoimei.konyak@campus.edu');
                     setPassword('demo1234');
                   }}
                   className="p-2.5 rounded-xl bg-slate-50 hover:bg-violet-50/60 border border-slate-200/80 hover:border-violet-300 text-left transition-all group/btn"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] font-bold text-slate-900 group-hover/btn:text-violet-700">Nyimei C Konyak</span>
+                    <span className="text-[11px] font-bold text-slate-900 group-hover/btn:text-violet-700">Nyoimei C Konyak</span>
                     <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">NIT Nagaland</span>
                   </div>
-                  <p className="text-[10px] text-slate-500 font-mono truncate">nyimei.konyak@campus.edu</p>
+                  <p className="text-[10px] text-slate-500 font-mono truncate">nyoimei.konyak@campus.edu</p>
                 </button>
 
                 <button

@@ -74,25 +74,25 @@ async function main() {
     },
   });
 
-  // 2. Nyimei C Konyak (2nd Year, NIT Nagaland, EEE)
-  const nyimei = await prisma.user.upsert({
-    where: { email: 'nyimei.konyak@campus.edu' },
+  // 2. Nyoimei C Konyak (2nd Year, NIT Nagaland, EEE)
+  const nyoimei = await prisma.user.upsert({
+    where: { email: 'nyoimei.konyak@campus.edu' },
     update: {},
     create: {
-      email: 'nyimei.konyak@campus.edu',
+      email: 'nyoimei.konyak@campus.edu',
       passwordHash,
       role: UserRole.MENTOR,
       isVerified: true,
       profile: {
         create: {
-          fullName: 'Nyimei C Konyak',
+          fullName: 'Nyoimei C Konyak',
           department: 'Electrical & Electronics Engineering',
           currentYear: '2nd Year',
           university: 'National Institute of Technology (NIT) Nagaland',
           headline: 'EEE Student | NIT Nagaland | Embedded Systems & Microcontrollers',
           bio: 'Electrical & Electronics Engineering student at NIT Nagaland. Specializing in microcontrollers (8051, ARM), embedded C programming, and smart grid automation.',
-          githubUrl: 'https://github.com/nyimei-konyak',
-          linkedinUrl: 'https://linkedin.com/in/nyimei-konyak',
+          githubUrl: 'https://github.com/nyoimei-konyak',
+          linkedinUrl: 'https://linkedin.com/in/nyoimei-konyak',
           languages: ['English', 'Hindi', 'Nagamese'],
           learningPreferences: ['kinesthetic', 'visual'],
           onlineStatus: 'available',
@@ -142,25 +142,25 @@ async function main() {
     },
   });
 
-  // 4. Kasturika Nargary (2nd Year, NIT Nagaland, EEE)
+  // 4. Kasturika Narzary (2nd Year, NIT Nagaland, EEE)
   await prisma.user.upsert({
-    where: { email: 'kasturika.nargary@campus.edu' },
+    where: { email: 'kasturika.narzary@campus.edu' },
     update: {},
     create: {
-      email: 'kasturika.nargary@campus.edu',
+      email: 'kasturika.narzary@campus.edu',
       passwordHash,
       role: UserRole.MENTOR,
       isVerified: true,
       profile: {
         create: {
-          fullName: 'Kasturika Nargary',
+          fullName: 'Kasturika Narzary',
           department: 'Electrical & Electronics Engineering',
           currentYear: '2nd Year',
           university: 'National Institute of Technology (NIT) Nagaland',
           headline: 'EEE Student | NIT Nagaland | VLSI Design & Digital Electronics',
           bio: 'Electrical & Electronics Engineering student at NIT Nagaland. Passionate about digital logic design, Verilog RTL, FPGA prototyping, and PCB layout design.',
-          githubUrl: 'https://github.com/kasturika-nargary',
-          linkedinUrl: 'https://linkedin.com/in/kasturika-nargary',
+          githubUrl: 'https://github.com/kasturika-narzary',
+          linkedinUrl: 'https://linkedin.com/in/kasturika-narzary',
           languages: ['English', 'Assamese', 'Hindi'],
           learningPreferences: ['visual', 'kinesthetic'],
           onlineStatus: 'available',
@@ -232,7 +232,7 @@ async function main() {
 
   await prisma.post.create({
     data: {
-      authorId: nyimei.id,
+      authorId: nyoimei.id,
       communityId: embeddedClub.id,
       content: 'Successfully flashed custom FreeRTOS firmware on our ARM Cortex-M board for the campus weather telemetry node. Shoutout to Vidya Gupta for the circuit analysis review!',
       postType: 'PROJECT_SHOWCASE',

@@ -27,7 +27,7 @@ const STORAGE_KEYS = {
   connections: 'sb_connections',
   projects: 'sb_projects',
   projectApplications: 'sb_project_applications',
-  initialized: 'sb_initialized_v11_nit_nagaland_cohort',
+  initialized: 'sb_initialized_v12_spelling_updates',
 } as const;
 
 function loadOrSeed<T>(key: string, seedData: T[]): T[] {
@@ -88,7 +88,12 @@ export function getUsers(): User[] {
     if (idx === -1) {
       merged.push(mu);
       changed = true;
-    } else if (['user-vidya', 'user-nyimei', 'user-salini', 'user-kasturika', 'user-betimansa'].includes(mu.id)) {
+    } else if (['user-vidya', 'user-nyoimei', 'user-salini', 'user-kasturika', 'user-betimansa'].includes(mu.id)) {
+      if (merged[idx].fullName !== mu.fullName || merged[idx].email !== mu.email) {
+        merged[idx].fullName = mu.fullName;
+        merged[idx].email = mu.email;
+        changed = true;
+      }
       if (merged[idx].year !== '2nd Year' || merged[idx].university !== 'National Institute of Technology (NIT) Nagaland' || merged[idx].department !== 'Electrical & Electronics Engineering') {
         merged[idx] = {
           ...merged[idx],
@@ -689,10 +694,10 @@ export function calculateSkillExchangeMatches(currentUserId: string): {
       Math.round(skillCompatScore + scheduleScore + proficiencyScore * 0.9 + prefScore * 0.8 + reputationScore * 0.8 + (isMutual ? 10 : 0))
     );
 
-    // Specific demonstration between Vidya Gupta and Nyimei C Konyak (NIT Nagaland 2nd Year EEE):
+    // Specific demonstration between Vidya Gupta and Nyoimei C Konyak (NIT Nagaland 2nd Year EEE):
     if (
-      (currentUser.email === 'vidya.gupta@campus.edu' && other.email === 'nyimei.konyak@campus.edu') ||
-      (currentUser.email === 'nyimei.konyak@campus.edu' && other.email === 'vidya.gupta@campus.edu')
+      (currentUser.email === 'vidya.gupta@campus.edu' && other.email === 'nyoimei.konyak@campus.edu') ||
+      (currentUser.email === 'nyoimei.konyak@campus.edu' && other.email === 'vidya.gupta@campus.edu')
     ) {
       totalScore = 96;
     }
