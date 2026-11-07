@@ -8,6 +8,7 @@ import {
   Image,
   TouchableOpacity,
   Alert,
+  Linking,
 } from 'react-native';
 import {
   ShieldCheck,
@@ -18,12 +19,16 @@ import {
   ExternalLink,
   Laptop,
   CheckCircle,
+  Smartphone,
+  Sparkles,
 } from 'lucide-react-native';
 import { useAuth } from '../../services/auth-context';
+import { UpdateManager } from '../../services/updates';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const [syncing, setSyncing] = useState(false);
+  const [checkingUpdates, setCheckingUpdates] = useState(false);
 
   const profileAny = user?.profile as any;
   const userSkills: string[] = Array.isArray(profileAny?.skillsOffered) && profileAny.skillsOffered.length > 0
@@ -37,6 +42,50 @@ export default function ProfileScreen() {
     await new Promise((r) => setTimeout(r, 600));
     setSyncing(false);
     Alert.alert('Cloud Synced', 'Mobile profile is fully synchronized with your Web account in PostgreSQL.');
+  };
+
+  const handleCheckForUpdates = async () => {
+    setCheckingUpdates(true);
+    try {
+      const res = await UpdateManager.checkForUpdates();
+      if (res.isAvailable) {
+        if (res.isOtaUpdate) {
+          Alert.alert(
+            '🚀 Update Downloaded!',
+            'An Over-The-Air update was received and applied. Restart now to activate the new version?',
+            [
+              { text: 'Later', style: 'cancel' },
+              { text: 'Restart Now', onPress: () => UpdateManager.applyOtaUpdate() },
+            ]
+          );
+        } else if (res.isMandatoryNativeUpdate || res.latestVersion) {
+          Alert.alert(
+            '📦 New Version Available',
+            `${res.message}\n\n${res.releaseNotes || ''}`,
+            [
+              { text: 'Later', style: 'cancel' },
+              ...(res.downloadUrl
+                ? [
+                    {
+                      text: 'Download Update',
+                      onPress: () => Linking.openURL(res.downloadUrl!),
+                    },
+                  ]
+                : []),
+            ]
+          );
+        }
+      } else {
+        Alert.alert(
+          '✅ Up to Date',
+          `StudyBridge Campus v${res.currentVersion} is running the latest release. No updates pending.`
+        );
+      }
+    } catch (err: any) {
+      Alert.alert('Update Check', `Could not reach update service: ${err.message}`);
+    } finally {
+      setCheckingUpdates(false);
+    }
   };
 
   const handleLogout = () => {
@@ -131,6 +180,37 @@ export default function ProfileScreen() {
             <Text style={styles.accountLabel}>Token Storage:</Text>
             <Text style={styles.accountVal}>Expo SecureStore (Encrypted)</Text>
           </View>
+        </View>
+
+        {/* In-App Updates & Version */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Smartphone size={16} color="#7c3aed" />
+            <Text style={styles.sectionTitle}>In-App Updates & Version</Text>
+          </View>
+          <View style={styles.accountRow}>
+            <Text style={styles.accountLabel}>Installed Version:</Text>
+            <Text style={styles.accountVal}>v{UpdateManager.getCurrentVersion()}</Text>
+          </View>
+          <View style={styles.accountRow}>
+            <Text style={styles.accountLabel}>Delivery Channel:</Text>
+            <Text style={styles.accountVal}>OTA Production Channel</Text>
+          </View>
+          <View style={styles.accountRow}>
+            <Text style={styles.accountLabel}>Update Method:</Text>
+            <Text style={styles.accountVal}>Instant In-App Sync (No APK reinstall)</Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.updateBtn}
+            onPress={handleCheckForUpdates}
+            disabled={checkingUpdates}
+          >
+            <RefreshCw size={14} color="#ffffff" />
+            <Text style={styles.updateBtnText}>
+              {checkingUpdates ? 'Checking for updates...' : 'Check for Updates Now'}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Logout Button */}
@@ -276,6 +356,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#0f172a',
+  },
+  updateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#7c3aed',
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 12,
+  },
+  updateBtnText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
   },
   logoutBtn: {
     flexDirection: 'row',

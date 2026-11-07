@@ -558,12 +558,15 @@ export function getSystemVersion(_req: Request, res: Response) {
       otaChannel: 'production',
       runtimeVersion: 'exposdk:52.0.0',
       mandatoryUpdateRequired: false,
+      downloadUrl: 'https://skillbridge-backend-15a7.onrender.com/downloads/skillbridge-campus-v3.0.0.apk',
+      releaseNotes: 'Ultra-fast SWR caching, FlatList list virtualization, zero dummy data, and real-time Socket.IO peer messaging.',
       serverTimestamp: new Date().toISOString(),
       features: {
         linkedInAutoImport: true,
         socketMessaging: true,
         smartMatching5Factor: true,
         cloudObjectStorage: true,
+        inAppOtaUpdates: true,
       },
     },
   });

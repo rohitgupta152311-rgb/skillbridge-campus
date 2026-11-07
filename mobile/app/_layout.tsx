@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { Alert, Linking } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../services/auth-context';
 import { UpdateManager } from '../services/updates';
@@ -9,10 +10,37 @@ function RootNavigation() {
   const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    // Check for updates on startup
+    // Check for OTA or in-app updates on startup
     UpdateManager.checkForUpdates().then((res) => {
-      if (res.isAvailable && !res.isMandatoryNativeUpdate) {
-        console.log('EAS OTA update applied');
+      if (res.isAvailable) {
+        if (res.isOtaUpdate) {
+          Alert.alert(
+            '🚀 Update Ready!',
+            res.message || 'A new update with the latest improvements has been downloaded. Restart the app now to apply?',
+            [
+              { text: 'Later', style: 'cancel' },
+              {
+                text: 'Restart to Apply',
+                onPress: () => {
+                  UpdateManager.applyOtaUpdate();
+                },
+              },
+            ]
+          );
+        } else if (res.isMandatoryNativeUpdate && res.downloadUrl) {
+          Alert.alert(
+            '⚠️ Critical Update Required',
+            res.message || 'A critical update is required to connect to the campus network.',
+            [
+              {
+                text: 'Download Update',
+                onPress: () => {
+                  Linking.openURL(res.downloadUrl!);
+                },
+              },
+            ]
+          );
+        }
       }
     });
   }, []);
