@@ -60,7 +60,7 @@ export function MentorDashboard() {
   return (
     <div className="space-y-6 pb-20 lg:pb-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Welcome back, {user.fullName.split(' ')[0]}! 🎓</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Welcome back, {(user?.fullName || user?.email || 'Mentor').split(' ')[0]}! 🎓</h1>
         <p className="text-slate-500 mt-1">Here's your mentoring activity overview and analytics.</p>
       </div>
 

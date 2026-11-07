@@ -2,6 +2,7 @@ import { ExplorePage } from '../experiences/explore/ExplorePage';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { DashboardLayout } from '../shared/layouts/DashboardLayout';
 import { ProtectedRoute, RoleRedirect } from '../identity/authorization/ProtectedRoute';
+import { RouteErrorBoundary } from '../shared/components';
 import { LandingPage } from '../experiences/landing/LandingPage';
 import { LoginPage } from '../identity/authentication/LoginPage';
 import { RegisterPage } from '../identity/authentication/RegisterPage';
@@ -33,30 +34,32 @@ import { ProjectDetailPage } from '../experiences/projects/ProjectDetailPage';
 
 const router = createBrowserRouter([
   // Public routes
-  { path: '/', element: <LandingPage /> },
-  { path: '/login', element: <LoginPage /> },
-  { path: '/register', element: <RegisterPage /> },
-  { path: '/redirect', element: <RoleRedirect /> },
+  { path: '/', element: <LandingPage />, errorElement: <RouteErrorBoundary /> },
+  { path: '/login', element: <LoginPage />, errorElement: <RouteErrorBoundary /> },
+  { path: '/register', element: <RegisterPage />, errorElement: <RouteErrorBoundary /> },
+  { path: '/redirect', element: <RoleRedirect />, errorElement: <RouteErrorBoundary /> },
 
   // Universal Authenticated Campus Network Routes (Mentee, Mentor, Admin)
   {
     element: <ProtectedRoute allowedRoles={['mentee', 'mentor', 'admin']} />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       {
         element: <DashboardLayout />,
+        errorElement: <RouteErrorBoundary />,
         children: [
-          { path: '/feed', element: <ActivityFeedPage /> },
-          { path: '/explore', element: <ExplorePage /> },
-          { path: '/exchange', element: <SkillExchangePage /> },
-          { path: '/projects', element: <ProjectSpacePage /> },
-          { path: '/projects/:id', element: <ProjectDetailPage /> },
-          { path: '/network', element: <NetworkPage /> },
-          { path: '/communities', element: <CommunitiesPage /> },
-          { path: '/notifications', element: <NotificationsPage /> },
-          { path: '/profile', element: <ProfilePage /> },
-          { path: '/settings', element: <SettingsPage /> },
-          { path: '/messages', element: <ConversationCenterPage /> },
-          { path: '/messages/:conversationId', element: <ConversationCenterPage /> },
+          { path: '/feed', element: <ActivityFeedPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/explore', element: <ExplorePage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/exchange', element: <SkillExchangePage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/projects', element: <ProjectSpacePage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/projects/:id', element: <ProjectDetailPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/network', element: <NetworkPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/communities', element: <CommunitiesPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/notifications', element: <NotificationsPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/profile', element: <ProfilePage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/settings', element: <SettingsPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/messages', element: <ConversationCenterPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/messages/:conversationId', element: <ConversationCenterPage />, errorElement: <RouteErrorBoundary /> },
         ],
       },
     ],
@@ -65,17 +68,19 @@ const router = createBrowserRouter([
   // Mentee & Student Routes
   {
     element: <ProtectedRoute allowedRoles={['mentee']} />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       {
         element: <DashboardLayout />,
+        errorElement: <RouteErrorBoundary />,
         children: [
-          { path: '/dashboard', element: <LearnerDashboard /> },
-          { path: '/discover', element: <MentorDiscoveryPage /> },
-          { path: '/discover/:mentorId', element: <MentorProfilePage /> },
-          { path: '/match', element: <SmartMatchingPage /> },
-          { path: '/book/:mentorId', element: <SessionBookingPage /> },
-          { path: '/sessions', element: <SessionsPage /> },
-          { path: '/review/:sessionId', element: <FeedbackPage /> },
+          { path: '/dashboard', element: <LearnerDashboard />, errorElement: <RouteErrorBoundary /> },
+          { path: '/discover', element: <MentorDiscoveryPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/discover/:mentorId', element: <MentorProfilePage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/match', element: <SmartMatchingPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/book/:mentorId', element: <SessionBookingPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/sessions', element: <SessionsPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/review/:sessionId', element: <FeedbackPage />, errorElement: <RouteErrorBoundary /> },
         ],
       },
     ],
@@ -84,14 +89,16 @@ const router = createBrowserRouter([
   // Mentor Routes
   {
     element: <ProtectedRoute allowedRoles={['mentor']} />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       {
         element: <DashboardLayout />,
+        errorElement: <RouteErrorBoundary />,
         children: [
-          { path: '/mentor/dashboard', element: <MentorDashboard /> },
-          { path: '/mentor/sessions', element: <SessionsPage /> },
-          { path: '/mentor/availability', element: <AvailabilityPage /> },
-          { path: '/mentor/reviews', element: <MentorReviewsPage /> },
+          { path: '/mentor/dashboard', element: <MentorDashboard />, errorElement: <RouteErrorBoundary /> },
+          { path: '/mentor/sessions', element: <SessionsPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/mentor/availability', element: <AvailabilityPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/mentor/reviews', element: <MentorReviewsPage />, errorElement: <RouteErrorBoundary /> },
         ],
       },
     ],
@@ -100,14 +107,16 @@ const router = createBrowserRouter([
   // Admin Routes
   {
     element: <ProtectedRoute allowedRoles={['admin']} />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       {
         element: <DashboardLayout />,
+        errorElement: <RouteErrorBoundary />,
         children: [
-          { path: '/admin', element: <AdminDashboard /> },
-          { path: '/admin/users', element: <AdminUsersPage /> },
-          { path: '/admin/reports', element: <AdminReportsPage /> },
-          { path: '/admin/settings', element: <AdminSettingsPage /> },
+          { path: '/admin', element: <AdminDashboard />, errorElement: <RouteErrorBoundary /> },
+          { path: '/admin/users', element: <AdminUsersPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/admin/reports', element: <AdminReportsPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/admin/settings', element: <AdminSettingsPage />, errorElement: <RouteErrorBoundary /> },
         ],
       },
     ],

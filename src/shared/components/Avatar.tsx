@@ -2,8 +2,8 @@ import { getInitials, getAvatarColor } from '../../foundation/helpers';
 import clsx from 'clsx';
 
 interface AvatarProps {
-  name: string;
-  src?: string;
+  name?: string | null;
+  src?: string | null;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
   showStatus?: boolean;
@@ -24,15 +24,16 @@ const statusColors = {
 };
 
 export function Avatar({ name, src, size = 'md', className, showStatus, status }: AvatarProps) {
-  const initials = getInitials(name);
-  const color = getAvatarColor(name);
+  const safeName = (name && typeof name === 'string') ? name : 'User';
+  const initials = getInitials(safeName);
+  const color = getAvatarColor(safeName);
 
   return (
     <div className={clsx('relative inline-flex items-center justify-center rounded-full font-semibold text-white flex-shrink-0', sizes[size], className)}
       style={{ backgroundColor: src ? undefined : color }}
     >
       {src ? (
-        <img src={src} alt={name} className="w-full h-full rounded-full object-cover" />
+        <img src={src} alt={safeName} className="w-full h-full rounded-full object-cover" />
       ) : (
         <span>{initials}</span>
       )}

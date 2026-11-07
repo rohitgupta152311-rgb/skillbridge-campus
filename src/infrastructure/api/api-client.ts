@@ -148,7 +148,7 @@ export const apiClient = {
                 LocalData.addUser({
                   id: conv.otherUser.id,
                   email: conv.otherUser.email,
-                  fullName: conv.otherUser.profile?.fullName || conv.otherUser.email.split('@')[0],
+                  fullName: conv.otherUser.profile?.fullName || (conv.otherUser.email ? conv.otherUser.email.split('@')[0] : 'Campus Peer'),
                   avatar: conv.otherUser.profile?.avatarUrl || '',
                   role: (conv.otherUser.role || 'mentee').toLowerCase(),
                   department: conv.otherUser.profile?.department || 'Engineering',

@@ -23,8 +23,8 @@ export function checkMentorAvailability(
   const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase() as DayOfWeek;
 
   // Calculate requested end time
-  const [startH, startM] = startTime.split(':').map(Number);
-  const startTotal = startH * 60 + startM;
+  const [startH, startM] = (startTime && typeof startTime === 'string' && startTime.includes(':') ? startTime : '10:00').split(':').map(Number);
+  const startTotal = (startH || 0) * 60 + (startM || 0);
   const endTotal = startTotal + durationMinutes;
   const endH = Math.floor(endTotal / 60) % 24;
   const endM = endTotal % 60;
@@ -41,8 +41,8 @@ export function checkMentorAvailability(
     if (sess.date !== targetDate) return false;
     if (sess.status === 'cancelled' || sess.status === 'rejected') return false;
 
-    const [sH, sM] = sess.startTime.split(':').map(Number);
-    const sStart = sH * 60 + sM;
+    const [sH, sM] = (sess.startTime && typeof sess.startTime === 'string' && sess.startTime.includes(':') ? sess.startTime : '10:00').split(':').map(Number);
+    const sStart = (sH || 0) * 60 + (sM || 0);
     const sEnd = sStart + sess.duration;
     const sessEndTime = `${String(Math.floor(sEnd / 60) % 24).padStart(2, '0')}:${String(sEnd % 60).padStart(2, '0')}`;
 
@@ -83,10 +83,10 @@ export function generateBookableSlots(
   const availableSlots: string[] = [];
 
   for (const slot of daySlots) {
-    const [startH, startM] = slot.startTime.split(':').map(Number);
-    const [endH, endM] = slot.endTime.split(':').map(Number);
-    const slotStartTotal = startH * 60 + startM;
-    const slotEndTotal = endH * 60 + endM;
+    const [startH, startM] = (slot.startTime && typeof slot.startTime === 'string' && slot.startTime.includes(':') ? slot.startTime : '10:00').split(':').map(Number);
+    const [endH, endM] = (slot.endTime && typeof slot.endTime === 'string' && slot.endTime.includes(':') ? slot.endTime : '12:00').split(':').map(Number);
+    const slotStartTotal = (startH || 0) * 60 + (startM || 0);
+    const slotEndTotal = (endH || 0) * 60 + (endM || 0);
 
     for (let current = slotStartTotal; current + slotDurationMinutes <= slotEndTotal; current += 30) {
       const h = Math.floor(current / 60);

@@ -44,7 +44,7 @@ function mapBackendUserToFrontend(backendUser: any, token: string): User {
   return {
     id: backendUser.id,
     email: backendUser.email,
-    fullName: profile.fullName || backendUser.email.split('@')[0],
+    fullName: profile.fullName || (backendUser.email ? backendUser.email.split('@')[0] : 'Campus Student'),
     avatar: profile.avatarUrl || '',
     role: (backendUser.role || 'mentee').toLowerCase() as UserRole,
     department: profile.department || 'General Engineering',

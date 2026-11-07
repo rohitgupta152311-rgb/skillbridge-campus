@@ -17,18 +17,22 @@ import {
 
 function computeTopicRelevance(expertise: MentorExpertise[], topic: string): number {
   if (!topic) return 0;
-  const needle = topic.toLowerCase();
-  const exact = expertise.find(e => e.topic.toLowerCase() === needle);
+  if (!topic || !expertise || expertise.length === 0) return 0;
+  const needle = (topic || '').toLowerCase();
+  const exact = expertise.find(e => (e.topic || '').toLowerCase() === needle);
   if (exact) return 60 + exact.proficiencyLevel * 8; // 68–100
 
   // Partial / related match
-  const partial = expertise.find(e => e.topic.toLowerCase().includes(needle) || needle.includes(e.topic.toLowerCase()));
+  const partial = expertise.find(e => {
+    const t = (e.topic || '').toLowerCase();
+    return (t && needle && (t.includes(needle) || needle.includes(t)));
+  });
   if (partial) return 30 + partial.proficiencyLevel * 6; // 36–60
 
   // Category match
   const sameCategory = expertise.some(e => {
-    const topicWords = needle.split(/\s+/);
-    const expWords = e.topic.toLowerCase().split(/\s+/);
+    const topicWords = (needle || '').split(/\s+/).filter(Boolean);
+    const expWords = (e.topic || '').toLowerCase().split(/\s+/).filter(Boolean);
     return topicWords.some(w => expWords.includes(w));
   });
   if (sameCategory) return 20;

@@ -110,7 +110,7 @@ export function ProjectSpacePage() {
       appliedPositionId: chosenPos.id,
       appliedPositionTitle: chosenPos.title,
       pitch: applyPitch || 'I would love to contribute my complementary technical skills to this campus initiative.',
-      relevantSkills: applySkills.split(',').map(s => s.trim()).filter(Boolean),
+      relevantSkills: (applySkills || '').split(',').map(s => s.trim()).filter(Boolean),
     });
 
     addToast({
@@ -134,7 +134,7 @@ export function ProjectSpacePage() {
     const openPositions: ProjectOpenPosition[] = newProject.positions.map((pos, idx) => ({
       id: `pos-${Date.now()}-${idx}`,
       title: pos.title,
-      requiredSkills: pos.skills.split(',').map(s => s.trim()).filter(Boolean),
+      requiredSkills: (pos.skills || '').split(',').map(s => s.trim()).filter(Boolean),
       spots: Number(pos.spots) || 1,
     }));
 
@@ -160,7 +160,7 @@ export function ProjectSpacePage() {
         },
       ],
       openPositions,
-      requiredSkills: newProject.requiredSkills.split(',').map(s => s.trim()).filter(Boolean),
+      requiredSkills: (newProject.requiredSkills || '').split(',').map(s => s.trim()).filter(Boolean),
       estimatedDuration: newProject.estimatedDuration,
       repoUrl: newProject.repoUrl.trim() || undefined,
       milestones: [

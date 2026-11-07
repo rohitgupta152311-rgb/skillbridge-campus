@@ -7,3 +7,4 @@ export { Input, Select, Textarea } from './FormControls';
 export { Modal } from './Modal';
 export { LoadingSkeleton, CardSkeleton, PageSkeleton } from './Skeletons';
 export { EmptyState } from './EmptyState';
+export { RouteErrorBoundary } from './RouteErrorBoundary';

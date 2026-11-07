@@ -21,7 +21,7 @@ export function ActivityFeedPage() {
   const { user } = useAuthStore();
   const hour = new Date().getHours();
   const timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  const firstName = user?.fullName ? user.fullName.split(' ')[0] : 'Vidya';
+  const firstName = (user?.fullName || user?.email || 'Student').split(' ')[0] || 'Student';
   const navigate = useNavigate();
   const { addToast } = useToastStore();
 
@@ -42,7 +42,7 @@ export function ActivityFeedPage() {
     return calculateSkillExchangeMatches(user.id);
   }, [user]);
 
-  const topMutualMatch = exchangeMatches.mutualMatches[0];
+  const topMutualMatch = exchangeMatches?.mutualMatches?.[0];
 
   // Active projects for right sidebar
   const activeProjects = useMemo(() => {
@@ -55,9 +55,23 @@ export function ActivityFeedPage() {
 
   async function loadFeed() {
     setLoading(true);
-    const feed = await apiClient.getPosts();
-    setPosts(feed);
-    setLoading(false);
+    try {
+      const feed = await apiClient.getPosts();
+      const sanitized = (feed || []).map((p: any) => ({
+        ...p,
+        authorName: p.authorName || p.author?.profile?.fullName || (p.author?.email ? p.author.email.split('@')[0] : 'Campus Student'),
+        tags: Array.isArray(p.tags) ? p.tags : [],
+        comments: (p.comments || []).map((c: any) => ({
+          ...c,
+          authorName: c.authorName || (c.author?.email ? c.author.email.split('@')[0] : 'Student'),
+        })),
+      }));
+      setPosts(sanitized);
+    } catch {
+      setPosts([]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const handleAddTag = () => {
@@ -145,20 +159,20 @@ export function ActivityFeedPage() {
             {/* Avatar & Header */}
             <div className="p-4 text-center relative -mt-10">
               <Avatar
-                name={user.fullName}
+                name={user?.fullName || user?.email || 'Student'}
                 size="lg"
                 showStatus
-                status={user.onlineStatus}
+                status={user?.onlineStatus}
                 className="mx-auto ring-4 ring-white shadow-sm"
               />
               <Link to="/profile" className="block font-bold text-slate-900 mt-2 hover:text-violet-600 transition-colors">
-                {user.fullName}
+                {user?.fullName || user?.email || 'Student'}
               </Link>
               <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
-                {user.headline || `${user.year} • ${user.department}`}
+                {user?.headline || `${user?.year || '1st Year'} • ${user?.department || 'Engineering'}`}
               </p>
               <p className="text-xs text-violet-600 font-medium mt-1">
-                {user.university || 'Campus University'}
+                {user?.university || 'NIT Nagaland'}
               </p>
 
               {/* Profile Completion Indicator */}
@@ -316,7 +330,7 @@ export function ActivityFeedPage() {
           {/* Post Creation Box */}
           <Card padding="md" className="border border-slate-200 shadow-xs">
             <div className="flex gap-3 items-start mb-3">
-              <Avatar name={user.fullName} size="md" />
+              <Avatar name={user?.fullName || user?.email || 'Student'} size="md" />
               <div className="flex-1">
                 <textarea
                   value={postContent}
@@ -431,10 +445,10 @@ export function ActivityFeedPage() {
                     {/* Post Author Info */}
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <Avatar name={post.authorName} size="md" />
+                        <Avatar name={post.authorName || 'Student'} size="md" />
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-slate-900 text-sm">{post.authorName}</span>
+                            <span className="font-semibold text-slate-900 text-sm">{post.authorName || 'Student'}</span>
                             {post.authorRole === 'mentor' && (
                               <Badge variant="violet" size="sm">Mentor</Badge>
                             )}
@@ -520,7 +534,7 @@ export function ActivityFeedPage() {
                     {activeCommentPostId === post.id && (
                       <div className="mt-4 pt-3 border-t border-slate-100 space-y-3">
                         <div className="flex items-center gap-2">
-                          <Avatar name={user.fullName} size="sm" />
+                          <Avatar name={user?.fullName || user?.email || 'Student'} size="sm" />
                           <input
                             type="text"
                             placeholder="Add a constructive thought or comment..."
@@ -543,10 +557,10 @@ export function ActivityFeedPage() {
                           <div className="space-y-2.5 pt-2">
                             {post.comments.map((comment) => (
                               <div key={comment.id} className="flex gap-2.5 items-start bg-slate-50 p-2.5 rounded-xl">
-                                <Avatar name={comment.authorName} size="sm" />
+                                <Avatar name={comment.authorName || 'Student'} size="sm" />
                                 <div className="flex-1">
                                   <div className="flex items-center justify-between">
-                                    <span className="text-xs font-semibold text-slate-900">{comment.authorName}</span>
+                                    <span className="text-xs font-semibold text-slate-900">{comment.authorName || 'Student'}</span>
                                     <span className="text-[10px] text-slate-400">{formatRelativeTime(comment.createdAt)}</span>
                                   </div>
                                   <p className="text-xs text-slate-700 mt-0.5">{comment.content}</p>
@@ -580,13 +594,13 @@ export function ActivityFeedPage() {
               </div>
 
               <div className="flex items-center gap-2.5">
-                <Avatar name={topMutualMatch.partnerName} size="md" />
+                <Avatar name={topMutualMatch?.partnerName || 'Peer'} size="md" />
                 <div className="min-w-0">
                   <p className="text-xs font-bold text-slate-900 truncate">
-                    {topMutualMatch.partnerName}
+                    {topMutualMatch?.partnerName || 'Peer'}
                   </p>
                   <p className="text-[10px] text-slate-500 truncate">
-                    {topMutualMatch.partnerHeadline}
+                    {topMutualMatch?.partnerHeadline || ''}
                   </p>
                 </div>
               </div>

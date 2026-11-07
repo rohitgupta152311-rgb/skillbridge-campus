@@ -84,7 +84,7 @@ export function ProjectDetailPage() {
       appliedPositionId: chosenPos.id,
       appliedPositionTitle: chosenPos.title,
       pitch: applyPitch || 'Excited to contribute complementary technical capabilities to this initiative.',
-      relevantSkills: applySkills.split(',').map(s => s.trim()).filter(Boolean),
+      relevantSkills: (applySkills || '').split(',').map(s => s.trim()).filter(Boolean),
     });
 
     addToast({

@@ -4,11 +4,15 @@ export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
-export function getInitials(name: string): string {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+export function getInitials(name?: string | null): string {
+  if (!name || typeof name !== 'string') return 'U';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'U';
+  return parts.map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
 }
 
-export function getAvatarColor(name: string): string {
+export function getAvatarColor(name?: string | null): string {
+  if (!name || typeof name !== 'string') return AVATAR_COLORS[0];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -16,21 +20,26 @@ export function getAvatarColor(name: string): string {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
-export function formatDate(dateStr: string): string {
+export function formatDate(dateStr?: string | null): string {
+  if (!dateStr) return '';
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '';
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export function formatTime(time: string): string {
+export function formatTime(time?: string | null): string {
+  if (!time || typeof time !== 'string' || !time.includes(':')) return '12:00 PM';
   const [hours, minutes] = time.split(':').map(Number);
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  const h = hours % 12 || 12;
-  return `${h}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+  const ampm = (hours || 0) >= 12 ? 'PM' : 'AM';
+  const h = (hours || 0) % 12 || 12;
+  return `${h}:${(minutes || 0).toString().padStart(2, '0')} ${ampm}`;
 }
 
-export function formatRelativeTime(dateStr: string): string {
+export function formatRelativeTime(dateStr?: string | null): string {
+  if (!dateStr) return 'Just now';
   const now = new Date();
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return 'Recently';
   const diffMs = now.getTime() - date.getTime();
   const diffMinutes = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);

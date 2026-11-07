@@ -208,10 +208,10 @@ function ConversationList({
                 title={`Chat with ${peer.fullName}`}
               >
                 <div className="relative">
-                  <Avatar name={peer.fullName} src={peer.avatar} size="md" showStatus status={peer.onlineStatus} />
+                  <Avatar name={peer?.fullName || 'Peer'} src={peer?.avatar} size="md" showStatus status={peer?.onlineStatus} />
                 </div>
                 <span className="text-[10px] font-medium text-slate-700 truncate w-full group-hover:text-violet-700">
-                  {peer.fullName.split(' ')[0]}
+                  {(peer?.fullName || 'Peer').split(' ')[0]}
                 </span>
               </button>
             ))}

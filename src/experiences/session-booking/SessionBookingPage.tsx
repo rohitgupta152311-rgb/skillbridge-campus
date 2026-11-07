@@ -160,7 +160,7 @@ export function SessionBookingPage() {
 }
 
 function addMinutes(time: string, minutes: number): string {
-  const [h, m] = time.split(':').map(Number);
-  const total = h * 60 + m + minutes;
+  const [h, m] = (time && typeof time === 'string' && time.includes(':') ? time : '10:00').split(':').map(Number);
+  const total = (h || 0) * 60 + (m || 0) + minutes;
   return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 }
