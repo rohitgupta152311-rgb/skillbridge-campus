@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import {
   View,
@@ -6,8 +7,7 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
-  SafeAreaView,
-} from 'react-native';
+  } from 'react-native';
 import { UserCheck, UserPlus, ShieldCheck, Search } from 'lucide-react-native';
 
 export default function NetworkScreen() {

@@ -512,14 +512,14 @@ export function DashboardLayout() {
         </header>
 
         {/* Content Body */}
-        <main className="flex-1 pb-16 lg:pb-8">
+        <main className="flex-1 pb-24 lg:pb-8">
           <Outlet />
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 lg:hidden z-30">
-        <div className="flex items-center justify-around h-14 px-2">
+      {/* Mobile Bottom Navigation Bar (Safe Area Aware) */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 lg:hidden z-30 pb-[env(safe-area-inset-bottom,0px)]">
+        <div className="flex items-center justify-around h-15 px-2">
           <Link
             to="/feed"
             className={clsx(
