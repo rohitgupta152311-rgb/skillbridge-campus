@@ -72,11 +72,47 @@ export async function getNetworkSummary(req: Request, res: Response, next: NextF
 export async function getSuggestions(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
+    const { university, excludeUniversity, search, limit } = req.query as {
+      university?: string;
+      excludeUniversity?: string;
+      search?: string;
+      limit?: string;
+    };
 
-    // Find users who are not connected to current user
+    const where: any = {
+      isSuspended: false,
+    };
+    if (userId) {
+      where.id = { not: userId };
+    }
+
+    if (search) {
+      where.OR = [
+        { profile: { fullName: { contains: search, mode: 'insensitive' } } },
+        { profile: { department: { contains: search, mode: 'insensitive' } } },
+        { profile: { university: { contains: search, mode: 'insensitive' } } },
+        { userSkills: { some: { skill: { name: { contains: search, mode: 'insensitive' } } } } },
+      ];
+    }
+
+    if (university) {
+      where.profile = {
+        ...(where.profile || {}),
+        university: { contains: university, mode: 'insensitive' },
+      };
+    } else if (excludeUniversity) {
+      where.profile = {
+        ...(where.profile || {}),
+        university: { not: { contains: excludeUniversity, mode: 'insensitive' } },
+      };
+    }
+
+    const take = limit ? Math.min(parseInt(limit, 10), 100) : 50;
+
     const users = await prisma.user.findMany({
-      where: userId ? { id: { not: userId } } : {},
-      take: 12,
+      where,
+      take,
+      orderBy: { createdAt: 'desc' },
       include: {
         profile: true,
         userSkills: { include: { skill: true } },
@@ -87,9 +123,25 @@ export async function getSuggestions(req: Request, res: Response, next: NextFunc
       success: true,
       data: users.map((u) => ({
         id: u.id,
+        email: u.email,
         role: u.role,
+        isVerified: u.isVerified,
+        fullName: u.profile?.fullName || 'Student Peer',
+        avatar: u.profile?.avatarUrl,
+        headline: u.profile?.headline,
+        bio: u.profile?.bio,
+        university: u.profile?.university || 'Campus University',
+        department: u.profile?.department || 'General Engineering',
+        year: u.profile?.currentYear || '1st Year',
+        onlineStatus: u.profile?.onlineStatus || 'offline',
         profile: u.profile,
         skills: u.userSkills.map((s) => s.skill.name),
+        skillsOffered: u.userSkills.map((s) => ({
+          skillName: s.skill.name,
+          category: s.skill.category || 'General',
+          proficiency: s.proficiency >= 4 ? 'advanced' : s.proficiency >= 2 ? 'intermediate' : 'beginner',
+        })),
+        skillsWanted: [],
       })),
     });
   } catch (error) {

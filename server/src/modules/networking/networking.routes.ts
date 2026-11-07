@@ -5,11 +5,11 @@ import {
   sendConnectionRequest,
   respondConnectionRequest,
 } from './networking.controller.js';
-import { requireAuth } from '../../middleware/authentication.js';
+import { requireAuth, optionalAuth } from '../../middleware/authentication.js';
 
 export const networkingRouter = Router();
 
 networkingRouter.get('/summary', requireAuth, getNetworkSummary);
-networkingRouter.get('/suggestions', getSuggestions);
+networkingRouter.get('/suggestions', optionalAuth, getSuggestions);
 networkingRouter.post('/request', requireAuth, sendConnectionRequest);
 networkingRouter.post('/request/:requestId/respond', requireAuth, respondConnectionRequest);

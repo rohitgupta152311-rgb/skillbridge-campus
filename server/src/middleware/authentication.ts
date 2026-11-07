@@ -55,6 +55,38 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
   }
 }
 
+export async function optionalAuth(req: Request, _res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next();
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    const payload = jwt.verify(token, env.JWT_SECRET) as AuthenticatedUser;
+    req.user = payload;
+    return next();
+  } catch {
+    try {
+      const fbUser = await FirebaseService.verifyFirebaseIdToken(token);
+      const dbUser = await prisma.user.findUnique({
+        where: { email: fbUser.email },
+      });
+
+      if (dbUser) {
+        req.user = {
+          id: dbUser.id,
+          email: dbUser.email,
+          role: dbUser.role as any,
+        };
+      }
+    } catch {
+      // Ignore in optional auth
+    }
+    return next();
+  }
+}
+
 export function requireRoles(...allowedRoles: Array<'MENTEE' | 'MENTOR' | 'FACULTY' | 'ALUMNI' | 'ADMIN'>) {
   return (req: Request, _res: Response, next: NextFunction) => {
     if (!req.user) {

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Compass, Search, Users, Sparkles, Rocket, Building2,
@@ -65,8 +65,35 @@ export function ExplorePage() {
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'all' | 'people' | 'projects' | 'communities' | 'events'>('all');
+  const [campusScope, setCampusScope] = useState<'all' | 'my_campus' | 'cross_campus'>('all');
+  const [liveUsers, setLiveUsers] = useState<any[]>([]);
+  const [isLoadingPeers, setIsLoadingPeers] = useState(false);
 
-  const allUsers = useMemo(() => getUsers(), []);
+  useEffect(() => {
+    let active = true;
+    setIsLoadingPeers(true);
+    apiClient.getPeerSuggestions()
+      .then((peers) => {
+        if (active && peers && peers.length > 0) {
+          setLiveUsers(peers);
+        }
+      })
+      .catch((err) => console.warn('Could not load live peers from backend:', err))
+      .finally(() => {
+        if (active) setIsLoadingPeers(false);
+      });
+    return () => { active = false; };
+  }, []);
+
+  const localUsers = useMemo(() => getUsers(), []);
+  const allUsers = useMemo(() => {
+    if (liveUsers.length > 0) {
+      const ids = new Set(liveUsers.map((u) => u.id));
+      const remainingLocal = localUsers.filter((u) => !ids.has(u.id));
+      return [...liveUsers, ...remainingLocal];
+    }
+    return localUsers;
+  }, [liveUsers, localUsers]);
   const allProjects = useMemo(() => getProjects(), []);
   const allCommunities = useMemo(() => getCommunities(), []);
 
@@ -77,25 +104,34 @@ export function ExplorePage() {
       const q = searchQuery.toLowerCase();
       const matchesSearch =
         !q ||
-        u.fullName.toLowerCase().includes(q) ||
-        u.department.toLowerCase().includes(q) ||
+        (u.fullName && u.fullName.toLowerCase().includes(q)) ||
+        (u.department && u.department.toLowerCase().includes(q)) ||
         (u.university && u.university.toLowerCase().includes(q)) ||
-        u.skillsOffered?.some(s => s.skillName.toLowerCase().includes(q)) ||
-        u.skillsWanted?.some(s => s.skillName.toLowerCase().includes(q));
+        u.skillsOffered?.some((s: any) => s.skillName?.toLowerCase().includes(q)) ||
+        u.skillsWanted?.some((s: any) => s.skillName?.toLowerCase().includes(q));
 
       const matchesCategory =
         selectedCategory === 'all' ||
-        (selectedCategory === 'web' && u.skillsOffered?.some(s => ['react', 'next.js', 'node', 'web', 'typescript'].some(k => s.skillName.toLowerCase().includes(k)))) ||
-        (selectedCategory === 'ai' && u.skillsOffered?.some(s => ['python', 'machine learning', 'pytorch', 'data', 'vision'].some(k => s.skillName.toLowerCase().includes(k)))) ||
-        (selectedCategory === 'iot' && u.skillsOffered?.some(s => ['iot', 'esp32', 'embedded', 'lora', 'ros2', 'robotics'].some(k => s.skillName.toLowerCase().includes(k)))) ||
-        (selectedCategory === 'vlsi' && u.skillsOffered?.some(s => ['verilog', 'fpga', 'digital electronics', 'vlsi', 'circuit'].some(k => s.skillName.toLowerCase().includes(k)))) ||
-        (selectedCategory === 'cp' && u.skillsOffered?.some(s => ['c++', 'data structures', 'algorithms', 'discrete'].some(k => s.skillName.toLowerCase().includes(k)))) ||
-        (selectedCategory === 'startup' && (u.department.toLowerCase().includes('business') || u.skillsOffered?.some(s => ['product', 'pitch', 'business'].some(k => s.skillName.toLowerCase().includes(k))))) ||
-        (selectedCategory === 'design' && u.skillsOffered?.some(s => ['figma', 'design', 'ui/ux', 'usability'].some(k => s.skillName.toLowerCase().includes(k))));
+        (selectedCategory === 'web' && u.skillsOffered?.some((s: any) => ['react', 'next.js', 'node', 'web', 'typescript'].some(k => s.skillName?.toLowerCase().includes(k)))) ||
+        (selectedCategory === 'ai' && u.skillsOffered?.some((s: any) => ['python', 'machine learning', 'pytorch', 'data', 'vision'].some(k => s.skillName?.toLowerCase().includes(k)))) ||
+        (selectedCategory === 'iot' && u.skillsOffered?.some((s: any) => ['iot', 'esp32', 'embedded', 'lora', 'ros2', 'robotics'].some(k => s.skillName?.toLowerCase().includes(k)))) ||
+        (selectedCategory === 'vlsi' && u.skillsOffered?.some((s: any) => ['verilog', 'fpga', 'digital electronics', 'vlsi', 'circuit'].some(k => s.skillName?.toLowerCase().includes(k)))) ||
+        (selectedCategory === 'cp' && u.skillsOffered?.some((s: any) => ['c++', 'data structures', 'algorithms', 'discrete'].some(k => s.skillName?.toLowerCase().includes(k)))) ||
+        (selectedCategory === 'startup' && (u.department?.toLowerCase().includes('business') || u.skillsOffered?.some((s: any) => ['product', 'pitch', 'business'].some(k => s.skillName?.toLowerCase().includes(k))))) ||
+        (selectedCategory === 'design' && u.skillsOffered?.some((s: any) => ['figma', 'design', 'ui/ux', 'usability'].some(k => s.skillName?.toLowerCase().includes(k))));
 
-      return matchesSearch && matchesCategory;
+      const userUni = (user?.university || 'NIT Nagaland').toLowerCase();
+      const peerUni = (u.university || '').toLowerCase();
+      const isSameCampus = peerUni.includes('nit nagaland') || (userUni && peerUni.includes(userUni));
+
+      const matchesCampus =
+        campusScope === 'all' ||
+        (campusScope === 'my_campus' && isSameCampus) ||
+        (campusScope === 'cross_campus' && !isSameCampus);
+
+      return matchesSearch && matchesCategory && matchesCampus;
     });
-  }, [allUsers, user?.id, searchQuery, selectedCategory]);
+  }, [allUsers, user?.id, user?.university, searchQuery, selectedCategory, campusScope]);
 
   // Filtered Projects
   const filteredProjects = useMemo(() => {
@@ -249,11 +285,52 @@ export function ExplorePage() {
       {/* ── SECTION: PEOPLE / PEERS ── */}
       {(activeTab === 'all' || activeTab === 'people') && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-violet-600" />
               <h2 className="text-lg font-bold text-slate-900">Campus Peers &amp; Skill Sharers</h2>
+              {liveUsers.length > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
+                  Live DB Active
+                </span>
+              )}
             </div>
+
+            {/* Campus Discovery Scope Pills */}
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0">
+              <button
+                onClick={() => setCampusScope('all')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  campusScope === 'all'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                All Campuses
+              </button>
+              <button
+                onClick={() => setCampusScope('my_campus')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 ${
+                  campusScope === 'my_campus'
+                    ? 'bg-white text-violet-700 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Building2 className="w-3 h-3" />
+                <span>My Campus</span>
+              </button>
+              <button
+                onClick={() => setCampusScope('cross_campus')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  campusScope === 'cross_campus'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Other Colleges
+              </button>
+            </div>
+
             {activeTab === 'all' && (
               <button
                 onClick={() => setActiveTab('people')}
@@ -264,7 +341,30 @@ export function ExplorePage() {
             )}
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredUsers.length === 0 ? (
+            <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-200 space-y-3">
+              <div className="w-12 h-12 mx-auto rounded-full bg-violet-50 text-violet-600 flex items-center justify-center font-bold text-lg">
+                👥
+              </div>
+              <h3 className="font-bold text-slate-800 text-sm">No campus peers found matching this filter</h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                Try switching between &quot;My Campus&quot; and &quot;All Campuses&quot;, or clear your search term.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedCategory('all');
+                  setCampusScope('all');
+                }}
+              >
+                Reset Search Filters
+              </Button>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredUsers.slice(0, activeTab === 'all' ? 6 : 45).map(peer => (
               <div
                 key={peer.id}
@@ -292,7 +392,7 @@ export function ExplorePage() {
                     <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
                       <span>Teaches:</span>
                       <div className="flex flex-wrap gap-1">
-                        {peer.skillsOffered?.slice(0, 2).map(s => (
+                        {peer.skillsOffered?.slice(0, 2).map((s: any) => (
                           <span key={s.skillName} className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 text-[10px] font-bold">
                             {s.skillName}
                           </span>
@@ -303,7 +403,7 @@ export function ExplorePage() {
                     <div className="flex items-center gap-1 text-[11px] font-semibold text-violet-700">
                       <span>Wants:</span>
                       <div className="flex flex-wrap gap-1">
-                        {peer.skillsWanted?.slice(0, 2).map(s => (
+                        {peer.skillsWanted?.slice(0, 2).map((s: any) => (
                           <span key={s.skillName} className="px-1.5 py-0.5 rounded bg-violet-50 text-violet-800 text-[10px] font-bold">
                             {s.skillName}
                           </span>
@@ -346,6 +446,7 @@ export function ExplorePage() {
               </div>
             ))}
           </div>
+          )}
         </div>
       )}
 

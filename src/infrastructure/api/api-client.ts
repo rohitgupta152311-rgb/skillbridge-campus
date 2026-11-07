@@ -468,19 +468,138 @@ export const apiClient = {
   },
 
   // ── CONNECTIONS & NETWORK ──
+  async getNetworkSummary(): Promise<any> {
+    const token = getAuthToken();
+    if (token) {
+      try {
+        const res = await fetch(`${API_BASE}/network/summary`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          return json.data;
+        }
+      } catch (err) {
+        console.warn('Network summary API error:', err);
+      }
+    }
+    return {
+      connectionsCount: 0,
+      connections: [],
+      pendingReceived: [],
+      pendingSentCount: 0,
+      followingCount: 0,
+      followersCount: 0,
+    };
+  },
+
+  async getPeerSuggestions(params?: { university?: string; excludeUniversity?: string; search?: string; limit?: number }): Promise<any[]> {
+    const token = getAuthToken();
+    try {
+      const url = new URL(`${API_BASE}/network/suggestions`);
+      if (params?.university) url.searchParams.set('university', params.university);
+      if (params?.excludeUniversity) url.searchParams.set('excludeUniversity', params.excludeUniversity);
+      if (params?.search) url.searchParams.set('search', params.search);
+      if (params?.limit) url.searchParams.set('limit', params.limit.toString());
+
+      const res = await fetch(url.toString(), {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data || [];
+      }
+    } catch (err) {
+      console.warn('Failed to fetch peer suggestions from server:', err);
+    }
+    return [];
+  },
+
   async getConnections(): Promise<Connection[]> {
+    const token = getAuthToken();
+    if (token) {
+      try {
+        const res = await fetch(`${API_BASE}/network/summary`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data?.connections) {
+            const current = JSON.parse(localStorage.getItem('sb_current_user') || '{}');
+            return json.data.connections.map((c: any) => ({
+              id: c.connectionId,
+              senderId: c.user?.id,
+              receiverId: current?.id,
+              status: 'accepted',
+              createdAt: c.connectedSince,
+            }));
+          }
+        }
+      } catch (err) {
+        console.warn('Network connections API error, falling back to local store:', err);
+      }
+    }
     return LocalData.getConnections();
   },
 
-  async sendConnectionRequest(senderId: string, receiverId: string): Promise<Connection> {
+  async sendConnectionRequest(senderId: string, receiverId: string): Promise<any> {
+    const token = getAuthToken();
+    if (token) {
+      try {
+        const res = await fetch(`${API_BASE}/network/request`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ targetUserId: receiverId }),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          return json.data;
+        }
+      } catch (err) {
+        console.warn('Send connection request API error:', err);
+      }
+    }
     return LocalData.sendConnectionRequest(senderId, receiverId);
   },
 
-  async respondConnectionRequest(connectionId: string, status: 'ACCEPTED' | 'REJECTED'): Promise<void> {
-    LocalData.respondConnectionRequest(connectionId, status);
+  async respondConnectionRequest(requestId: string, status: 'ACCEPTED' | 'REJECTED'): Promise<void> {
+    const token = getAuthToken();
+    if (token) {
+      try {
+        await fetch(`${API_BASE}/network/request/${requestId}/respond`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ action: status }),
+        });
+      } catch (err) {
+        console.warn('Respond connection request API error:', err);
+      }
+    }
+    LocalData.respondConnectionRequest(requestId, status);
   },
 
   async removeConnection(connectionId: string): Promise<void> {
+    const token = getAuthToken();
+    if (token) {
+      try {
+        await fetch(`${API_BASE}/network/request/${connectionId}/respond`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ action: 'WITHDRAW' }),
+        });
+      } catch (err) {
+        console.warn('Remove connection API error:', err);
+      }
+    }
     LocalData.removeConnection(connectionId);
   },
 
