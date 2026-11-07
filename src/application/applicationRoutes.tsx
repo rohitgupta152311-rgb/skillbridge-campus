@@ -18,7 +18,16 @@ import { ConversationCenterPage } from '../experiences/conversation-center/Conve
 import { FeedbackPage } from '../experiences/feedback-center/FeedbackPage';
 import { MentorReviewsPage } from '../experiences/feedback-center/MentorReviewsPage';
 import { ProfilePage } from '../experiences/personal-profile/ProfilePage';
-import { AdminDashboard, AdminUsersPage, AdminReportsPage, AdminSettingsPage } from '../experiences/admin-panel/AdminPages';
+import {
+  AdminDashboard,
+  AdminUsersPage,
+  AdminConversationsPage,
+  AdminActivityPage,
+  AdminAnalyticsPage,
+  AdminReportsPage,
+  AdminAuditLogsPage,
+  AdminSettingsPage,
+} from '../experiences/admin-panel/AdminPages';
 
 // SkillBridge 2.0 Ecosystem Pages
 import { ActivityFeedPage } from '../experiences/activity-feed/ActivityFeedPage';
@@ -115,7 +124,11 @@ const router = createBrowserRouter([
         children: [
           { path: '/admin', element: <AdminDashboard />, errorElement: <RouteErrorBoundary /> },
           { path: '/admin/users', element: <AdminUsersPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/admin/conversations', element: <AdminConversationsPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/admin/activity', element: <AdminActivityPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/admin/analytics', element: <AdminAnalyticsPage />, errorElement: <RouteErrorBoundary /> },
           { path: '/admin/reports', element: <AdminReportsPage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/admin/audit-logs', element: <AdminAuditLogsPage />, errorElement: <RouteErrorBoundary /> },
           { path: '/admin/settings', element: <AdminSettingsPage />, errorElement: <RouteErrorBoundary /> },
         ],
       },

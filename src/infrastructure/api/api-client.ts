@@ -527,4 +527,216 @@ export const apiClient = {
     }
     return base64DataUri;
   },
+
+  // ── ADMIN CONTROL & REAL-TIME PLATFORM TELEMETRY ──
+  async getAdminDashboard(): Promise<any> {
+    const token = getAuthToken();
+    try {
+      const res = await fetch(`${API_BASE}/admin/dashboard`, {
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data;
+      }
+    } catch (err) {
+      console.warn('Admin dashboard fetch failed:', err);
+    }
+    return null;
+  },
+
+  async getAdminUsers(params?: { search?: string; role?: string; status?: string; page?: number; limit?: number }): Promise<any> {
+    const token = getAuthToken();
+    const query = new URLSearchParams();
+    if (params?.search) query.append('search', params.search);
+    if (params?.role) query.append('role', params.role);
+    if (params?.status) query.append('status', params.status);
+    if (params?.page) query.append('page', String(params.page));
+    if (params?.limit) query.append('limit', String(params.limit));
+
+    try {
+      const res = await fetch(`${API_BASE}/admin/users?${query.toString()}`, {
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data;
+      }
+    } catch (err) {
+      console.warn('Admin users fetch failed:', err);
+    }
+    return null;
+  },
+
+  async getAdminUserDetails(userId: string): Promise<any> {
+    const token = getAuthToken();
+    try {
+      const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data;
+      }
+    } catch (err) {
+      console.warn('Admin user details fetch failed:', err);
+    }
+    return null;
+  },
+
+  async updateAdminUserStatus(userId: string, update: { isSuspended?: boolean; isVerified?: boolean; role?: string }): Promise<boolean> {
+    const token = getAuthToken();
+    try {
+      const res = await fetch(`${API_BASE}/admin/users/${userId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(update),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  },
+
+  async toggleAdminUserSuspension(userId: string, suspend: boolean): Promise<boolean> {
+    const token = getAuthToken();
+    try {
+      const res = await fetch(`${API_BASE}/admin/users/${userId}/suspend`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ suspend }),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  },
+
+  async getAdminConversations(params?: { search?: string; page?: number; limit?: number }): Promise<any> {
+    const token = getAuthToken();
+    const query = new URLSearchParams();
+    if (params?.search) query.append('search', params.search);
+    if (params?.page) query.append('page', String(params.page));
+    if (params?.limit) query.append('limit', String(params.limit));
+
+    try {
+      const res = await fetch(`${API_BASE}/admin/conversations?${query.toString()}`, {
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data;
+      }
+    } catch (err) {
+      console.warn('Admin conversations fetch failed:', err);
+    }
+    return null;
+  },
+
+  async inspectAdminConversation(conversationId: string, reason = 'Safety and Moderation Review'): Promise<any> {
+    const token = getAuthToken();
+    try {
+      const res = await fetch(`${API_BASE}/admin/conversations/${conversationId}?reason=${encodeURIComponent(reason)}`, {
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data;
+      }
+    } catch (err) {
+      console.warn('Admin conversation inspection failed:', err);
+    }
+    return null;
+  },
+
+  async getAdminActivity(): Promise<any[]> {
+    const token = getAuthToken();
+    try {
+      const res = await fetch(`${API_BASE}/admin/activity`, {
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data || [];
+      }
+    } catch (err) {
+      console.warn('Admin activity fetch failed:', err);
+    }
+    return [];
+  },
+
+  async getAdminAnalytics(): Promise<any> {
+    const token = getAuthToken();
+    try {
+      const res = await fetch(`${API_BASE}/admin/analytics`, {
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data;
+      }
+    } catch (err) {
+      console.warn('Admin analytics fetch failed:', err);
+    }
+    return null;
+  },
+
+  async getAdminAuditLogs(params?: { page?: number; limit?: number }): Promise<any> {
+    const token = getAuthToken();
+    const query = new URLSearchParams();
+    if (params?.page) query.append('page', String(params.page));
+    if (params?.limit) query.append('limit', String(params.limit));
+
+    try {
+      const res = await fetch(`${API_BASE}/admin/audit-logs?${query.toString()}`, {
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data;
+      }
+    } catch (err) {
+      console.warn('Admin audit logs fetch failed:', err);
+    }
+    return null;
+  },
+
+  async getAdminReports(): Promise<any[]> {
+    const token = getAuthToken();
+    try {
+      const res = await fetch(`${API_BASE}/admin/reports`, {
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data || [];
+      }
+    } catch (err) {
+      console.warn('Admin reports fetch failed:', err);
+    }
+    return [];
+  },
+
+  async resolveAdminReport(reportId: string, status = 'RESOLVED', note?: string): Promise<boolean> {
+    const token = getAuthToken();
+    try {
+      const res = await fetch(`${API_BASE}/admin/reports/${reportId}/resolve`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ status, note }),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  },
 };
