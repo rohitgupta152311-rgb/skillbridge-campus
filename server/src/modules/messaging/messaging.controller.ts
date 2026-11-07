@@ -30,10 +30,12 @@ export async function getConversations(req: Request, res: Response, next: NextFu
       return {
         id: conv.id,
         updatedAt: conv.updatedAt,
+        participantIds: conv.participants.map((p) => p.userId),
         otherUser: otherParticipant
           ? {
               id: otherParticipant.id,
               role: otherParticipant.role,
+              email: otherParticipant.email,
               profile: otherParticipant.profile,
             }
           : null,
@@ -49,6 +51,111 @@ export async function getConversations(req: Request, res: Response, next: NextFu
     });
 
     return res.json({ success: true, data: formatted });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function startConversation(req: Request, res: Response, next: NextFunction) {
+  try {
+    if (!req.user) throw new AppError('Unauthorized', 401);
+    const userId = req.user.id;
+    const { recipientId, partnerId, participantId } = req.body;
+    const targetId = recipientId || partnerId || participantId;
+
+    if (!targetId) {
+      throw new AppError('Recipient ID is required.', 400);
+    }
+
+    if (targetId === userId) {
+      throw new AppError('Cannot start a conversation with yourself.', 400);
+    }
+
+    // Find recipient by ID or email
+    let recipient = await prisma.user.findUnique({
+      where: { id: targetId },
+      include: { profile: true },
+    });
+
+    if (!recipient) {
+      recipient = await prisma.user.findFirst({
+        where: { email: targetId },
+        include: { profile: true },
+      });
+    }
+
+    if (!recipient) {
+      throw new AppError('Recipient user not found.', 404);
+    }
+
+    // Check if conversation already exists between the two users
+    let conversation = await prisma.conversation.findFirst({
+      where: {
+        AND: [
+          { participants: { some: { userId } } },
+          { participants: { some: { userId: recipient.id } } },
+        ],
+      },
+      include: {
+        participants: {
+          include: { user: { include: { profile: true } } },
+        },
+        messages: {
+          take: 1,
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!conversation) {
+      conversation = await prisma.conversation.create({
+        data: {
+          participants: {
+            create: [
+              { userId },
+              { userId: recipient.id },
+            ],
+          },
+        },
+        include: {
+          participants: {
+            include: { user: { include: { profile: true } } },
+          },
+          messages: {
+            take: 1,
+            orderBy: { createdAt: 'desc' },
+          },
+        },
+      });
+    }
+
+    const otherParticipant = conversation.participants.find((p) => p.userId !== userId)?.user;
+    const lastMessage = conversation.messages[0];
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        id: conversation.id,
+        updatedAt: conversation.updatedAt,
+        participantIds: conversation.participants.map((p) => p.userId),
+        otherUser: otherParticipant
+          ? {
+              id: otherParticipant.id,
+              role: otherParticipant.role,
+              email: otherParticipant.email,
+              profile: otherParticipant.profile,
+            }
+          : null,
+        lastMessage: lastMessage
+          ? {
+              id: lastMessage.id,
+              content: lastMessage.content,
+              createdAt: lastMessage.createdAt,
+              senderId: lastMessage.senderId,
+            }
+          : null,
+      },
+    });
   } catch (error) {
     return next(error);
   }
@@ -126,6 +233,12 @@ export async function sendMessage(req: Request, res: Response, next: NextFunctio
         data: { updatedAt: new Date() },
       }),
     ]);
+
+    // Broadcast realtime event via Socket.IO if available
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`conversation:${conversationId}`).emit('message:received', message);
+    }
 
     return res.status(201).json({ success: true, data: message });
   } catch (error) {

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Avatar, Card, Badge, EmptyState, Button, Modal } from '../../shared/components';
 import { useAuthStore } from '../../identity/authentication/auth-store';
+import { apiClient } from '../../infrastructure/api/api-client';
 import {
   getConversationsByUser,
   getMessagesByConversation,
@@ -28,7 +29,7 @@ import {
 } from '../../infrastructure/local-storage/data-service';
 import { formatRelativeTime } from '../../foundation/helpers';
 import { useToastStore } from '../../shared/notifications/toast-store';
-import { User } from '../../foundation/types';
+import { User, Conversation, Message } from '../../foundation/types';
 import clsx from 'clsx';
 
 export function ConversationCenterPage() {
@@ -40,6 +41,22 @@ export function ConversationCenterPage() {
 
   if (!user) return null;
 
+  const handleStartChatWithPeer = async (peerId: string) => {
+    try {
+      const conv = await apiClient.startConversation(peerId);
+      if (conv && conv.id) {
+        setIsComposeOpen(false);
+        navigate(`/messages/${conv.id}`);
+        return;
+      }
+    } catch (err) {
+      console.warn('API start conversation failed, fallback local:', err);
+    }
+    const conv = getOrCreateConversation(user.id, peerId);
+    setIsComposeOpen(false);
+    navigate(`/messages/${conv.id}`);
+  };
+
   return (
     <div className="h-[calc(100vh-8rem)] lg:h-[calc(100vh-5rem)] flex bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs animate-fade-in">
       {/* ── CONVERSATION SIDEBAR ── */}
@@ -49,6 +66,7 @@ export function ConversationCenterPage() {
         search={searchTerm}
         onSearch={setSearchTerm}
         onOpenCompose={() => setIsComposeOpen(true)}
+        onStartChat={handleStartChatWithPeer}
         className={clsx(
           'w-full md:w-80 lg:w-96 border-r border-slate-200 flex-shrink-0 flex flex-col',
           conversationId && 'hidden md:flex'
@@ -65,10 +83,7 @@ export function ConversationCenterPage() {
       ) : (
         <ConnectedPeersDashboard
           userId={user.id}
-          onStartChat={(peerId) => {
-            const conv = getOrCreateConversation(user.id, peerId);
-            navigate(`/messages/${conv.id}`);
-          }}
+          onStartChat={handleStartChatWithPeer}
         />
       )}
 
@@ -77,11 +92,7 @@ export function ConversationCenterPage() {
         isOpen={isComposeOpen}
         onClose={() => setIsComposeOpen(false)}
         userId={user.id}
-        onSelectPeer={(peerId) => {
-          const conv = getOrCreateConversation(user.id, peerId);
-          setIsComposeOpen(false);
-          navigate(`/messages/${conv.id}`);
-        }}
+        onSelectPeer={handleStartChatWithPeer}
       />
     </div>
   );
@@ -94,6 +105,7 @@ function ConversationList({
   search,
   onSearch,
   onOpenCompose,
+  onStartChat,
   className,
 }: {
   userId: string;
@@ -101,13 +113,30 @@ function ConversationList({
   search: string;
   onSearch: (s: string) => void;
   onOpenCompose: () => void;
+  onStartChat: (peerId: string) => void;
   className?: string;
 }) {
   const navigate = useNavigate();
 
-  const conversations = useMemo(() => {
-    const convs = getConversationsByUser(userId);
-    return convs.sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
+  const [conversations, setConversations] = useState<Conversation[]>(() => {
+    return getConversationsByUser(userId).sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
+  });
+
+  const loadConversations = async () => {
+    try {
+      const apiConvs = await apiClient.getConversations();
+      if (apiConvs && apiConvs.length > 0) {
+        setConversations(apiConvs.sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()));
+      }
+    } catch {
+      // keep existing
+    }
+  };
+
+  useEffect(() => {
+    loadConversations();
+    const interval = setInterval(loadConversations, 3000);
+    return () => clearInterval(interval);
   }, [userId]);
 
   const connectedPeers = useMemo(() => getConnectedUsers(userId), [userId]);
@@ -174,10 +203,7 @@ function ConversationList({
               <button
                 key={peer.id}
                 type="button"
-                onClick={() => {
-                  const conv = getOrCreateConversation(userId, peer.id);
-                  navigate(`/messages/${conv.id}`);
-                }}
+                onClick={() => onStartChat(peer.id)}
                 className="group flex flex-col items-center gap-1 p-1.5 rounded-xl hover:bg-white border border-transparent hover:border-slate-200/80 transition-all text-center flex-shrink-0 w-16"
                 title={`Chat with ${peer.fullName}`}
               >
@@ -298,34 +324,82 @@ function ChatArea({
   onBack: () => void;
 }) {
   const [input, setInput] = useState('');
+  const [isSending, setIsSending] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { addToast } = useToastStore();
 
-  const messages = useMemo(
-    () => getMessagesByConversation(conversationId),
-    [conversationId, refreshKey]
-  );
+  const [messages, setMessages] = useState<Message[]>(() => getMessagesByConversation(conversationId));
+
+  const loadMessages = async () => {
+    try {
+      const apiMsgs = await apiClient.getMessages(conversationId);
+      if (apiMsgs && apiMsgs.length > 0) {
+        setMessages(apiMsgs);
+      }
+    } catch {
+      // keep existing
+    }
+  };
+
+  useEffect(() => {
+    loadMessages();
+    const interval = setInterval(loadMessages, 2500);
+    return () => clearInterval(interval);
+  }, [conversationId]);
 
   const conversation = useMemo(() => {
     const convs = getConversationsByUser(userId);
     return convs.find(c => c.id === conversationId);
-  }, [conversationId, userId]);
+  }, [conversationId, userId, refreshKey]);
 
   const otherId = conversation?.participantIds.find(p => p !== userId) || '';
-  const other = getUserById(otherId);
-  const isConnected = isUserConnected(userId, otherId);
+  const localOther = getUserById(otherId);
+  const other = localOther || {
+    id: otherId,
+    fullName: otherId ? 'Campus Peer' : 'Peer',
+    department: 'Engineering',
+    year: 'NIT Nagaland',
+    university: 'NIT Nagaland',
+    avatar: '',
+    onlineStatus: 'available' as const,
+  };
+  const isConnected = otherId ? isUserConnected(userId, otherId) : false;
 
   useEffect(() => {
     markMessagesRead(conversationId, userId);
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length, conversationId, userId]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    addMessage({ conversationId, senderId: userId, content: input.trim() });
+  const handleSend = async () => {
+    const content = input.trim();
+    if (!content || isSending) return;
+    setIsSending(true);
     setInput('');
-    setRefreshKey(k => k + 1);
+
+    // Instant optimistic echo
+    const tempId = 'temp-' + Date.now();
+    const optimisticMsg: Message = {
+      id: tempId,
+      conversationId,
+      senderId: userId,
+      content,
+      timestamp: new Date().toISOString(),
+      isRead: true,
+    };
+    setMessages(prev => [...prev, optimisticMsg]);
+
+    try {
+      const sent = await apiClient.sendMessage(conversationId, content);
+      if (sent) {
+        setMessages(prev => prev.map(m => m.id === tempId ? sent : m));
+      }
+    } catch (err) {
+      console.warn('API sendMessage error:', err);
+    } finally {
+      setIsSending(false);
+      setRefreshKey(k => k + 1);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { User, UserRole } from '../../foundation/types';
-import { getUserByEmail, getUserById, addUser, initializeDataStore } from '../../infrastructure/local-storage/data-service';
+import { getUserByEmail, getUserById, addUser, updateUser, initializeDataStore } from '../../infrastructure/local-storage/data-service';
 import { DEMO_CREDENTIALS } from '../../foundation/constants';
+import { apiClient, setAuthSession, clearAuthSession, getAuthToken } from '../../infrastructure/api/api-client';
 
 export interface OAuthProfileData {
   email: string;
@@ -24,6 +25,7 @@ interface AuthState {
   loginWithOAuth: (profile: OAuthProfileData) => Promise<boolean>;
   logout: () => void;
   clearError: () => void;
+  syncDatabaseProfile: () => Promise<void>;
 }
 
 interface RegisterData {
@@ -37,8 +39,34 @@ interface RegisterData {
 
 const AUTH_KEY = 'sb_current_user';
 
-export const useAuthStore = create<AuthState>((set) => {
-  // Initialize data store
+function mapBackendUserToFrontend(backendUser: any, token: string): User {
+  const profile = backendUser.profile || {};
+  return {
+    id: backendUser.id,
+    email: backendUser.email,
+    fullName: profile.fullName || backendUser.email.split('@')[0],
+    avatar: profile.avatarUrl || '',
+    role: (backendUser.role || 'mentee').toLowerCase() as UserRole,
+    department: profile.department || 'General Engineering',
+    year: profile.currentYear || '1st Year',
+    university: profile.university || 'NIT Nagaland',
+    bio: profile.bio || '',
+    headline: profile.headline || '',
+    portfolioUrl: profile.portfolioUrl || '',
+    githubUrl: profile.githubUrl || '',
+    linkedinUrl: profile.linkedinUrl || '',
+    isVerified: backendUser.isVerified !== undefined ? backendUser.isVerified : true,
+    isSuspended: backendUser.isSuspended || false,
+    joinedAt: backendUser.createdAt || new Date().toISOString(),
+    learningPreferences: ['visual', 'kinesthetic'],
+    languages: profile.languages && profile.languages.length ? profile.languages : ['English'],
+    onlineStatus: 'available',
+    token,
+  };
+}
+
+export const useAuthStore = create<AuthState>((set, get) => {
+  // Initialize local data store
   initializeDataStore();
 
   // Restore session
@@ -47,17 +75,27 @@ export const useAuthStore = create<AuthState>((set) => {
   if (stored) {
     try {
       const parsed = JSON.parse(stored);
-      if (parsed && parsed.id && getUserById(parsed.id)) {
+      if (parsed && parsed.id) {
         initialUser = parsed;
       }
     } catch { /* ignore */ }
   }
-  // Default to Vidya Gupta (NIT Nagaland 2nd Year EEE)
-  if (!initialUser) {
-    initialUser = getUserByEmail('vidya.gupta@campus.edu') || null;
-    if (initialUser) {
-      localStorage.setItem(AUTH_KEY, JSON.stringify(initialUser));
-    }
+
+  // If initialUser has token or sb_auth_token exists, sync from PostgreSQL
+  const token = getAuthToken();
+  if (token && initialUser) {
+    setTimeout(async () => {
+      try {
+        const me = await apiClient.getMe();
+        if (me && me.id) {
+          const freshUser = mapBackendUserToFrontend(me, token);
+          setAuthSession(token, freshUser);
+          set({ user: freshUser, isAuthenticated: true });
+        }
+      } catch {
+        // Retain offline session
+      }
+    }, 100);
   }
 
   return {
@@ -66,51 +104,109 @@ export const useAuthStore = create<AuthState>((set) => {
     isLoading: false,
     error: null,
 
+    syncDatabaseProfile: async () => {
+      const currentToken = getAuthToken();
+      if (!currentToken) return;
+      try {
+        const me = await apiClient.getMe();
+        if (me && me.id) {
+          const freshUser = mapBackendUserToFrontend(me, currentToken);
+          setAuthSession(currentToken, freshUser);
+          set({ user: freshUser });
+        }
+      } catch {
+        // Ignore
+      }
+    },
+
     login: async (email: string, password: string): Promise<boolean> => {
       set({ isLoading: true, error: null });
-      // Simulate network delay
-      await new Promise(r => setTimeout(r, 500));
 
-      // Check demo credentials or any user with matching email
-      const validCredentials =
+      // 1. Try real backend database login
+      const result = await apiClient.login({ email, password });
+      if (result.success && result.data) {
+        const userObj = mapBackendUserToFrontend(result.data.user, result.data.token);
+        
+        // Ensure user is recorded in local data store for components
+        if (!getUserById(userObj.id)) {
+          addUser(userObj);
+        } else {
+          updateUser(userObj.id, userObj);
+        }
+
+        setAuthSession(result.data.token, userObj);
+        set({ user: userObj, isAuthenticated: true, isLoading: false, error: null });
+        return true;
+      }
+
+      // 2. Demo credentials fallback (for offline or local demo accounts)
+      const isDemoPass = password === 'demo1234' || password === 'admin1234' ||
         (email === DEMO_CREDENTIALS.student.email && password === DEMO_CREDENTIALS.student.password) ||
         (email === DEMO_CREDENTIALS.mentor.email && password === DEMO_CREDENTIALS.mentor.password) ||
-        (email === DEMO_CREDENTIALS.admin.email && password === DEMO_CREDENTIALS.admin.password) ||
-        password === 'demo1234' ||
-        password === 'admin1234';
+        (email === DEMO_CREDENTIALS.admin.email && password === DEMO_CREDENTIALS.admin.password);
 
-      if (!validCredentials) {
-        set({ isLoading: false, error: 'Invalid email or password' });
-        return false;
+      if (isDemoPass) {
+        const localUser = getUserByEmail(email);
+        if (localUser) {
+          if (localUser.isSuspended) {
+            set({ isLoading: false, error: 'This account has been suspended' });
+            return false;
+          }
+          setAuthSession('demo-token', localUser);
+          set({ user: localUser, isAuthenticated: true, isLoading: false, error: null });
+          return true;
+        }
       }
 
-      const user = getUserByEmail(email);
-      if (!user) {
-        set({ isLoading: false, error: 'No account found with this email' });
-        return false;
-      }
-
-      if (user.isSuspended) {
-        set({ isLoading: false, error: 'This account has been suspended' });
-        return false;
-      }
-
-      localStorage.setItem(AUTH_KEY, JSON.stringify(user));
-      set({ user, isAuthenticated: true, isLoading: false, error: null });
-      return true;
+      set({
+        isLoading: false,
+        error: result.message || 'Invalid email or password. Please verify your credentials.',
+      });
+      return false;
     },
 
     register: async (data: RegisterData): Promise<boolean> => {
       set({ isLoading: true, error: null });
-      await new Promise(r => setTimeout(r, 500));
 
-      const existing = getUserByEmail(data.email);
-      if (existing) {
+      // 1. Register with real production backend PostgreSQL database
+      const result = await apiClient.register({
+        email: data.email,
+        password: data.password,
+        fullName: data.fullName,
+        role: data.role,
+        department: data.department,
+        year: data.year,
+        university: 'NIT Nagaland',
+      });
+
+      if (result.success && result.data) {
+        const newUser = mapBackendUserToFrontend(result.data.user, result.data.token);
+
+        // Record in local cache
+        addUser(newUser);
+
+        setAuthSession(result.data.token, newUser);
+        set({ user: newUser, isAuthenticated: true, isLoading: false, error: null });
+        return true;
+      }
+
+      // If backend registration failed with specific error (e.g. 409 email already exists)
+      if (result.message && (result.message.includes('exists') || result.message.includes('already'))) {
+        set({
+          isLoading: false,
+          error: 'An account with this email address already exists. Please log in instead.',
+        });
+        return false;
+      }
+
+      // Fallback: If network is completely offline, allow local creation
+      const existingLocal = getUserByEmail(data.email);
+      if (existingLocal) {
         set({ isLoading: false, error: 'An account with this email already exists' });
         return false;
       }
 
-      const newUser = addUser({
+      const localNewUser = addUser({
         email: data.email,
         fullName: data.fullName,
         avatar: '',
@@ -125,46 +221,55 @@ export const useAuthStore = create<AuthState>((set) => {
         onlineStatus: 'available',
       });
 
-      localStorage.setItem(AUTH_KEY, JSON.stringify(newUser));
-      set({ user: newUser, isAuthenticated: true, isLoading: false });
+      setAuthSession('local-demo-token', localNewUser);
+      set({ user: localNewUser, isAuthenticated: true, isLoading: false });
       return true;
     },
 
     loginWithOAuth: async (profile: OAuthProfileData): Promise<boolean> => {
       set({ isLoading: true, error: null });
-      await new Promise(r => setTimeout(r, 400));
 
       let user = getUserByEmail(profile.email);
       if (!user) {
-        user = addUser({
+        // Attempt backend register for OAuth user
+        const regRes = await apiClient.register({
           email: profile.email,
+          password: 'OAuth_Secure_User_' + Math.random().toString(36).slice(-8),
           fullName: profile.fullName,
-          avatar: profile.avatar || '',
           role: profile.role || 'mentee',
           department: profile.department || 'Computer Science',
           year: profile.year || '3rd Year',
-          bio: profile.headline || `Student at Campus • Verified via ${profile.provider.toUpperCase()}`,
-          isVerified: true,
-          isSuspended: false,
-          learningPreferences: ['visual', 'kinesthetic'],
-          languages: ['English', 'Hindi'],
-          onlineStatus: 'available',
+          university: 'NIT Nagaland',
         });
-      } else {
-        // If user already exists, update verification and avatar if provided
-        if (profile.avatar && (!user.avatar || user.avatar.includes('placeholder'))) {
-          user.avatar = profile.avatar;
+
+        if (regRes.success && regRes.data) {
+          user = mapBackendUserToFrontend(regRes.data.user, regRes.data.token);
+          addUser(user);
+        } else {
+          user = addUser({
+            email: profile.email,
+            fullName: profile.fullName,
+            avatar: profile.avatar || '',
+            role: profile.role || 'mentee',
+            department: profile.department || 'Computer Science',
+            year: profile.year || '3rd Year',
+            bio: profile.headline || `Student at Campus • Verified via ${profile.provider.toUpperCase()}`,
+            isVerified: true,
+            isSuspended: false,
+            learningPreferences: ['visual', 'kinesthetic'],
+            languages: ['English', 'Hindi'],
+            onlineStatus: 'available',
+          });
         }
-        user.isVerified = true;
       }
 
-      localStorage.setItem(AUTH_KEY, JSON.stringify(user));
-      set({ user, isAuthenticated: true, isLoading: false, error: null });
+      setAuthSession(user.token || 'oauth-token', user);
+      set({ user, isAuthenticated: true, isLoading: false });
       return true;
     },
 
     logout: () => {
-      localStorage.removeItem(AUTH_KEY);
+      clearAuthSession();
       set({ user: null, isAuthenticated: false, error: null });
     },
 

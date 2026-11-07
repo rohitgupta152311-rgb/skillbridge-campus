@@ -196,6 +196,49 @@ async function main() {
     },
   });
 
+  
+  // 6. Rohit Gupta (2nd Year, NIT Nagaland, EEE)
+  const rohit = await prisma.user.upsert({
+    where: { email: 'rohit.gupta@campus.edu' },
+    update: {},
+    create: {
+      email: 'rohit.gupta@campus.edu',
+      passwordHash,
+      role: UserRole.MENTOR,
+      isVerified: true,
+      profile: {
+        create: {
+          fullName: 'Rohit Gupta',
+          department: 'Electrical & Electronics Engineering',
+          currentYear: '2nd Year',
+          university: 'National Institute of Technology (NIT) Nagaland',
+          headline: 'EEE Student | NIT Nagaland | Power Electronics, IoT & Embedded Systems',
+          bio: 'Electrical & Electronics Engineering student at NIT Nagaland. Specializing in power electronics, IoT telemetry, and embedded circuits.',
+          githubUrl: 'https://github.com/rohitgupta-nitn',
+          linkedinUrl: 'https://linkedin.com/in/rohitgupta-nitn',
+          languages: ['English', 'Hindi'],
+          learningPreferences: ['visual', 'kinesthetic'],
+          onlineStatus: 'available',
+        },
+      },
+      mentorExpertise: {
+        create: [
+          { topic: 'Power Electronics', category: 'technical', proficiencyLevel: 5, yearsOfExperience: 2.5 },
+          { topic: 'MATLAB', category: 'technical', proficiencyLevel: 5, yearsOfExperience: 2.0 },
+          { topic: 'Circuit Analysis', category: 'technical', proficiencyLevel: 5, yearsOfExperience: 2.5 },
+          { topic: 'Embedded Systems & IoT', category: 'technical', proficiencyLevel: 5, yearsOfExperience: 2.0 },
+        ],
+      },
+      mentorAvailability: {
+        create: [
+          { dayOfWeek: 'monday', startTime: '10:00', endTime: '12:00' },
+          { dayOfWeek: 'wednesday', startTime: '14:00', endTime: '16:00' },
+          { dayOfWeek: 'saturday', startTime: '10:00', endTime: '12:00' },
+        ],
+      },
+    },
+  });
+
   // Communities
   const eeeCommunity = await prisma.community.upsert({
     where: { slug: 'eee-nit-nagaland' },

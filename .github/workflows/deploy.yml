@@ -64,7 +64,7 @@ jobs:
       - name: Build Web Application
         run: npm run build
         env:
-          VITE_API_URL: "https://skillbridge-api.onrender.com/api/v1"
+          VITE_API_URL: "https://skillbridge-backend-15a7.onrender.com/api/v1"
 
   # ───────────────────────────────────────────────
   # Job 3: Automated Render Deployment

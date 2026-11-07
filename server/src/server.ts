@@ -17,6 +17,7 @@ async function bootstrap() {
   });
 
   setupSocketIO(io);
+  app.set('io', io);
 
   server.listen(env.PORT, () => {
     console.log(`=======================================================`);

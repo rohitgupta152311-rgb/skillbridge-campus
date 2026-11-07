@@ -4,7 +4,7 @@ import { Storage } from './storage';
 
 // In development, Android emulator connects to host computer via 10.0.2.2, iOS via localhost
 const DEFAULT_DEV_HOST = Platform.OS === 'android' ? 'http://10.0.2.2:5000/api/v1' : 'http://localhost:5000/api/v1';
-const PROD_API = Constants.expoConfig?.extra?.productionApiUrl || 'https://studybridge-api.onrender.com/api/v1';
+const PROD_API = Constants.expoConfig?.extra?.productionApiUrl || 'https://skillbridge-backend-15a7.onrender.com/api/v1';
 
 export const API_URL = __DEV__ ? DEFAULT_DEV_HOST : PROD_API;
 

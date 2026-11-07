@@ -30,6 +30,7 @@
       "package": "com.studybridge.campus",
       "permissions": [
         "CAMERA",
+        "READ_MEDIA_IMAGES",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "INTERNET"
@@ -65,7 +66,7 @@
         "projectId": "00000000-0000-0000-0000-000000000000"
       },
       "apiUrl": "http://10.0.2.2:5000/api/v1",
-      "productionApiUrl": "https://studybridge-api.onrender.com/api/v1"
+      "productionApiUrl": "https://skillbridge-backend-15a7.onrender.com/api/v1"
     }
   }
 }

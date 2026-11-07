@@ -1,5 +1,5 @@
 import { apiClient } from '../../infrastructure/api/api-client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   User as UserIcon, Mail, Building2, BookOpen, Globe, Save,
@@ -98,9 +98,28 @@ export function ProfilePage() {
     githubUrl: user?.githubUrl || '',
     linkedinUrl: user?.linkedinUrl || '',
     languages: user?.languages || ['English'],
+    avatar: user?.avatar || '',
   });
 
   if (!user) return null;
+
+  useEffect(() => {
+    if (user) {
+      setForm({
+        fullName: user.fullName || '',
+        headline: user.headline || '',
+        bio: user.bio || '',
+        department: user.department || '',
+        year: user.year || '',
+        university: user.university || 'NIT Nagaland',
+        portfolioUrl: user.portfolioUrl || '',
+        githubUrl: user.githubUrl || '',
+        linkedinUrl: user.linkedinUrl || '',
+        languages: user.languages || ['English'],
+        avatar: user.avatar || '',
+      });
+    }
+  }, [user]);
 
   const userBadges = (user.badges && user.badges.length > 0) ? user.badges : DEFAULT_BADGES;
 
@@ -116,6 +135,7 @@ export function ProfilePage() {
       githubUrl: form.githubUrl,
       linkedinUrl: form.linkedinUrl,
       languages: form.languages,
+      avatar: form.avatar,
     });
 
     if (updated) {
@@ -352,6 +372,38 @@ export function ProfilePage() {
               value={form.linkedinUrl}
               onChange={e => setForm(f => ({ ...f, linkedinUrl: e.target.value }))}
             />
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Input
+              label="Avatar Image URL"
+              value={form.avatar}
+              placeholder="https://... or upload below"
+              onChange={e => setForm(f => ({ ...f, avatar: e.target.value }))}
+            />
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">Upload Profile Photo</label>
+              <input
+                type="file"
+                accept="image/*"
+                className="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 cursor-pointer"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = async () => {
+                    const base64 = reader.result as string;
+                    try {
+                      const uploadedUrl = await apiClient.uploadAvatar(base64);
+                      setForm(f => ({ ...f, avatar: uploadedUrl }));
+                    } catch {
+                      setForm(f => ({ ...f, avatar: base64 }));
+                    }
+                  };
+                  reader.readAsDataURL(file);
+                }}
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">

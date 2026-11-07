@@ -178,10 +178,19 @@ export function updateUser(id: string, updates: Partial<User>): User | undefined
   return users[idx];
 }
 
-export function addUser(user: Omit<User, 'id' | 'joinedAt'>): User {
+export function addUser(user: Omit<User, 'id' | 'joinedAt'> & { id?: string; joinedAt?: string }): User {
   const users = getUsers();
-  const newUser: User = { ...user, id: `user-${generateId()}`, joinedAt: new Date().toISOString() } as User;
-  users.push(newUser);
+  const existingIdx = user.id ? users.findIndex(u => u.id === user.id) : -1;
+  const newUser: User = {
+    ...user,
+    id: user.id || `user-${generateId()}`,
+    joinedAt: user.joinedAt || new Date().toISOString(),
+  } as User;
+  if (existingIdx >= 0) {
+    users[existingIdx] = newUser;
+  } else {
+    users.push(newUser);
+  }
   persist(STORAGE_KEYS.users, users);
   return newUser;
 }

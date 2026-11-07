@@ -76,6 +76,7 @@ export interface User {
   portfolioUrl?: string;
   githubUrl?: string;
   linkedinUrl?: string;
+  token?: string;
   // SkillBridge 4.0 additions:
   skillsOffered?: SkillExchangeEntry[];
   skillsWanted?: SkillExchangeEntry[];
