@@ -16,6 +16,10 @@ jobs:
     defaults:
       run:
         working-directory: ./server
+    env:
+      NODE_ENV: test
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/skillbridge_test?schema=public"
+      JWT_SECRET: "test_jwt_secret_for_ci_environment_2026"
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -23,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: server/package-lock.json
 
@@ -32,8 +36,6 @@ jobs:
 
       - name: Generate Prisma Client
         run: npx prisma generate
-        env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/skillbridge_test?schema=public"
 
       - name: Compile TypeScript
         run: npm run build
@@ -54,7 +56,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
