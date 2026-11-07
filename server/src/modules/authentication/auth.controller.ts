@@ -11,19 +11,31 @@ import { GoogleService } from '../../integrations/google/google.service.js';
 import { GitHubService } from '../../integrations/github/github.service.js';
 import { FirebaseService } from '../../integrations/firebase/firebase.service.js';
 
+export const EMAIL_FORMAT_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+const emailSchema = z
+  .string({ required_error: 'Email is required' })
+  .trim()
+  .toLowerCase()
+  .email('Please enter a valid email address')
+  .regex(
+    EMAIL_FORMAT_REGEX,
+    'Please enter a valid email format (e.g. name@nitnagaland.ac.in or student@campus.edu)'
+  );
+
 const registerSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  fullName: z.string().min(2),
+  email: emailSchema,
+  password: z.string().min(6, 'Password must be at least 6 characters long'),
+  fullName: z.string().trim().min(2, 'Full name must be at least 2 characters'),
   role: z.enum(['MENTEE', 'MENTOR', 'FACULTY', 'ALUMNI']).default('MENTEE'),
-  department: z.string().min(2),
+  department: z.string().trim().min(2, 'Department is required'),
   currentYear: z.string().default('1st Year'),
   university: z.string().default('Campus University'),
 });
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+  email: emailSchema,
+  password: z.string().min(1, 'Password is required'),
 });
 
 const confirmImportSchema = z.object({

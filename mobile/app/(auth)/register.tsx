@@ -26,27 +26,45 @@ export default function MobileRegisterScreen() {
   const [department, setDepartment] = useState('Computer Science');
   const [year, setYear] = useState('3rd Year');
 
+  const EMAIL_FORMAT_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
   const handleRegister = async () => {
-    if (!fullName || !email || !password) {
-      Alert.alert('Incomplete Form', 'Please fill in your name, email, and password.');
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = fullName.trim();
+
+    if (!cleanName || !cleanEmail || !password) {
+      Alert.alert('Incomplete Form', 'Please fill in your full name, email, and password.');
+      return;
+    }
+
+    if (!EMAIL_FORMAT_REGEX.test(cleanEmail)) {
+      Alert.alert(
+        'Invalid Email Format',
+        'Please enter a valid campus or student email address (e.g. name@nitnagaland.ac.in or student@campus.edu).'
+      );
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Weak Password', 'Password must be at least 6 characters long.');
       return;
     }
 
     setLoading(true);
     try {
       const regRes = await MobileApi.register({
-        fullName,
-        email,
+        fullName: cleanName,
+        email: cleanEmail,
         password,
         role: role.toUpperCase(),
         department,
         currentYear: year,
-        university: 'Campus University',
+        university: 'National Institute of Technology (NIT) Nagaland',
       });
 
       if (regRes.success) {
-        await login(email, password);
-        Alert.alert('Account Created', `Welcome to SkillBridge, ${fullName}!`);
+        await login(cleanEmail, password);
+        Alert.alert('Account Created', `Welcome to SkillBridge, ${cleanName}!`);
         router.replace('/(tabs)');
       } else {
         Alert.alert('Registration Failed', regRes.message || 'Unable to register account.');
@@ -86,7 +104,7 @@ export default function MobileRegisterScreen() {
               <Mail size={16} color="#94a3b8" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="elena@campus.edu"
+                placeholder="student@nitnagaland.ac.in"
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"

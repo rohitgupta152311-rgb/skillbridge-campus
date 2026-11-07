@@ -29,10 +29,17 @@ export function RegisterPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const EMAIL_FORMAT_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
   const validate = () => {
     const e: Record<string, string> = {};
     if (!form.fullName.trim()) e.fullName = 'Full name is required';
-    if (!form.email.includes('@')) e.email = 'Enter a valid university email';
+    const trimmedEmail = form.email.trim();
+    if (!trimmedEmail) {
+      e.email = 'Email address is required';
+    } else if (!EMAIL_FORMAT_REGEX.test(trimmedEmail)) {
+      e.email = 'Please enter a valid campus or university email (e.g. name@nitnagaland.ac.in)';
+    }
     if (form.password.length < 6) e.password = 'Password must be at least 6 characters';
     if (form.password !== form.confirmPassword) e.confirmPassword = 'Passwords do not match';
     setErrors(e);
@@ -42,10 +49,11 @@ export function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
+    const cleanEmail = form.email.trim().toLowerCase();
     const success = await register({
-      email: form.email,
+      email: cleanEmail,
       password: form.password,
-      fullName: form.fullName,
+      fullName: form.fullName.trim(),
       role: form.role,
       department: form.department,
       year: form.year,
@@ -153,7 +161,7 @@ export function RegisterPage() {
             <Input
               label="Campus Email"
               type="email"
-              placeholder="aarav.sharma@campus.edu"
+              placeholder="student@nitnagaland.ac.in"
               value={form.email}
               onChange={(e) => update('email', e.target.value)}
               error={errors.email}

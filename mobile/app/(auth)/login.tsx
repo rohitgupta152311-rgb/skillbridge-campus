@@ -30,13 +30,26 @@ export default function MobileLoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const EMAIL_FORMAT_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
   const handleSignIn = async () => {
-    if (!email || !password) {
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (!cleanEmail || !password) {
       Alert.alert('Required Fields', 'Please enter your email and password.');
       return;
     }
+
+    if (!EMAIL_FORMAT_REGEX.test(cleanEmail)) {
+      Alert.alert(
+        'Invalid Email Format',
+        'Please enter a valid email address (e.g. name@nitnagaland.ac.in or student@campus.edu).'
+      );
+      return;
+    }
+
     setLoading(true);
-    await login(email, password);
+    await login(cleanEmail, password);
     setLoading(false);
     router.replace('/(tabs)');
   };
@@ -105,7 +118,7 @@ export default function MobileLoginScreen() {
               <Mail size={16} color="#94a3b8" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="alex.student@campus.edu"
+                placeholder="student@nitnagaland.ac.in"
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"

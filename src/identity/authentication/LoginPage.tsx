@@ -314,9 +314,28 @@ export function LoginPage() {
     }
   };
 
+  const EMAIL_FORMAT_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await login(email, password);
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
+      addToast({
+        type: 'error',
+        title: 'Email Required',
+        message: 'Please enter your registered campus email address.',
+      });
+      return;
+    }
+    if (!EMAIL_FORMAT_REGEX.test(cleanEmail)) {
+      addToast({
+        type: 'error',
+        title: 'Invalid Email Format',
+        message: 'Please enter a valid email address (e.g. name@nitnagaland.ac.in or student@campus.edu).',
+      });
+      return;
+    }
+    const success = await login(cleanEmail, password);
     if (success) {
       const currentUser = useAuthStore.getState().user;
       if (currentUser?.role === 'admin') {
@@ -558,7 +577,7 @@ export function LoginPage() {
             <Input
               label="Campus Email"
               type="email"
-              placeholder="you@campus.edu"
+              placeholder="student@nitnagaland.ac.in"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -890,7 +909,7 @@ export function LoginPage() {
                   <Input
                     label="Email address"
                     type="email"
-                    placeholder="you@campus.edu"
+                    placeholder="student@nitnagaland.ac.in"
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
                     required

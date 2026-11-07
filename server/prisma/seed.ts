@@ -241,10 +241,10 @@ async function main() {
 
   // 7. Harsh Sharma (2nd Year, NIT Nagaland, EEE)
   const harsh = await prisma.user.upsert({
-    where: { email: 'harsh.sharma@campus.edu' },
+    where: { email: 'harsh.sharma@nitnagaland.ac.in' },
     update: {},
     create: {
-      email: 'harsh.sharma@campus.edu',
+      email: 'harsh.sharma@nitnagaland.ac.in',
       passwordHash,
       role: UserRole.MENTEE,
       isVerified: true,
