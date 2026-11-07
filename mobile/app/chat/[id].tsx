@@ -14,6 +14,8 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Send, Phone, Video, ArrowLeft, Sparkles, Check, CheckCheck } from 'lucide-react-native';
 import { MobileApi } from '../../services/api';
+import { SocketService } from '../../services/socket';
+import { useAuth } from '../../services/auth-context';
 import { TutoringCallModal } from '../../components/TutoringCallModal';
 
 interface ChatMessage {
@@ -26,6 +28,7 @@ interface ChatMessage {
 export default function MobileChatScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
+  const { user } = useAuth();
 
   // Participant info (defaults to peer mentor)
   const [peer] = useState({
@@ -67,25 +70,54 @@ export default function MobileChatScreen() {
   const [input, setInput] = useState('');
 
   useEffect(() => {
-    // Try fetching messages from backend if a valid conversationId is present
-    if (id && typeof id === 'string' && !id.startsWith('conv-')) {
-      MobileApi.getMessages(id)
+    let activeSocket: any = null;
+    const convId = typeof id === 'string' ? id : Array.isArray(id) ? id[0] : '';
+
+    if (convId && !convId.startsWith('conv-')) {
+      // 1. Fetch persistent history
+      MobileApi.getMessages(convId)
         .then((res) => {
           if (res && res.data && Array.isArray(res.data)) {
             const mapped = res.data.map((m: any) => ({
               id: m.id || String(Math.random()),
-              sender: m.senderId === 'me' ? 'me' : 'them',
+              sender: m.senderId === user?.id ? 'me' : 'them',
               text: m.content || m.text || '',
               time: m.createdAt ? new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now',
             }));
             if (mapped.length > 0) setMessages(mapped);
           }
         })
-        .catch(() => {
-          // Keep initial fallback messages
+        .catch(() => {});
+
+      // 2. Real-time WebSocket connection
+      SocketService.connect().then((sock) => {
+        activeSocket = sock;
+        sock.emit('conversation:join', convId);
+        sock.on('message:received', (msg: any) => {
+          if (msg.conversationId === convId) {
+            setMessages((prev) => {
+              if (prev.some((m) => m.id === msg.id)) return prev;
+              return [
+                ...prev,
+                {
+                  id: msg.id,
+                  sender: msg.senderId === user?.id ? 'me' : 'them',
+                  text: msg.content,
+                  time: new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                },
+              ];
+            });
+          }
         });
+      });
     }
-  }, [id]);
+
+    return () => {
+      if (activeSocket && convId) {
+        activeSocket.emit('conversation:leave', convId);
+      }
+    };
+  }, [id, user?.id]);
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -100,9 +132,13 @@ export default function MobileChatScreen() {
     setMessages((prev) => [...prev, newMsg]);
     setInput('');
 
-    // If real conversation ID, dispatch to backend
-    if (id && typeof id === 'string' && !id.startsWith('conv-')) {
-      MobileApi.sendMessage(id, textToSend).catch(() => {});
+    const convId = typeof id === 'string' ? id : Array.isArray(id) ? id[0] : '';
+    if (convId && !convId.startsWith('conv-')) {
+      const sock = SocketService.getSocket();
+      if (sock && sock.connected) {
+        sock.emit('message:send', { conversationId: convId, content: textToSend });
+      }
+      MobileApi.sendMessage(convId, textToSend).catch(() => {});
     }
   };
 

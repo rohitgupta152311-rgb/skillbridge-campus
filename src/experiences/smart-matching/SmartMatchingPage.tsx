@@ -121,7 +121,73 @@ export function SmartMatchingPage() {
         <div>
           <h2 className="text-lg font-semibold text-slate-900 mb-4">{results.length} Match{results.length !== 1 ? 'es' : ''} Found</h2>
           {results.length === 0 ? (
-            <EmptyState title="No matches found" description="Try a different topic or adjust your preferences." icon={<Search className="w-8 h-8" />} />
+            <div className="bg-white rounded-2xl p-8 border border-slate-200 text-center space-y-4">
+              <div className="w-12 h-12 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center mx-auto">
+                <Search className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">No exact peer matches found for "{topic}"</h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
+                  Try broadening your search criteria or explore trending engineering topics offered by campus peers.
+                </p>
+              </div>
+
+              {/* Suggestions */}
+              <div className="pt-2">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                  Try Searching These Active Topics
+                </span>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {['ReactJS', 'Python', 'Machine Learning', 'Power Electronics', 'Data Structures', 'Circuit Analysis', 'VLSI'].map(t => (
+                    <button
+                      key={t}
+                      onClick={() => {
+                        setTopic(t);
+                        setMinRating(0);
+                        setLanguage('');
+                        setSelectedDays([]);
+                      }}
+                      className="text-xs px-3 py-1.5 rounded-full bg-slate-100 hover:bg-violet-50 hover:text-violet-700 text-slate-700 font-medium transition-colors"
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex flex-wrap justify-center gap-3 pt-4 border-t border-slate-100">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setMinRating(0);
+                    setLanguage('');
+                    setSelectedDays([]);
+                    setPreferences([]);
+                    handleSearch();
+                  }}
+                  className="text-xs font-semibold"
+                >
+                  Reset All Filters
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => navigate('/exchange')}
+                  className="bg-slate-900 text-white text-xs font-semibold"
+                >
+                  Post to Skill Exchange Hub &rarr;
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/explore')}
+                  className="text-xs font-semibold text-slate-700"
+                >
+                  Browse Full Campus Directory
+                </Button>
+              </div>
+            </div>
           ) : (
             <div className="space-y-4">
               {results.map((mentor, idx) => {

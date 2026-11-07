@@ -17,6 +17,7 @@ import { messagingRouter } from './modules/messaging/messaging.routes.js';
 import { notificationsRouter } from './modules/notifications/notifications.routes.js';
 import { adminRouter } from './modules/administration/admin.routes.js';
 import { uploadRouter } from './modules/uploads/upload.routes.js';
+import { reportsRouter } from './modules/reports/reports.routes.js';
 
 export function createApplication() {
   const app = express();
@@ -290,6 +291,7 @@ export function createApplication() {
   app.use('/api/v1/notifications', notificationsRouter);
   app.use('/api/v1/admin', adminRouter);
   app.use('/api/v1/uploads', uploadRouter);
+  app.use('/api/v1/reports', reportsRouter);
 
   // Global Error Handler
   app.use(errorHandler);

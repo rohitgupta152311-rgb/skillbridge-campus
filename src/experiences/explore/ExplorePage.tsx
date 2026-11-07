@@ -12,6 +12,7 @@ import {
   getUsers, getProjects, getCommunities, calculateSkillExchangeMatches, getOrCreateConversation
 } from '../../infrastructure/local-storage/data-service';
 import { useToastStore } from '../../shared/notifications/toast-store';
+import { apiClient } from '../../infrastructure/api/api-client';
 
 const EXPLORE_CATEGORIES = [
   { id: 'all', label: 'All Domains', icon: Compass },
@@ -325,9 +326,17 @@ export function ExplorePage() {
                     variant="primary"
                     size="sm"
                     className="text-xs flex-1 bg-slate-900 hover:bg-black text-white font-semibold flex items-center justify-center gap-1"
-                    onClick={() => {
-                      const conv = getOrCreateConversation(user?.id || 'user-vidya', peer.id);
-                      navigate(`/messages/${conv.id}`);
+                    onClick={async () => {
+                      if (!user) {
+                        navigate('/login');
+                        return;
+                      }
+                      const conv = await apiClient.startConversation(peer.id);
+                      if (conv?.id) {
+                        navigate(`/messages/${conv.id}`);
+                      } else {
+                        navigate('/messages');
+                      }
                     }}
                   >
                     <MessageSquare className="w-3.5 h-3.5" />

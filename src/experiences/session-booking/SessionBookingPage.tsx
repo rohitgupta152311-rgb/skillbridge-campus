@@ -6,6 +6,7 @@ import { useAuthStore } from '../../identity/authentication/auth-store';
 import { getUserById, getAvailabilityByMentor, getExpertiseByMentor, addSession, getSessionsByUser, addNotification } from '../../infrastructure/local-storage/data-service';
 import { formatTime, getDayName, isTimeSlotOverlapping } from '../../foundation/helpers';
 import { useToastStore } from '../../shared/notifications/toast-store';
+import { apiClient } from '../../infrastructure/api/api-client';
 import { ALL_TOPICS } from '../../foundation/constants';
 import type { SessionType, DayOfWeek } from '../../foundation/types';
 
@@ -27,25 +28,47 @@ export function SessionBookingPage() {
   const selectedDayOfWeek = form.date ? new Date(form.date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase() as DayOfWeek : null;
   const daySlots = selectedDayOfWeek ? availability.filter(a => a.dayOfWeek === selectedDayOfWeek) : [];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.topic || !form.date || !form.startTime) {
       addToast({ type: 'error', title: 'Missing fields', message: 'Please fill in all required fields.' });
       return;
     }
 
-    // Check for conflicts
-    const existingSessions = getSessionsByUser(mentor.id).filter(s => s.date === form.date && (s.status === 'accepted' || s.status === 'pending'));
-    const hasConflict = existingSessions.some(s => isTimeSlotOverlapping(form.startTime, addMinutes(form.startTime, form.duration), s.startTime, addMinutes(s.startTime, s.duration)));
-    if (hasConflict) {
-      addToast({ type: 'error', title: 'Time conflict', message: 'This time slot conflicts with an existing session.' });
-      return;
-    }
+    try {
+      await apiClient.bookSession({
+        mentorId: mentor.id,
+        topic: form.topic,
+        description: form.description,
+        sessionDate: form.date,
+        startTime: form.startTime,
+        duration: form.duration,
+        sessionType: form.sessionType === 'online' ? 'ONLINE' : 'IN_PERSON',
+        location: form.location || undefined,
+        meetingLink: form.meetingLink || undefined,
+      });
 
-    addSession({ mentorId: mentor.id, menteeId: user.id, topic: form.topic, description: form.description, date: form.date, startTime: form.startTime, duration: form.duration, sessionType: form.sessionType, location: form.location || undefined, meetingLink: form.meetingLink || undefined, status: 'pending' });
-    addNotification({ userId: mentor.id, type: 'session_request', title: 'New Session Request', message: `${user.fullName} requested a ${form.topic} session on ${form.date}.`, relatedId: mentor.id });
-    setBooked(true);
-    addToast({ type: 'success', title: 'Session requested!', message: `Your request has been sent to ${mentor.fullName}.` });
+      addNotification({
+        userId: mentor.id,
+        type: 'session_request',
+        title: 'New Session Request',
+        message: `${user.fullName} requested a ${form.topic} session on ${form.date}.`,
+        relatedId: mentor.id,
+      });
+
+      setBooked(true);
+      addToast({
+        type: 'success',
+        title: 'Session requested!',
+        message: `Your request has been sent to ${mentor.fullName}.`,
+      });
+    } catch (err: any) {
+      addToast({
+        type: 'error',
+        title: 'Could not book session',
+        message: err.message || 'Selected time slot may conflict with an existing session.',
+      });
+    }
   };
 
   if (booked) {

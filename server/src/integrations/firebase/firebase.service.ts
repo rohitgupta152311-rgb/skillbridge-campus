@@ -70,61 +70,42 @@ class FirebaseServiceImpl {
   }
 
   /**
-   * Verify Firebase ID Token passed from client (Google or GitHub Sign-In)
+   * Verify Firebase ID Token passed from client (Google or GitHub Sign-In).
+   * Strict security requirement: Cryptographically verifies signature and claims via Firebase Admin.
+   * Unverified tokens or decoding fallbacks are strictly rejected.
    */
   async verifyFirebaseIdToken(idToken: string): Promise<FirebaseVerifiedUser> {
     if (!idToken || typeof idToken !== 'string') {
-      throw new Error('Missing or invalid Firebase ID token.');
+      throw new Error('Missing or invalid Firebase ID token format.');
     }
 
-    // A. Attempt standard Firebase Admin verification if initialized
-    if (this.isInitialized && this.app) {
-      try {
-        const auth = getAuth(this.app);
-        const decoded = await auth.verifyIdToken(idToken);
-        const providerId = decoded.firebase?.sign_in_provider || 'google.com';
-        const provider: 'google' | 'github' | 'firebase' =
-          providerId.includes('github') ? 'github' : providerId.includes('google') ? 'google' : 'firebase';
-
-        return {
-          uid: decoded.uid,
-          email: decoded.email || `${decoded.uid}@firebase.campus.edu`,
-          emailVerified: decoded.email_verified,
-          fullName: decoded.name || decoded.email?.split('@')[0] || 'Campus Student',
-          avatarUrl: decoded.picture || null,
-          provider,
-          rawClaims: decoded,
-        };
-      } catch (err: any) {
-        console.warn('[Firebase] auth.verifyIdToken threw, checking fallback validation:', err.message);
-      }
+    if (!this.isInitialized || !this.app) {
+      throw new Error('Firebase Admin SDK is not initialized. Cannot verify token signatures.');
     }
 
-    // B. Resilient fallback: Decode JWT payload directly (safe for client ID token exchange)
     try {
-      const decoded: any = jwt.decode(idToken);
-      if (!decoded || (!decoded.sub && !decoded.user_id)) {
-        throw new Error('Invalid Firebase token format.');
-      }
-
-      const uid = decoded.sub || decoded.user_id;
+      const auth = getAuth(this.app);
+      // Cryptographically verifies signature, expiration, audience, and project matching
+      const decoded = await auth.verifyIdToken(idToken, true);
       const providerId = decoded.firebase?.sign_in_provider || 'google.com';
       const provider: 'google' | 'github' | 'firebase' =
         providerId.includes('github') ? 'github' : providerId.includes('google') ? 'google' : 'firebase';
 
       return {
-        uid,
-        email: decoded.email || `${uid}@firebase.campus.edu`,
+        uid: decoded.uid,
+        email: decoded.email || `${decoded.uid}@firebase.campus.edu`,
         emailVerified: Boolean(decoded.email_verified),
-        fullName: decoded.name || decoded.email?.split('@')[0] || 'Campus Student',
+        fullName: decoded.name || (typeof decoded.email === 'string' && decoded.email.includes('@') ? decoded.email.split('@')[0] : 'Campus Student'),
         avatarUrl: decoded.picture || null,
         provider,
         rawClaims: decoded,
       };
-    } catch (fallbackErr: any) {
-      throw new Error(`Firebase token verification failed: ${fallbackErr.message}`);
+    } catch (err: any) {
+      console.error('[Firebase] Cryptographic token verification failed:', err.message);
+      throw new Error(`Firebase token verification failed: ${err.message || 'Signature or claims invalid'}`);
     }
   }
 }
 
 export const FirebaseService = new FirebaseServiceImpl();
+export const firebaseService = FirebaseService;

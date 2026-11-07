@@ -53,6 +53,20 @@ export function clearAuthSession() {
   localStorage.removeItem('sb_current_user');
 }
 
+export function isTokenExpired(token?: string | null): boolean {
+  const t = token || getAuthToken();
+  if (!t) return true;
+  try {
+    const parts = t.split('.');
+    if (parts.length < 2) return true;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (!payload.exp) return false;
+    return Date.now() >= payload.exp * 1000;
+  } catch {
+    return false;
+  }
+}
+
 export const apiClient = {
   // Check backend connectivity status
   isOnline: async () => await checkBackend(),
@@ -761,5 +775,252 @@ export const apiClient = {
     } catch {
       return false;
     }
+  },
+
+  // ── MENTORSHIP & SESSIONS JOURNEY ──
+  async bookSession(data: {
+    mentorId: string;
+    topic: string;
+    description?: string;
+    sessionDate: string;
+    startTime: string;
+    duration?: number;
+    sessionType?: 'ONLINE' | 'IN_PERSON';
+    location?: string;
+    meetingLink?: string;
+  }): Promise<any> {
+    const token = getAuthToken();
+    if (token) {
+      try {
+        const res = await fetch(`${API_BASE}/mentorship/sessions/book`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (res.ok) {
+          return json.data;
+        }
+        throw new Error(json.message || 'Failed to book session');
+      } catch (err: any) {
+        if (err.message && !err.message.includes('fetch')) {
+          throw err;
+        }
+        console.warn('Backend book session failed, falling back to local storage:', err);
+      }
+    }
+    const currentUser = JSON.parse(localStorage.getItem('sb_current_user') || '{}');
+    if (!currentUser.id) throw new Error('You must be logged in to book a session');
+    return LocalData.addSession({
+      mentorId: data.mentorId,
+      menteeId: currentUser.id,
+      date: data.sessionDate,
+      startTime: data.startTime,
+      duration: data.duration || 60,
+      topic: data.topic,
+      description: data.description || '',
+      notes: data.description || '',
+      sessionType: (data.sessionType?.toLowerCase() as any) || 'online',
+      status: 'pending',
+    });
+  },
+
+  async getUserSessions(params?: { status?: string; role?: 'mentee' | 'mentor' }): Promise<any[]> {
+    const token = getAuthToken();
+    if (token) {
+      try {
+        const query = new URLSearchParams();
+        if (params?.status) query.append('status', params.status);
+        if (params?.role) query.append('role', params.role);
+        const res = await fetch(`${API_BASE}/mentorship/sessions?${query.toString()}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          return json.data || [];
+        }
+      } catch (err) {
+        console.warn('Backend get sessions failed, falling back to local:', err);
+      }
+    }
+    const currentUser = JSON.parse(localStorage.getItem('sb_current_user') || '{}');
+    if (currentUser.id) {
+      let sessions = LocalData.getSessionsByUser(currentUser.id);
+      if (params?.status) {
+        sessions = sessions.filter(s => s.status.toLowerCase() === params.status?.toLowerCase());
+      }
+      return sessions;
+    }
+    return [];
+  },
+
+  async getSessionById(sessionId: string): Promise<any | null> {
+    const token = getAuthToken();
+    if (token) {
+      try {
+        const res = await fetch(`${API_BASE}/mentorship/sessions/${sessionId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          return json.data;
+        }
+      } catch (err) {
+        console.warn('Backend get session by id failed, falling back:', err);
+      }
+    }
+    return LocalData.getSessionById(sessionId) || null;
+  },
+
+  async updateSessionStatus(
+    sessionId: string,
+    status: 'ACCEPTED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED',
+    cancellationReason?: string
+  ): Promise<any> {
+    const token = getAuthToken();
+    if (token) {
+      try {
+        const res = await fetch(`${API_BASE}/mentorship/sessions/${sessionId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status, cancellationReason }),
+        });
+        const json = await res.json();
+        if (res.ok) return json.data;
+        throw new Error(json.message || 'Status update failed');
+      } catch (err: any) {
+        if (err.message && !err.message.includes('fetch')) throw err;
+        console.warn('Backend update status failed, falling back:', err);
+      }
+    }
+    return LocalData.updateSession(sessionId, {
+      status: status.toLowerCase() as any,
+      cancellationReason,
+    });
+  },
+
+  async rescheduleSession(sessionId: string, sessionDate: string, startTime: string): Promise<any> {
+    const token = getAuthToken();
+    if (token) {
+      try {
+        const res = await fetch(`${API_BASE}/mentorship/sessions/${sessionId}/reschedule`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ sessionDate, startTime }),
+        });
+        const json = await res.json();
+        if (res.ok) return json.data;
+        throw new Error(json.message || 'Reschedule failed');
+      } catch (err: any) {
+        if (err.message && !err.message.includes('fetch')) throw err;
+        console.warn('Backend reschedule failed, falling back:', err);
+      }
+    }
+    return LocalData.updateSession(sessionId, {
+      date: sessionDate,
+      startTime,
+      status: 'pending',
+    });
+  },
+
+  async getMentorAvailability(mentorId: string): Promise<any> {
+    const token = getAuthToken();
+    try {
+      const res = await fetch(`${API_BASE}/mentorship/mentors/${mentorId}/availability`, {
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data;
+      }
+    } catch (err) {
+      console.warn('Backend mentor availability failed:', err);
+    }
+    return {
+      mentorId,
+      availability: LocalData.getAvailabilityByMentor(mentorId),
+      bookedSlots: [],
+    };
+  },
+
+  getSessionIcsUrl(sessionId: string): string {
+    return `${API_BASE}/mentorship/sessions/${sessionId}/ics`;
+  },
+
+  async submitReview(sessionId: string, rating: number, comment?: string): Promise<any> {
+    const token = getAuthToken();
+    if (token) {
+      try {
+        const res = await fetch(`${API_BASE}/mentorship/sessions/${sessionId}/review`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ rating, comment }),
+        });
+        const json = await res.json();
+        if (res.ok) return json.data;
+        throw new Error(json.message || 'Failed to submit review');
+      } catch (err: any) {
+        if (err.message && !err.message.includes('fetch')) throw err;
+      }
+    }
+    const currentUser = JSON.parse(localStorage.getItem('sb_current_user') || '{}');
+    const sess = LocalData.getSessionById(sessionId);
+    if (sess) {
+      return LocalData.addReview({
+        sessionId,
+        menteeId: currentUser.id || 'reviewer',
+        mentorId: sess.mentorId,
+        overallRating: rating,
+        teachingQuality: rating,
+        communication: rating,
+        subjectKnowledge: rating,
+        review: comment || '',
+      });
+    }
+  },
+
+  // ── TRUST, SAFETY & REPORTING ──
+  async fileReport(data: {
+    reportedUserId: string;
+    reason: string;
+    details?: string;
+    conversationId?: string;
+  }): Promise<boolean> {
+    const token = getAuthToken();
+    if (token) {
+      try {
+        const res = await fetch(`${API_BASE}/reports`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(data),
+        });
+        return res.ok;
+      } catch (err) {
+        console.warn('Backend file report failed:', err);
+      }
+    }
+    const currentUser = JSON.parse(localStorage.getItem('sb_current_user') || '{}');
+    LocalData.addReport({
+      reporterId: currentUser.id || 'anonymous',
+      reportedUserId: data.reportedUserId,
+      reason: data.reason,
+      description: data.details || 'User report filed',
+    });
+    return true;
   },
 };

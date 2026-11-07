@@ -14,10 +14,12 @@ import {
   ExternalLink,
   Video,
   PhoneCall,
+  Flag,
 } from 'lucide-react';
 import { Avatar, Card, Badge, EmptyState, Button, Modal } from '../../shared/components';
 import { useAuthStore } from '../../identity/authentication/auth-store';
 import { apiClient } from '../../infrastructure/api/api-client';
+import { socketClient } from '../../infrastructure/socket/socket-client';
 import { TutoringCallModal } from '../session-booking/TutoringCallModal';
 import {
   getConversationsByUser,
@@ -138,8 +140,48 @@ function ConversationList({
 
   useEffect(() => {
     loadConversations();
-    const interval = setInterval(loadConversations, 3000);
-    return () => clearInterval(interval);
+    socketClient.connect();
+
+    const unsubscribeConv = socketClient.onConversationUpdated(({ conversationId, lastMessage }) => {
+      setConversations((prev) => {
+        const index = prev.findIndex((c) => c.id === conversationId);
+        if (index >= 0) {
+          const updated = [...prev];
+          updated[index] = {
+            ...updated[index],
+            lastMessage: lastMessage.content,
+            lastMessageAt: lastMessage.createdAt || new Date().toISOString(),
+          };
+          return updated.sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
+        } else {
+          loadConversations();
+          return prev;
+        }
+      });
+    });
+
+    const unsubscribeMsg = socketClient.onMessageReceived((msg) => {
+      setConversations((prev) => {
+        const index = prev.findIndex((c) => c.id === msg.conversationId);
+        if (index >= 0) {
+          const updated = [...prev];
+          updated[index] = {
+            ...updated[index],
+            lastMessage: msg.content,
+            lastMessageAt: msg.createdAt || new Date().toISOString(),
+          };
+          return updated.sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
+        } else {
+          loadConversations();
+          return prev;
+        }
+      });
+    });
+
+    return () => {
+      unsubscribeConv();
+      unsubscribeMsg();
+    };
   }, [userId]);
 
   const connectedPeers = useMemo(() => getConnectedUsers(userId), [userId]);
@@ -330,6 +372,8 @@ function ChatArea({
   const [isSending, setIsSending] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [activeCall, setActiveCall] = useState<'video' | 'voice' | null>(null);
+  const [peerIsTyping, setPeerIsTyping] = useState(false);
+  const typingTimeoutRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { addToast } = useToastStore();
 
@@ -348,9 +392,44 @@ function ChatArea({
 
   useEffect(() => {
     loadMessages();
-    const interval = setInterval(loadMessages, 2500);
-    return () => clearInterval(interval);
-  }, [conversationId]);
+    socketClient.joinConversation(conversationId);
+
+    const unsubscribeMsg = socketClient.onMessageReceived((msg: any) => {
+      if (msg.conversationId === conversationId) {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === msg.id)) return prev;
+          const tempIdx = prev.findIndex((m) => m.id.startsWith('temp-') && m.senderId === msg.senderId && m.content === msg.content);
+          const mappedMsg: Message = {
+            id: msg.id,
+            conversationId: msg.conversationId,
+            senderId: msg.senderId,
+            content: msg.content,
+            timestamp: msg.createdAt || new Date().toISOString(),
+            isRead: true,
+          };
+          if (tempIdx >= 0) {
+            const next = [...prev];
+            next[tempIdx] = mappedMsg;
+            return next;
+          }
+          return [...prev, mappedMsg];
+        });
+      }
+    });
+
+    const unsubscribeTyping = socketClient.onTypingStatus((data) => {
+      if (data.conversationId === conversationId && data.userId !== userId) {
+        setPeerIsTyping(data.isTyping);
+      }
+    });
+
+    return () => {
+      socketClient.leaveConversation(conversationId);
+      unsubscribeMsg();
+      unsubscribeTyping();
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, [conversationId, userId]);
 
   const conversation = useMemo(() => {
     const convs = getConversationsByUser(userId);
@@ -382,6 +461,10 @@ function ChatArea({
     setIsSending(true);
     setInput('');
 
+    // Stop typing immediately on submit
+    socketClient.sendTyping(conversationId, false);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
     // Instant optimistic echo
     const tempId = 'temp-' + Date.now();
     const optimisticMsg: Message = {
@@ -393,6 +476,9 @@ function ChatArea({
       isRead: true,
     };
     setMessages(prev => [...prev, optimisticMsg]);
+
+    // Send via real-time WebSocket
+    socketClient.sendMessage(conversationId, content);
 
     try {
       const sent = await apiClient.sendMessage(conversationId, content);
@@ -407,10 +493,51 @@ function ChatArea({
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+    socketClient.sendTyping(conversationId, true);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      socketClient.sendTyping(conversationId, false);
+    }, 1500);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('Harassment or Inappropriate Conduct');
+  const [reportDetails, setReportDetails] = useState('');
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+
+  const handleFileReport = async () => {
+    if (!otherId) return;
+    setIsSubmittingReport(true);
+    try {
+      await apiClient.fileReport({
+        reportedUserId: otherId,
+        reason: reportReason,
+        details: reportDetails,
+        conversationId,
+      });
+      addToast({
+        type: 'success',
+        title: 'Report filed with campus safety',
+        message: 'Platform administrators and moderators will inspect this conversation history.',
+      });
+      setReportModalOpen(false);
+      setReportDetails('');
+    } catch {
+      addToast({
+        type: 'error',
+        title: 'Could not submit report',
+      });
+    } finally {
+      setIsSubmittingReport(false);
     }
   };
 
@@ -500,6 +627,17 @@ function ChatArea({
               <ExternalLink className="w-3 h-3" />
             </Link>
           )}
+
+          {/* Report Peer Action */}
+          <button
+            type="button"
+            onClick={() => setReportModalOpen(true)}
+            className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-colors flex items-center gap-1.5 text-xs font-semibold"
+            title="Report User for Safety or Conduct"
+          >
+            <Flag className="w-4 h-4" />
+            <span className="hidden sm:inline">Report</span>
+          </button>
         </div>
       </div>
 
@@ -542,6 +680,18 @@ function ChatArea({
             );
           })
         )}
+        {peerIsTyping && (
+          <div className="flex justify-start">
+            <div className="px-3.5 py-1.5 rounded-2xl bg-violet-50 border border-violet-200/60 text-xs text-violet-700 font-medium flex items-center gap-2 shadow-2xs animate-pulse">
+              <span className="flex gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-600 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-600 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-600 animate-bounce" style={{ animationDelay: '300ms' }} />
+              </span>
+              <span>{other?.fullName || 'Peer'} is typing...</span>
+            </div>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
@@ -552,7 +702,7 @@ function ChatArea({
             className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 bg-slate-50/50"
             placeholder={`Message ${other?.fullName || 'peer'}...`}
             value={input}
-            onChange={e => setInput(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
           />
           <Button
@@ -565,6 +715,59 @@ function ChatArea({
           </Button>
         </div>
       </div>
+
+      {/* Report User Modal */}
+      <Modal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        title="Report Campus Peer"
+      >
+        <div className="space-y-4">
+          <p className="text-xs text-slate-500">
+            Submit an official safety report regarding <strong className="text-slate-800">{other?.fullName}</strong>.
+            Authorized campus administrators will review the report and recent conversation messages.
+          </p>
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Reason for Report</label>
+            <select
+              value={reportReason}
+              onChange={e => setReportReason(e.target.value)}
+              className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white"
+            >
+              <option value="Harassment or Inappropriate Conduct">Harassment or Inappropriate Conduct</option>
+              <option value="Academic Dishonesty / Cheating Request">Academic Dishonesty / Cheating Request</option>
+              <option value="Commercial Solicitation / Charging Fees">Commercial Solicitation / Charging Fees</option>
+              <option value="Spam or Unwanted Messages">Spam or Unwanted Messages</option>
+              <option value="No-show / Repeated Abandonment">No-show / Repeated Abandonment</option>
+              <option value="Other Safety Violation">Other Safety Violation</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Details &amp; Context</label>
+            <textarea
+              rows={3}
+              placeholder="Provide specific context or describe what occurred..."
+              value={reportDetails}
+              onChange={e => setReportDetails(e.target.value)}
+              className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <Button variant="ghost" size="sm" onClick={() => setReportModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              variant="danger"
+              disabled={isSubmittingReport}
+              onClick={handleFileReport}
+              className="text-xs font-bold"
+            >
+              {isSubmittingReport ? 'Submitting...' : 'File Official Report'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {activeCall && (
         <TutoringCallModal

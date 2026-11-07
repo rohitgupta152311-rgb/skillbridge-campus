@@ -67,7 +67,8 @@ export function DashboardLayout() {
 
   const isActive = (path: string) => {
     if (path === '/feed') return location.pathname === '/feed';
-    return location.pathname === path || (path !== '/' && location.pathname.startsWith(path) && path.length > 1);
+    if (path === '/explore') return location.pathname === '/explore' || location.pathname === '/discover';
+    return location.pathname === path || (path !== '/' && location.pathname.startsWith(path + '/'));
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -86,31 +87,19 @@ export function DashboardLayout() {
 
     const sections: NavSection[] = [
       {
-        title: 'CAMPUS NETWORK & EXCHANGE',
+        title: 'CORE PLATFORM',
         items: [
           { label: 'Campus Feed', icon: Newspaper, path: '/feed' },
-          { label: 'Explore Campus', icon: Compass, path: '/explore', highlight: true },
-          {
-            label: 'Skill Exchange',
-            icon: ArrowLeftRight,
-            path: '/exchange',
-            highlight: true,
-            badgeText: '96% Match',
-          },
-          {
-            label: 'ProjectSpace',
-            icon: Rocket,
-            path: '/projects',
-            highlight: true,
-          },
-          { label: 'My Network', icon: Users, path: '/network' },
-          { label: 'Communities', icon: Building2, path: '/communities' },
+          { label: 'Discover & Explore', icon: Compass, path: '/explore' },
+          { label: 'Skill Exchange', icon: ArrowLeftRight, path: '/exchange' },
+          { label: 'ProjectSpace', icon: Rocket, path: '/projects' },
+          { label: 'Messages', icon: MessageSquare, path: '/messages' },
+          { label: 'My Profile', icon: UserIcon, path: '/profile' },
         ],
       },
       {
-        title: 'MENTORSHIP & SESSIONS',
+        title: 'LEARNING & COLLABORATION',
         items: [
-          { label: 'Find Mentors', icon: Compass, path: '/discover' },
           { label: 'Smart Matchmaker', icon: Sparkles, path: '/match' },
           {
             label: isMentor ? 'Mentorship Sessions' : 'My Sessions',
@@ -123,14 +112,10 @@ export function DashboardLayout() {
                 { label: 'Reviews & Ratings', icon: Star, path: '/mentor/reviews' },
               ]
             : []),
+          { label: 'Communities', icon: Building2, path: '/communities' },
+          { label: 'My Network', icon: Users, path: '/network' },
           {
-            label: 'Start Messaging',
-            icon: MessageSquare,
-            path: '/messages',
-            badge: 2,
-          },
-          {
-            label: isMentor ? 'Mentor Dashboard' : 'Academic Dashboard',
+            label: isMentor ? 'Mentor Dashboard' : 'Learning Dashboard',
             icon: LayoutDashboard,
             path: isMentor ? '/mentor/dashboard' : '/dashboard',
           },
@@ -139,12 +124,11 @@ export function DashboardLayout() {
       {
         title: 'ACCOUNT & SAFETY',
         items: [
-          { label: 'Professional Profile', icon: UserIcon, path: '/profile' },
           {
             label: 'Notifications',
             icon: Bell,
             path: '/notifications',
-            badge: unreadCount,
+            badge: unreadCount > 0 ? unreadCount : undefined,
           },
           { label: 'Settings', icon: Settings, path: '/settings' },
           ...(isAdmin
@@ -215,8 +199,6 @@ export function DashboardLayout() {
                           'w-4 h-4 transition-colors',
                           active
                             ? 'text-white'
-                            : item.highlight
-                            ? 'text-[#151e4e] group-hover:text-slate-900'
                             : 'text-slate-400 group-hover:text-slate-600'
                         )}
                       />
@@ -264,21 +246,44 @@ export function DashboardLayout() {
           </Link>
         </div>
 
-        {/* Floating SkillBridge Metric Card */}
-        <div className="p-3 mb-2 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 flex items-center justify-between shadow-xs">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-600 font-bold">
-              <ArrowLeftRight className="w-4 h-4" />
+        {/* Profile Completeness Card */}
+        {(() => {
+          const profileSteps = [
+            { label: 'Campus identity', done: Boolean(user.department && user.year) },
+            { label: 'Skills offered', done: Boolean(user.skillsOffered && user.skillsOffered.length > 0) },
+            { label: 'Skills wanted', done: Boolean(user.skillsWanted && user.skillsWanted.length > 0) },
+            { label: 'Bio', done: Boolean(user.bio) },
+          ];
+          const completedSteps = profileSteps.filter(s => s.done).length;
+          const completenessPct = Math.round((completedSteps / profileSteps.length) * 100);
+
+          return (
+            <div className="p-3 mb-2 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-xs">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[11px] font-bold text-slate-700">Profile Completeness</span>
+                <span className="text-[10px] font-bold text-violet-700 bg-violet-100/80 px-1.5 py-0.5 rounded-md">
+                  {completenessPct}%
+                </span>
+              </div>
+              <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mb-2">
+                <div
+                  className="bg-violet-600 h-full rounded-full transition-all duration-300"
+                  style={{ width: `${completenessPct}%` }}
+                />
+              </div>
+              {completenessPct < 100 ? (
+                <Link
+                  to="/onboarding"
+                  className="block text-center text-[10px] font-bold text-violet-600 hover:text-violet-700"
+                >
+                  Finish Onboarding →
+                </Link>
+              ) : (
+                <p className="text-[10px] text-emerald-600 font-medium text-center">Ready for peer matching ✓</p>
+              )}
             </div>
-            <div>
-              <p className="text-sm font-black text-slate-900 tracking-tight leading-none">1,245</p>
-              <p className="text-[10px] text-slate-500 font-medium mt-0.5">Total Peer Exchanges</p>
-            </div>
-          </div>
-          <span className="text-[10px] font-bold text-amber-700 bg-amber-100/80 px-1.5 py-0.5 rounded-md">
-            +18%
-          </span>
-        </div>
+          );
+        })()}
 
         <button
           onClick={handleLogout}
@@ -487,7 +492,7 @@ export function DashboardLayout() {
             to="/feed"
             className={clsx(
               'flex flex-col items-center justify-center flex-1 py-1 transition-colors',
-              isActive('/feed') ? 'text-violet-600' : 'text-slate-400 hover:text-slate-600'
+              isActive('/feed') ? 'text-violet-600 font-bold' : 'text-slate-400 hover:text-slate-600'
             )}
           >
             <Newspaper className="w-5 h-5" />
@@ -495,10 +500,21 @@ export function DashboardLayout() {
           </Link>
 
           <Link
+            to="/explore"
+            className={clsx(
+              'flex flex-col items-center justify-center flex-1 py-1 transition-colors',
+              isActive('/explore') ? 'text-violet-600 font-bold' : 'text-slate-400 hover:text-slate-600'
+            )}
+          >
+            <Compass className="w-5 h-5" />
+            <span className="text-[10px] font-medium mt-0.5">Discover</span>
+          </Link>
+
+          <Link
             to="/exchange"
             className={clsx(
               'flex flex-col items-center justify-center flex-1 py-1 transition-colors',
-              isActive('/exchange') ? 'text-violet-600' : 'text-slate-400 hover:text-slate-600'
+              isActive('/exchange') ? 'text-violet-600 font-bold' : 'text-slate-400 hover:text-slate-600'
             )}
           >
             <ArrowLeftRight className="w-5 h-5" />
@@ -509,12 +525,10 @@ export function DashboardLayout() {
             to="/projects"
             className={clsx(
               'flex flex-col items-center justify-center flex-1 py-1 transition-colors',
-              isActive('/projects') ? 'text-violet-600' : 'text-slate-400 hover:text-slate-600'
+              isActive('/projects') ? 'text-violet-600 font-bold' : 'text-slate-400 hover:text-slate-600'
             )}
           >
-            <div className="w-7 h-7 rounded-full bg-violet-600 text-white flex items-center justify-center shadow-sm">
-              <Rocket className="w-4 h-4" />
-            </div>
+            <Rocket className="w-5 h-5" />
             <span className="text-[10px] font-medium mt-0.5">Projects</span>
           </Link>
 
@@ -522,7 +536,7 @@ export function DashboardLayout() {
             to="/messages"
             className={clsx(
               'flex flex-col items-center justify-center flex-1 py-1 transition-colors',
-              isActive('/messages') ? 'text-violet-600' : 'text-slate-400 hover:text-slate-600'
+              isActive('/messages') ? 'text-violet-600 font-bold' : 'text-slate-400 hover:text-slate-600'
             )}
           >
             <MessageSquare className="w-5 h-5" />
@@ -533,7 +547,7 @@ export function DashboardLayout() {
             to="/profile"
             className={clsx(
               'flex flex-col items-center justify-center flex-1 py-1 transition-colors',
-              isActive('/profile') ? 'text-violet-600' : 'text-slate-400 hover:text-slate-600'
+              isActive('/profile') ? 'text-violet-600 font-bold' : 'text-slate-400 hover:text-slate-600'
             )}
           >
             <UserIcon className="w-5 h-5" />

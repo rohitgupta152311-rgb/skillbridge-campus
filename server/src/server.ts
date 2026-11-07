@@ -11,7 +11,27 @@ async function bootstrap() {
 
   const io = new SocketIOServer(server, {
     cors: {
-      origin: [env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:3000'],
+      origin: (requestOrigin, callback) => {
+        if (!requestOrigin) return callback(null, true);
+        const allowed = [
+          env.FRONTEND_URL,
+          'http://localhost:5173',
+          'http://localhost:3000',
+          'http://localhost:8081',
+          'http://localhost:19006',
+        ];
+        if (
+          allowed.includes(requestOrigin) ||
+          requestOrigin.endsWith('.onrender.com') ||
+          requestOrigin.endsWith('.render.com') ||
+          requestOrigin.endsWith('.vercel.app') ||
+          requestOrigin.startsWith('http://localhost:') ||
+          requestOrigin.startsWith('http://127.0.0.1:')
+        ) {
+          return callback(null, true);
+        }
+        return callback(null, true);
+      },
       credentials: true,
     },
   });

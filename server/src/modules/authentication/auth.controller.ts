@@ -857,7 +857,15 @@ export async function handleFirebaseAuth(req: Request, res: Response, next: Next
     });
 
     if (user) {
-      // User exists -> check if provider account is linked
+      // Security check: Reject automatic account linking if the OAuth identity email is unverified
+      if (!firebaseUser.emailVerified) {
+        throw new AppError(
+          'Cannot link account: The email address provided by your external identity provider has not been verified. Please verify your email with the provider before linking.',
+          403
+        );
+      }
+
+      // User exists and email is verified -> check if provider account is linked
       const hasAccountLinked = user.accounts.some(
         (a) => a.provider === firebaseUser.provider && a.providerAccountId === firebaseUser.uid
       );

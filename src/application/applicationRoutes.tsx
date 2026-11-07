@@ -40,6 +40,7 @@ import { SettingsPage } from '../experiences/settings/SettingsPage';
 import { SkillExchangePage } from '../experiences/skill-exchange/SkillExchangePage';
 import { ProjectSpacePage } from '../experiences/projects/ProjectSpacePage';
 import { ProjectDetailPage } from '../experiences/projects/ProjectDetailPage';
+import { OnboardingPage } from '../experiences/onboarding/OnboardingPage';
 
 const router = createBrowserRouter([
   // Public routes
@@ -66,6 +67,7 @@ const router = createBrowserRouter([
           { path: '/communities', element: <CommunitiesPage />, errorElement: <RouteErrorBoundary /> },
           { path: '/notifications', element: <NotificationsPage />, errorElement: <RouteErrorBoundary /> },
           { path: '/profile', element: <ProfilePage />, errorElement: <RouteErrorBoundary /> },
+          { path: '/onboarding', element: <OnboardingPage />, errorElement: <RouteErrorBoundary /> },
           { path: '/settings', element: <SettingsPage />, errorElement: <RouteErrorBoundary /> },
           { path: '/messages', element: <ConversationCenterPage />, errorElement: <RouteErrorBoundary /> },
           { path: '/messages/:conversationId', element: <ConversationCenterPage />, errorElement: <RouteErrorBoundary /> },

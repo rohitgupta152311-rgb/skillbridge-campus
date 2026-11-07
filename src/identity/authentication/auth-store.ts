@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { User, UserRole } from '../../foundation/types';
-import { getUserByEmail, getUserById, addUser, updateUser, initializeDataStore } from '../../infrastructure/local-storage/data-service';
+import { getUserByEmail, getUserById, addUser, updateUser as updateLocalUser, initializeDataStore } from '../../infrastructure/local-storage/data-service';
 import { DEMO_CREDENTIALS } from '../../foundation/constants';
 import { apiClient, setAuthSession, clearAuthSession, getAuthToken } from '../../infrastructure/api/api-client';
 
@@ -27,6 +27,7 @@ interface AuthState {
   logout: () => void;
   clearError: () => void;
   syncDatabaseProfile: () => Promise<void>;
+  updateUser: (partial: Partial<User>) => void;
 }
 
 interface RegisterData {
@@ -132,7 +133,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
         if (!getUserById(userObj.id)) {
           addUser(userObj);
         } else {
-          updateUser(userObj.id, userObj);
+          updateLocalUser(userObj.id, userObj);
         }
 
         setAuthSession(result.data.token, userObj);
@@ -287,7 +288,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
         if (!getUserById(userObj.id)) {
           addUser(userObj);
         } else {
-          updateUser(userObj.id, userObj);
+          updateLocalUser(userObj.id, userObj);
         }
 
         setAuthSession(result.data.token, userObj);
@@ -305,6 +306,15 @@ export const useAuthStore = create<AuthState>((set, get) => {
     logout: () => {
       clearAuthSession();
       set({ user: null, isAuthenticated: false, error: null });
+    },
+
+    updateUser: (partial: Partial<User>) => {
+      const current = get().user;
+      if (!current) return;
+      const updated = { ...current, ...partial };
+      set({ user: updated });
+      setAuthSession(getAuthToken() || 'local-demo-token', updated);
+      updateLocalUser(current.id, partial);
     },
 
     clearError: () => set({ error: null }),

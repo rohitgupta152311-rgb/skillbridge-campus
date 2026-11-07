@@ -189,56 +189,53 @@ export function LandingPage() {
       {/* ── HERO SECTION ── */}
       <section className="relative pt-16 pb-20 lg:pt-24 lg:pb-28 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 border-b border-slate-200/70">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-50 border border-violet-200/60 text-violet-700 text-xs font-semibold">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Reciprocal Peer Learning Network</span>
+          </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.12] font-heading">
-            Empowering Campus Engineers Through{' '}
+            Learn from peers.{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-700 via-indigo-600 to-slate-900">
-              Direct Peer Skill Barter
+              Share what you know.
             </span>
           </h1>
 
           <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed font-normal">
-            A structured, academic skill exchange where students trade technical proficiencies—from Power Electronics and VLSI to Full-Stack Web Development—without commercial barriers.
+            Campus learning shouldn't depend on expensive courses or one-way tutoring. SkillBridge connects students to swap knowledge directly: if you know circuit design, teach it in exchange for help with web development. No money involved—just peers helping peers succeed.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <Button
               size="lg"
               className="bg-slate-900 hover:bg-black text-white font-bold text-xs sm:text-sm px-6 py-3.5 rounded-xl shadow-md transition-all flex items-center gap-2"
-              onClick={() => navigate('/register')}
+              onClick={() => navigate('/explore')}
             >
-              <span>Join Campus Network</span>
-              <ArrowRight className="w-4 h-4" />
+              <Search className="w-4 h-4" />
+              <span>Find a mentor</span>
             </Button>
             <Button
               variant="outline"
               size="lg"
-              className="border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs sm:text-sm px-5 py-3.5 rounded-xl shadow-2xs"
-              onClick={() => navigate('/explore')}
+              className="border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs sm:text-sm px-5 py-3.5 rounded-xl shadow-2xs flex items-center gap-2"
+              onClick={() => navigate('/register')}
             >
-              Browse Mentors &amp; Talent
+              <Repeat className="w-4 h-4 text-violet-600" />
+              <span>Share a skill</span>
             </Button>
           </div>
-
-
         </div>
       </section>
 
-      {/* ── INSTITUTIONAL PARTNERS MARQUEE ── */}
+      {/* ── CAMPUS COMMUNITIES SECTION ── */}
       <section id="institutions" className="py-8 bg-slate-50 border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
-            Collegiate Communities &amp; Networks
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-3">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            Built for Campus Engineering &amp; Technology Departments
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-semibold text-slate-600">
-            {institutions.map((inst, i) => (
-              <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200 shadow-2xs">
-                <Building2 className="w-3.5 h-3.5 text-slate-500" />
-                <span>{inst}</span>
-              </div>
-            ))}
-          </div>
+          <p className="text-xs text-slate-600 max-w-xl mx-auto">
+            Connect directly with verified students across Electrical, Computer Science, Electronics, and Mechanical branches.
+          </p>
         </div>
       </section>
 
@@ -249,10 +246,10 @@ export function LandingPage() {
             <div>
 
               <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight font-heading mt-2">
-                Featured Engineering Mentors
+                Community Peer Profiles
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                Explore students from NIT Nagaland and leading institutions active in the peer exchange network.
+                Explore sample student profiles from the NIT Nagaland cohort participating in reciprocal peer skill exchange.
               </p>
             </div>
             <Button
