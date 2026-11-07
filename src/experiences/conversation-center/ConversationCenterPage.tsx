@@ -12,10 +12,13 @@ import {
   Sparkles,
   X,
   ExternalLink,
+  Video,
+  PhoneCall,
 } from 'lucide-react';
 import { Avatar, Card, Badge, EmptyState, Button, Modal } from '../../shared/components';
 import { useAuthStore } from '../../identity/authentication/auth-store';
 import { apiClient } from '../../infrastructure/api/api-client';
+import { TutoringCallModal } from '../session-booking/TutoringCallModal';
 import {
   getConversationsByUser,
   getMessagesByConversation,
@@ -326,6 +329,7 @@ function ChatArea({
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [activeCall, setActiveCall] = useState<'video' | 'voice' | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { addToast } = useToastStore();
 
@@ -362,6 +366,7 @@ function ChatArea({
     year: 'NIT Nagaland',
     university: 'NIT Nagaland',
     avatar: '',
+    role: 'mentee' as const,
     onlineStatus: 'available' as const,
   };
   const isConnected = otherId ? isUserConnected(userId, otherId) : false;
@@ -464,6 +469,28 @@ function ChatArea({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Quick Video Call Action */}
+          <button
+            type="button"
+            onClick={() => setActiveCall('video')}
+            className="p-2 rounded-xl text-slate-600 hover:text-violet-700 hover:bg-violet-50 border border-slate-200 transition-colors flex items-center gap-1.5 text-xs font-semibold"
+            title="Start Video Tutoring Call"
+          >
+            <Video className="w-4 h-4 text-violet-600" />
+            <span className="hidden sm:inline">Video Call</span>
+          </button>
+
+          {/* Quick Voice Call Action */}
+          <button
+            type="button"
+            onClick={() => setActiveCall('voice')}
+            className="p-2 rounded-xl text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 border border-slate-200 transition-colors flex items-center gap-1.5 text-xs font-semibold"
+            title="Start Voice Tutoring Call"
+          >
+            <PhoneCall className="w-4 h-4 text-emerald-600" />
+            <span className="hidden sm:inline">Voice Call</span>
+          </button>
+
           {other?.id && (
             <Link
               to={`/discover/${other.id}`}
@@ -538,6 +565,23 @@ function ChatArea({
           </Button>
         </div>
       </div>
+
+      {activeCall && (
+        <TutoringCallModal
+          isOpen={!!activeCall}
+          onClose={() => setActiveCall(null)}
+          partner={{
+            id: otherId,
+            fullName: other?.fullName || 'Campus Peer',
+            avatar: other?.avatar,
+            department: other?.department,
+            role: other?.role || 'peer',
+            university: other?.university || 'NIT Nagaland',
+          }}
+          topic="Campus Peer Tutoring & Discussion"
+          initialMode={activeCall}
+        />
+      )}
     </div>
   );
 }

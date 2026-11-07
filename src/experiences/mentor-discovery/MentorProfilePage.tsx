@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, MessageSquare, MapPin, Globe, Clock, BookOpen, Award } from 'lucide-react';
+import { ArrowLeft, Calendar, MessageSquare, MapPin, Globe, Clock, BookOpen, Award, Video, PhoneCall } from 'lucide-react';
 import { Avatar, Badge, Button, Card, StarRating, EmptyState } from '../../shared/components';
 import { useAuthStore } from '../../identity/authentication/auth-store';
 import { buildMentorProfile } from '../../domain/matching-engine';
 import { getUserById, getReviewsByMentor, getSessionsByUser, getOrCreateConversation } from '../../infrastructure/local-storage/data-service';
 import { formatDate, formatTime, getDayName, getRatingColor, averageOf } from '../../foundation/helpers';
 import { useToastStore } from '../../shared/notifications/toast-store';
+import { TutoringCallModal } from '../session-booking/TutoringCallModal';
 
 export function MentorProfilePage() {
   const { mentorId } = useParams<{ mentorId: string }>();
@@ -14,6 +15,7 @@ export function MentorProfilePage() {
   const { user } = useAuthStore();
   const { addToast } = useToastStore();
   const [showBooking, setShowBooking] = useState(false);
+  const [activeTutoringCall, setActiveTutoringCall] = useState<'video' | 'voice' | null>(null);
 
   const mentor = useMemo(() => {
     if (!mentorId) return null;
@@ -64,9 +66,39 @@ export function MentorProfilePage() {
                 <span key={l} className="flex items-center gap-1 text-xs text-slate-500"><Globe className="w-3 h-3" />{l}</span>
               ))}
             </div>
-            <div className="flex flex-wrap gap-3 mt-4">
+            <div className="flex flex-wrap gap-2.5 mt-4">
               <Button onClick={handleBookSession} leftIcon={<Calendar className="w-4 h-4" />}>Book Session</Button>
-              <Button variant="outline" onClick={handleMessage} leftIcon={<MessageSquare className="w-4 h-4" />} className="border-violet-300 text-violet-700 hover:bg-violet-50">Start Messaging</Button>
+              <Button
+                variant="outline"
+                onClick={handleMessage}
+                leftIcon={<MessageSquare className="w-4 h-4" />}
+                className="border-violet-300 text-violet-700 hover:bg-violet-50"
+              >
+                Start Messaging
+              </Button>
+              <Button
+                size="sm"
+                className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl gap-1.5 shadow-xs"
+                onClick={() => {
+                  if (!user) return navigate('/login');
+                  setActiveTutoringCall('video');
+                }}
+                leftIcon={<Video className="w-3.5 h-3.5" />}
+              >
+                Video Call
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl gap-1.5"
+                onClick={() => {
+                  if (!user) return navigate('/login');
+                  setActiveTutoringCall('voice');
+                }}
+                leftIcon={<PhoneCall className="w-3.5 h-3.5" />}
+              >
+                Voice Call
+              </Button>
             </div>
           </div>
           <div className="flex sm:flex-col gap-4 sm:gap-3 text-center">
@@ -179,6 +211,23 @@ export function MentorProfilePage() {
           </Card>
         </div>
       </div>
+
+      {activeTutoringCall && (
+        <TutoringCallModal
+          isOpen={!!activeTutoringCall}
+          onClose={() => setActiveTutoringCall(null)}
+          partner={{
+            id: mentor.id,
+            fullName: mentor.fullName,
+            avatar: mentor.avatar,
+            department: mentor.department,
+            role: 'mentor',
+            university: mentor.university || 'NIT Nagaland',
+          }}
+          topic={mentor.expertise[0]?.topic || 'Academic Tutoring & Barter'}
+          initialMode={activeTutoringCall}
+        />
+      )}
     </div>
   );
 }

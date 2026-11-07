@@ -10,7 +10,8 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Calendar, Clock, Video, CheckCircle, ShieldCheck } from 'lucide-react-native';
+import { Calendar, Clock, Video, CheckCircle, ShieldCheck, Phone, MessageSquare, Sparkles } from 'lucide-react-native';
+import { TutoringCallModal } from '../../components/TutoringCallModal';
 
 export default function MobileBookingScreen() {
   const router = useRouter();
@@ -21,6 +22,16 @@ export default function MobileBookingScreen() {
   const [notes, setNotes] = useState('');
   const [sessionType, setSessionType] = useState<'ONLINE' | 'IN_PERSON'>('ONLINE');
   const [booking, setBooking] = useState(false);
+  const [callModalVisible, setCallModalVisible] = useState(false);
+  const [callInitialMode, setCallInitialMode] = useState<'VIDEO' | 'VOICE'>('VIDEO');
+
+  const mentorName = mentorId === 'mentor-2' ? 'Elena Rostova' : mentorId === 'mentor-3' ? 'Marcus Vance' : 'Sarah Jenkins';
+  const mentorRole = mentorId === 'mentor-2' ? 'PhD Researcher in ML' : mentorId === 'mentor-3' ? 'Full-Stack Engineer' : 'Graduate TA & Distributed Systems Lead';
+  const mentorAvatar = mentorId === 'mentor-2'
+    ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200'
+    : mentorId === 'mentor-3'
+    ? 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200'
+    : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200';
 
   const availableSlots = [
     'Tomorrow, 3:00 PM – 4:00 PM',
@@ -157,7 +168,63 @@ export default function MobileBookingScreen() {
             {booking ? 'Scheduling Slot...' : 'Confirm Mentorship Booking'}
           </Text>
         </TouchableOpacity>
+
+        {/* Instant Tutoring Live Channels */}
+        <View style={styles.instantCard}>
+          <View style={styles.instantHeader}>
+            <Sparkles size={14} color="#7c3aed" />
+            <Text style={styles.instantTitle}>Need Help Immediately?</Text>
+          </View>
+          <Text style={styles.instantDesc}>
+            Connect with {mentorName} directly via encrypted live channels.
+          </Text>
+
+          <View style={styles.instantButtonsRow}>
+            <TouchableOpacity
+              style={styles.instantBtnVoice}
+              onPress={() => {
+                setCallInitialMode('VOICE');
+                setCallModalVisible(true);
+              }}
+            >
+              <Phone size={14} color="#7c3aed" />
+              <Text style={styles.instantBtnVoiceText}>Voice Call</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.instantBtnVideo}
+              onPress={() => {
+                setCallInitialMode('VIDEO');
+                setCallModalVisible(true);
+              }}
+            >
+              <Video size={14} color="#ffffff" />
+              <Text style={styles.instantBtnVideoText}>Video Room</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.instantBtnChat}
+              onPress={() => {
+                const convId = mentorId === 'mentor-2' ? 'conv-3' : mentorId === 'mentor-3' ? 'conv-2' : 'conv-1';
+                router.push(`/chat/${convId}` as any);
+              }}
+            >
+              <MessageSquare size={14} color="#334155" />
+              <Text style={styles.instantBtnChatText}>Chat</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </ScrollView>
+
+      <TutoringCallModal
+        visible={callModalVisible}
+        onClose={() => setCallModalVisible(false)}
+        peerName={mentorName}
+        peerRole={mentorRole}
+        peerAvatar={mentorAvatar}
+        initialMode={callInitialMode}
+        topic={topic}
+      />
     </SafeAreaView>
   );
 }
@@ -271,5 +338,83 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 14,
     fontWeight: '700',
+  },
+  instantCard: {
+    marginTop: 12,
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  instantHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  instantTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  instantDesc: {
+    fontSize: 11,
+    color: '#64748b',
+    marginBottom: 12,
+  },
+  instantButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  instantBtnVoice: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    backgroundColor: '#ede9fe',
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#ddd6fe',
+  },
+  instantBtnVoiceText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#6d28d9',
+  },
+  instantBtnVideo: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    backgroundColor: '#7c3aed',
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  instantBtnVideoText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  instantBtnChat: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    backgroundColor: '#ffffff',
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+  },
+  instantBtnChatText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#334155',
   },
 });

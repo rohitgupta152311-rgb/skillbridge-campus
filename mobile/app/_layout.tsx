@@ -25,10 +25,7 @@ function RootNavigation() {
           <Stack.Screen
             name="chat/[id]"
             options={{
-              headerShown: true,
-              title: 'Conversation',
-              headerBackTitle: 'Back',
-              headerTintColor: '#4c1d95',
+              headerShown: false,
             }}
           />
           <Stack.Screen

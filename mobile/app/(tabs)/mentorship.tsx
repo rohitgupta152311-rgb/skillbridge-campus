@@ -17,11 +17,34 @@ import {
   CheckCircle,
   Calendar,
   Filter,
+  Phone,
+  Video,
+  MessageSquare,
 } from 'lucide-react-native';
+import { TutoringCallModal } from '../../components/TutoringCallModal';
 
 export default function MentorshipScreen() {
   const router = useRouter();
   const [selectedTopic, setSelectedTopic] = useState('All');
+  const [callModalVisible, setCallModalVisible] = useState(false);
+  const [callInitialMode, setCallInitialMode] = useState<'VIDEO' | 'VOICE'>('VIDEO');
+  const [activeCallPeer, setActiveCallPeer] = useState({
+    name: 'Sarah Jenkins',
+    role: 'Graduate TA & Distributed Systems Lead',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
+    topic: 'Distributed Systems & Exam Prep',
+  });
+
+  const handleStartCall = (mentor: any, mode: 'VIDEO' | 'VOICE') => {
+    setActiveCallPeer({
+      name: mentor.name,
+      role: mentor.role,
+      avatar: mentor.avatar,
+      topic: mentor.topics?.[0] || 'Peer Mentorship Session',
+    });
+    setCallInitialMode(mode);
+    setCallModalVisible(true);
+  };
 
   const topics = ['All', 'Algorithms & DSA', 'Distributed Systems', 'Machine Learning', 'Full-Stack Web', 'Operating Systems'];
 
@@ -162,23 +185,59 @@ export default function MentorshipScreen() {
               ))}
             </View>
 
-            {/* Footer Slot & Booking */}
+            {/* Footer Slot & Tutoring Quick Actions */}
             <View style={styles.footer}>
               <View style={styles.slotInfo}>
-                <Clock size={13} color="#64748b" />
-                <Text style={styles.slotText}>Next: {item.availability}</Text>
+                <Clock size={12} color="#64748b" />
+                <Text style={styles.slotText} numberOfLines={1}>{item.availability}</Text>
               </View>
 
-              <TouchableOpacity
-                style={styles.bookBtn}
-                onPress={() => router.push(`/booking/${item.id}` as any)}
-              >
-                <Calendar size={13} color="#ffffff" />
-                <Text style={styles.bookBtnText}>Book Slot</Text>
-              </TouchableOpacity>
+              <View style={styles.cardActions}>
+                <TouchableOpacity
+                  style={styles.cardActionMsg}
+                  onPress={() => router.push(`/chat/${item.id === 'mentor-2' ? 'conv-3' : item.id === 'mentor-3' ? 'conv-2' : 'conv-1'}` as any)}
+                  accessibilityLabel="Message Mentor"
+                >
+                  <MessageSquare size={13} color="#475569" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.cardActionVoice}
+                  onPress={() => handleStartCall(item, 'VOICE')}
+                  accessibilityLabel="Voice Call"
+                >
+                  <Phone size={13} color="#7c3aed" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.cardActionVideo}
+                  onPress={() => handleStartCall(item, 'VIDEO')}
+                  accessibilityLabel="Video Call"
+                >
+                  <Video size={13} color="#ffffff" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.bookBtn}
+                  onPress={() => router.push(`/booking/${item.id}` as any)}
+                >
+                  <Calendar size={13} color="#ffffff" />
+                  <Text style={styles.bookBtnText}>Book</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         )}
+      />
+
+      <TutoringCallModal
+        visible={callModalVisible}
+        onClose={() => setCallModalVisible(false)}
+        peerName={activeCallPeer.name}
+        peerRole={activeCallPeer.role}
+        peerAvatar={activeCallPeer.avatar}
+        initialMode={callInitialMode}
+        topic={activeCallPeer.topic}
       />
     </SafeAreaView>
   );
@@ -350,22 +409,56 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   slotText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
-    color: '#475569',
+    color: '#64748b',
+    maxWidth: 100,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  cardActionMsg: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  cardActionVoice: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#ede9fe',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd6fe',
+  },
+  cardActionVideo: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#7c3aed',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   bookBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#7c3aed',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 16,
+    backgroundColor: '#0f172a',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 14,
   },
   bookBtnText: {
     color: '#ffffff',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
   },
 });

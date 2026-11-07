@@ -1,11 +1,13 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, CheckCircle, XCircle, Clock, Filter } from 'lucide-react';
+import { Calendar, CheckCircle, XCircle, Clock, Filter, Video, PhoneCall, MessageSquare } from 'lucide-react';
 import { Card, Avatar, Badge, Button, EmptyState, Modal } from '../../shared/components';
 import { useAuthStore } from '../../identity/authentication/auth-store';
-import { getSessionsByUser, getUserById, updateSession, addNotification } from '../../infrastructure/local-storage/data-service';
+import { getSessionsByUser, getUserById, updateSession, addNotification, getOrCreateConversation } from '../../infrastructure/local-storage/data-service';
 import { formatDate, formatTime } from '../../foundation/helpers';
 import { useToastStore } from '../../shared/notifications/toast-store';
+import { apiClient } from '../../infrastructure/api/api-client';
+import { TutoringCallModal } from './TutoringCallModal';
 import type { SessionStatus } from '../../foundation/types';
 
 const statusConfig: Record<SessionStatus, { label: string; variant: 'success' | 'warning' | 'error' | 'info' | 'default' }> = {
@@ -23,6 +25,30 @@ export function SessionsPage() {
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'pending' | 'completed'>('all');
   const [cancelModal, setCancelModal] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('');
+  const [activeCall, setActiveCall] = useState<{
+    session: any;
+    partner: any;
+    mode: 'video' | 'voice';
+  } | null>(null);
+
+  const handleOpenMessage = async (partnerId: string) => {
+    if (!user) return;
+    try {
+      const conv = await apiClient.startConversation(partnerId);
+      if (conv && conv.id) {
+        navigate(`/messages/${conv.id}`);
+        return;
+      }
+    } catch {
+      // fallback
+    }
+    const conv = getOrCreateConversation(user.id, partnerId);
+    navigate(`/messages/${conv.id}`);
+  };
+
+  const handleStartTutoringCall = (session: any, partner: any, mode: 'video' | 'voice') => {
+    setActiveCall({ session, partner, mode });
+  };
 
   const sessions = useMemo(() => {
     if (!user) return [];
@@ -117,8 +143,40 @@ export function SessionsPage() {
                     <p className="text-xs text-slate-500">{formatTime(session.startTime)} · {session.duration}min</p>
                   </div>
                 </div>
-                {/* Actions */}
-                <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-100">
+                {/* Actions & Live Tutoring Channels */}
+                <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-100">
+                  {/* Video Call */}
+                  <Button
+                    size="sm"
+                    className="bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold rounded-xl gap-1.5 shadow-xs"
+                    onClick={() => handleStartTutoringCall(session, other, 'video')}
+                    leftIcon={<Video className="w-3.5 h-3.5" />}
+                  >
+                    Video Call
+                  </Button>
+
+                  {/* Voice Call */}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-semibold rounded-xl gap-1.5"
+                    onClick={() => handleStartTutoringCall(session, other, 'voice')}
+                    leftIcon={<PhoneCall className="w-3.5 h-3.5" />}
+                  >
+                    Voice Call
+                  </Button>
+
+                  {/* Message */}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-semibold rounded-xl gap-1.5"
+                    onClick={() => other?.id && handleOpenMessage(other.id)}
+                    leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
+                  >
+                    Message
+                  </Button>
+
                   {isMentor && session.status === 'pending' && (
                     <>
                       <Button size="sm" onClick={() => handleAccept(session.id)} leftIcon={<CheckCircle className="w-4 h-4" />}>Accept</Button>
@@ -151,6 +209,19 @@ export function SessionsPage() {
           </div>
         </div>
       </Modal>
+
+      {/* Live Tutoring Video & Voice Call Modal */}
+      {activeCall && (
+        <TutoringCallModal
+          isOpen={!!activeCall}
+          onClose={() => setActiveCall(null)}
+          partner={activeCall.partner || { id: 'partner', fullName: 'Tutoring Peer' }}
+          topic={activeCall.session?.topic || 'Tutoring Session'}
+          initialMode={activeCall.mode}
+          sessionId={activeCall.session?.id}
+          onCompleteSession={(id) => handleComplete(id)}
+        />
+      )}
     </div>
   );
 }

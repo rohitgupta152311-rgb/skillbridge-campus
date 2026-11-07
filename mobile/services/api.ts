@@ -6,7 +6,7 @@ import { Storage } from './storage';
 const DEFAULT_DEV_HOST = Platform.OS === 'android' ? 'http://10.0.2.2:5000/api/v1' : 'http://localhost:5000/api/v1';
 const PROD_API = Constants.expoConfig?.extra?.productionApiUrl || 'https://skillbridge-backend-15a7.onrender.com/api/v1';
 
-export const API_URL = __DEV__ ? DEFAULT_DEV_HOST : PROD_API;
+export const API_URL = (process.env.EXPO_PUBLIC_USE_LOCAL === 'true') ? DEFAULT_DEV_HOST : PROD_API;
 
 export async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = await Storage.getItem('sb_auth_token');
