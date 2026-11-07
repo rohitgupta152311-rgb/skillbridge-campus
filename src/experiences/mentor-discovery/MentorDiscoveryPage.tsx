@@ -5,7 +5,7 @@ import { Card, Avatar, Badge, Button, StarRating, Input, EmptyState } from '../.
 import { useAuthStore } from '../../identity/authentication/auth-store';
 import { computeMatchScores, getAllMentorProfiles } from '../../domain/matching-engine';
 import { getMatchScoreLabel, formatTime, getDayName } from '../../foundation/helpers';
-import { getOrCreateConversation } from '../../infrastructure/local-storage/data-service';
+import { apiClient } from '../../infrastructure/api/api-client';
 import { ALL_TOPICS, LANGUAGES, DAYS_OF_WEEK, DAY_LABELS } from '../../foundation/constants';
 import type { FilterOptions, MentorProfile, SessionType, DayOfWeek } from '../../foundation/types';
 
@@ -158,10 +158,18 @@ export function MentorDiscoveryPage() {
                     variant="outline"
                     className="w-full text-xs hover:bg-violet-50 hover:text-violet-700 hover:border-violet-300 font-semibold"
                     leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
-                      const conv = getOrCreateConversation(user?.id || 'user-vidya', mentor.id);
-                      navigate(`/messages/${conv.id}`);
+                      if (!user) {
+                        navigate('/login');
+                        return;
+                      }
+                      const conv = await apiClient.startConversation(mentor.id);
+                      if (conv?.id) {
+                        navigate(`/messages/${conv.id}`);
+                      } else {
+                        navigate('/messages');
+                      }
                     }}
                   >
                     Start Messaging

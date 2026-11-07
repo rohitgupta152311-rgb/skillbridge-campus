@@ -166,7 +166,7 @@ export async function getMessages(req: Request, res: Response, next: NextFunctio
     if (!req.user) throw new AppError('Unauthorized', 401);
     const { conversationId } = req.params;
 
-    // Check authorization
+    // Check authorization: must be participant or platform admin
     const isParticipant = await prisma.conversationParticipant.findUnique({
       where: {
         conversationId_userId: {
@@ -176,7 +176,7 @@ export async function getMessages(req: Request, res: Response, next: NextFunctio
       },
     });
 
-    if (!isParticipant) {
+    if (!isParticipant && req.user.role !== 'ADMIN') {
       throw new AppError('You are not authorized to view this conversation.', 403);
     }
 
@@ -238,6 +238,25 @@ export async function sendMessage(req: Request, res: Response, next: NextFunctio
     const io = req.app.get('io');
     if (io) {
       io.to(`conversation:${conversationId}`).emit('message:received', message);
+
+      // Notify other participants in their personal user rooms
+      prisma.conversationParticipant.findMany({
+        where: { conversationId },
+      }).then((participants) => {
+        for (const p of participants) {
+          if (p.userId !== req.user!.id) {
+            io.to(`user:${p.userId}`).emit('conversation:updated', {
+              conversationId,
+              lastMessage: {
+                id: message.id,
+                content: message.content,
+                createdAt: message.createdAt,
+                senderId: message.senderId,
+              },
+            });
+          }
+        }
+      }).catch((e) => console.error('[Messaging] Broadcast error:', e));
     }
 
     return res.status(201).json({ success: true, data: message });

@@ -25,71 +25,38 @@ export default function MessagesScreen() {
   const [callModalVisible, setCallModalVisible] = useState(false);
   const [callInitialMode, setCallInitialMode] = useState<'VIDEO' | 'VOICE'>('VIDEO');
   const [activeCallPeer, setActiveCallPeer] = useState({
-    name: 'Sarah Jenkins',
-    role: 'Graduate TA & Distributed Systems Lead',
+    name: 'Campus Peer',
+    role: 'SkillBridge Student',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
-    topic: 'Distributed Systems & Exam Prep',
+    topic: 'Campus Peer Discussion',
   });
 
-  const initialConversations = [
-    {
-      id: 'conv-1',
-      participantName: 'Sarah Jenkins',
-      participantRole: 'Graduate TA & Distributed Systems Lead',
-      participantAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
-      lastMessage: 'Awesome! See you tomorrow at 3 PM for the Paxos review.',
-      time: '12m ago',
-      unreadCount: 1,
-      isOnline: true,
-      topic: 'Distributed Systems & Paxos Review',
-    },
-    {
-      id: 'conv-2',
-      participantName: 'David Kim',
-      participantRole: 'Sophomore • Algorithms & Data Structures',
-      participantAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
-      lastMessage: 'Did you finish question 4 of the algorithms assignment?',
-      time: '2h ago',
-      unreadCount: 0,
-      isOnline: false,
-      topic: 'Algorithms CS301',
-    },
-    {
-      id: 'conv-3',
-      participantName: 'Elena Rostova',
-      participantRole: 'PhD Researcher in Deep Learning',
-      participantAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200',
-      lastMessage: 'I reviewed your PR on the PyTorch research repo. Great job!',
-      time: '1d ago',
-      unreadCount: 0,
-      isOnline: true,
-      topic: 'Deep Learning & PyTorch',
-    },
-  ];
-
-  const [conversations, setConversations] = useState(initialConversations);
+  const [conversations, setConversations] = useState<any[]>([]);
 
   const loadConversations = async () => {
     try {
       const res = await MobileApi.getConversations();
-      if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
-        const mapped = res.data.map((c: any) => ({
-          id: c.id,
-          participantName: c.participant?.profile?.fullName || c.participant?.email || 'Campus Peer',
-          participantRole: c.participant?.profile?.headline || 'StudyBridge Member',
-          participantAvatar: c.participant?.profile?.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
-          lastMessage: c.lastMessage?.content || 'Started a new conversation',
-          time: c.lastMessage?.createdAt ? new Date(c.lastMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent',
-          unreadCount: c.unreadCount || 0,
-          isOnline: true,
-          topic: 'Peer Mentoring Session',
-        }));
+      if (res && res.data && Array.isArray(res.data)) {
+        const mapped = res.data.map((c: any) => {
+          const other = c.otherUser || c.participant;
+          return {
+            id: c.id,
+            participantName: other?.profile?.fullName || (typeof other?.email === 'string' && other.email.includes('@') ? other.email.split('@')[0] : 'Campus Peer'),
+            participantRole: other?.profile?.headline || other?.profile?.department || 'SkillBridge Member',
+            participantAvatar: other?.profile?.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
+            lastMessage: typeof c.lastMessage === 'string' ? c.lastMessage : (c.lastMessage?.content || 'Started a new conversation'),
+            time: c.lastMessage?.createdAt ? new Date(c.lastMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent',
+            unreadCount: c.unreadCount || 0,
+            isOnline: other?.profile?.onlineStatus === 'available',
+            topic: 'Campus Peer Exchange',
+          };
+        });
         setConversations(mapped);
       } else {
-        setConversations(initialConversations);
+        setConversations([]);
       }
     } catch {
-      setConversations(initialConversations);
+      setConversations([]);
     } finally {
       setRefreshing(false);
     }

@@ -84,13 +84,33 @@ function persist<T>(key: string, data: T[]): void {
 
 /** Initialize (or re-initialize) all data stores from seed data. */
 export function initializeDataStore(force = false): void {
+  // Always clean up legacy dummy mock conversations/messages
+  try {
+    const existingConvs = safeStorage.getItem(STORAGE_KEYS.conversations);
+    if (existingConvs) {
+      const parsed = JSON.parse(existingConvs);
+      if (Array.isArray(parsed) && parsed.some(c => c.id && (c.id.startsWith('conv-') || c.id.startsWith('conv_')))) {
+        safeStorage.setItem(STORAGE_KEYS.conversations, JSON.stringify([]));
+      }
+    }
+    const existingMsgs = safeStorage.getItem(STORAGE_KEYS.messages);
+    if (existingMsgs) {
+      const parsed = JSON.parse(existingMsgs);
+      if (Array.isArray(parsed) && parsed.some(m => m.id && (m.id.startsWith('msg-') || m.conversationId?.startsWith('conv-')))) {
+        safeStorage.setItem(STORAGE_KEYS.messages, JSON.stringify([]));
+      }
+    }
+  } catch {
+    // Ignore cleanup error
+  }
+
   if (!force && safeStorage.getItem(STORAGE_KEYS.initialized)) return;
   safeStorage.setItem(STORAGE_KEYS.users, JSON.stringify(mockUsers));
   safeStorage.setItem(STORAGE_KEYS.expertise, JSON.stringify(mockExpertise));
   safeStorage.setItem(STORAGE_KEYS.availability, JSON.stringify(mockAvailability));
   safeStorage.setItem(STORAGE_KEYS.sessions, JSON.stringify(mockSessions));
-  safeStorage.setItem(STORAGE_KEYS.conversations, JSON.stringify(mockConversations));
-  safeStorage.setItem(STORAGE_KEYS.messages, JSON.stringify(mockMessages));
+  safeStorage.setItem(STORAGE_KEYS.conversations, JSON.stringify([]));
+  safeStorage.setItem(STORAGE_KEYS.messages, JSON.stringify([]));
   safeStorage.setItem(STORAGE_KEYS.reviews, JSON.stringify(mockReviews));
   safeStorage.setItem(STORAGE_KEYS.notifications, JSON.stringify(mockNotifications));
   safeStorage.setItem(STORAGE_KEYS.reports, JSON.stringify(mockReports));

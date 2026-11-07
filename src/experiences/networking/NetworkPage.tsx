@@ -6,7 +6,8 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../../identity/authentication/auth-store';
 import { Card, Avatar, Badge, Button, Input, EmptyState } from '../../shared/components';
-import { getConnections, getUsers, sendConnectionRequest, respondConnectionRequest, removeConnection, getOrCreateConversation } from '../../infrastructure/local-storage/data-service';
+import { getConnections, getUsers, sendConnectionRequest, respondConnectionRequest, removeConnection } from '../../infrastructure/local-storage/data-service';
+import { apiClient } from '../../infrastructure/api/api-client';
 import { useToastStore } from '../../shared/notifications/toast-store';
 import { DEPARTMENTS } from '../../foundation/constants';
 import { Connection, User } from '../../foundation/types';
@@ -98,10 +99,18 @@ export function NetworkPage() {
     setRefreshKey(k => k + 1);
   };
 
-  const handleStartChat = (otherUserId: string) => {
+  const handleStartChat = async (otherUserId: string) => {
     if (!user) return;
-    const conv = getOrCreateConversation(user.id, otherUserId);
-    navigate(`/messages/${conv.id}`);
+    try {
+      const conv = await apiClient.startConversation(otherUserId);
+      if (conv?.id) {
+        navigate(`/messages/${conv.id}`);
+        return;
+      }
+    } catch (e) {
+      console.warn('Could not start conversation:', e);
+    }
+    navigate('/messages');
   };
 
   if (!user) return null;

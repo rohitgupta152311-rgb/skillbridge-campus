@@ -26,8 +26,8 @@ import {
   calculateSkillExchangeMatches,
   scheduleExchangeSessions,
   updateUser,
-  getOrCreateConversation,
 } from '../../infrastructure/local-storage/data-service';
+import { apiClient } from '../../infrastructure/api/api-client';
 import { useToastStore } from '../../shared/notifications/toast-store';
 import { TwoWayMatch, SkillExchangeEntry } from '../../foundation/types';
 
@@ -338,9 +338,21 @@ export function SkillExchangePage() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => {
-                  const conv = getOrCreateConversation(user?.id || 'user-vidya', mutualMatches[0].partnerId);
-                  navigate(`/messages/${conv.id}`);
+                onClick={async () => {
+                  if (!user) {
+                    navigate('/login');
+                    return;
+                  }
+                  try {
+                    const conv = await apiClient.startConversation(mutualMatches[0].partnerId);
+                    if (conv?.id) {
+                      navigate(`/messages/${conv.id}`);
+                      return;
+                    }
+                  } catch (e) {
+                    console.warn('Could not start conversation:', e);
+                  }
+                  navigate('/messages');
                 }}
                 leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
                 className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2 border-white/20 rounded-xl"
@@ -432,9 +444,21 @@ export function SkillExchangePage() {
                     {/* Action Buttons */}
                     <div className="flex items-center gap-2 shrink-0">
                       <button
-                        onClick={() => {
-                          const conv = getOrCreateConversation(user?.id || 'user-vidya', match.partnerId);
-                          navigate(`/messages/${conv.id}`);
+                        onClick={async () => {
+                          if (!user) {
+                            navigate('/login');
+                            return;
+                          }
+                          try {
+                            const conv = await apiClient.startConversation(match.partnerId);
+                            if (conv?.id) {
+                              navigate(`/messages/${conv.id}`);
+                              return;
+                            }
+                          } catch (e) {
+                            console.warn('Could not start conversation:', e);
+                          }
+                          navigate('/messages');
                         }}
                         className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
                       >

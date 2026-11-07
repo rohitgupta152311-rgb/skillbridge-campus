@@ -159,6 +159,7 @@ export interface Conversation {
   lastMessageAt: string;
   createdAt: string;
   unreadCount: Record<string, number>;
+  otherUser?: any;
 }
 
 export interface Message {

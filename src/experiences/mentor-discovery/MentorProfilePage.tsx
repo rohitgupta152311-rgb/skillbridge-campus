@@ -4,7 +4,8 @@ import { ArrowLeft, Calendar, MessageSquare, MapPin, Globe, Clock, BookOpen, Awa
 import { Avatar, Badge, Button, Card, StarRating, EmptyState } from '../../shared/components';
 import { useAuthStore } from '../../identity/authentication/auth-store';
 import { buildMentorProfile } from '../../domain/matching-engine';
-import { getUserById, getReviewsByMentor, getSessionsByUser, getOrCreateConversation } from '../../infrastructure/local-storage/data-service';
+import { getUserById, getReviewsByMentor, getSessionsByUser } from '../../infrastructure/local-storage/data-service';
+import { apiClient } from '../../infrastructure/api/api-client';
 import { formatDate, formatTime, getDayName, getRatingColor, averageOf } from '../../foundation/helpers';
 import { useToastStore } from '../../shared/notifications/toast-store';
 import { TutoringCallModal } from '../session-booking/TutoringCallModal';
@@ -33,10 +34,18 @@ export function MentorProfilePage() {
 
   if (!mentor) return <EmptyState title="Mentor not found" description="This mentor profile doesn't exist." action={<Button onClick={() => navigate('/discover')}>Back to Discovery</Button>} />;
 
-  const handleMessage = () => {
+  const handleMessage = async () => {
     if (!user) return navigate('/login');
-    const conv = getOrCreateConversation(user.id, mentor.id);
-    navigate(`/messages/${conv.id}`);
+    try {
+      const conv = await apiClient.startConversation(mentor.id);
+      if (conv?.id) {
+        navigate(`/messages/${conv.id}`);
+        return;
+      }
+    } catch (e) {
+      console.warn('Could not start conversation:', e);
+    }
+    navigate('/messages');
   };
 
   const handleBookSession = () => {

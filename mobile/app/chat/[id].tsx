@@ -30,50 +30,44 @@ export default function MobileChatScreen() {
   const { id } = useLocalSearchParams();
   const { user } = useAuth();
 
-  // Participant info (defaults to peer mentor)
-  const [peer] = useState({
-    name: id === 'conv-2' ? 'David Kim' : id === 'conv-3' ? 'Elena Rostova' : 'Sarah Jenkins',
-    role: id === 'conv-2' ? 'Peer Student • Algorithms' : id === 'conv-3' ? 'PhD Researcher • ML' : 'Graduate TA • Distributed Systems',
-    avatar: id === 'conv-2'
-      ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200'
-      : id === 'conv-3'
-      ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200'
-      : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
-    topic: 'Distributed Systems & Exam Prep',
+  // Participant info
+  const [peer, setPeer] = useState({
+    name: 'Campus Peer',
+    role: 'SkillBridge Student',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
+    topic: 'Campus Peer Mentorship',
   });
 
   // Call modal state
   const [callModalVisible, setCallModalVisible] = useState(false);
   const [callInitialMode, setCallInitialMode] = useState<'VIDEO' | 'VOICE'>('VIDEO');
 
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 'm-1',
-      sender: 'them',
-      text: 'Hi Alex! Looking forward to reviewing the Distributed Systems assignment.',
-      time: '10:30 AM',
-    },
-    {
-      id: 'm-2',
-      sender: 'me',
-      text: 'Thanks Sarah! I was having trouble understanding how Paxos achieves consensus with concurrent proposers.',
-      time: '10:32 AM',
-    },
-    {
-      id: 'm-3',
-      sender: 'them',
-      text: 'Awesome! See you tomorrow at 3 PM for the Paxos review. Bring your draft notes!',
-      time: '10:35 AM',
-    },
-  ]);
-
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
 
   useEffect(() => {
     let activeSocket: any = null;
     const convId = typeof id === 'string' ? id : Array.isArray(id) ? id[0] : '';
 
-    if (convId && !convId.startsWith('conv-')) {
+    if (convId) {
+      // Fetch conversation metadata to populate peer details
+      MobileApi.getConversations().then((res) => {
+        if (res && res.data && Array.isArray(res.data)) {
+          const match = res.data.find((c: any) => c.id === convId);
+          if (match) {
+            const other = match.otherUser || match.participant;
+            if (other) {
+              setPeer({
+                name: other.profile?.fullName || (typeof other.email === 'string' ? other.email.split('@')[0] : 'Campus Peer'),
+                role: other.profile?.headline || other.profile?.department || 'SkillBridge Member',
+                avatar: other.profile?.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
+                topic: 'Peer Discussion',
+              });
+            }
+          }
+        }
+      }).catch(() => {});
+
       // 1. Fetch persistent history
       MobileApi.getMessages(convId)
         .then((res) => {
@@ -84,7 +78,7 @@ export default function MobileChatScreen() {
               text: m.content || m.text || '',
               time: m.createdAt ? new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now',
             }));
-            if (mapped.length > 0) setMessages(mapped);
+            setMessages(mapped);
           }
         })
         .catch(() => {});

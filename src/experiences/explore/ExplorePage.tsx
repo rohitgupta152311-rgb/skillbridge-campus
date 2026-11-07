@@ -9,7 +9,7 @@ import {
 import { Card, Button, Badge, Avatar } from '../../shared/components';
 import { useAuthStore } from '../../identity/authentication/auth-store';
 import {
-  getUsers, getProjects, getCommunities, calculateSkillExchangeMatches, getOrCreateConversation
+  getUsers, getProjects, getCommunities, calculateSkillExchangeMatches
 } from '../../infrastructure/local-storage/data-service';
 import { useToastStore } from '../../shared/notifications/toast-store';
 import { apiClient } from '../../infrastructure/api/api-client';
@@ -88,9 +88,7 @@ export function ExplorePage() {
   const localUsers = useMemo(() => getUsers(), []);
   const allUsers = useMemo(() => {
     if (liveUsers.length > 0) {
-      const ids = new Set(liveUsers.map((u) => u.id));
-      const remainingLocal = localUsers.filter((u) => !ids.has(u.id));
-      return [...liveUsers, ...remainingLocal];
+      return liveUsers;
     }
     return localUsers;
   }, [liveUsers, localUsers]);

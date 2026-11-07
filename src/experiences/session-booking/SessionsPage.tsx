@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, CheckCircle, XCircle, Clock, Filter, Video, PhoneCall, MessageSquare, Download, Star } from 'lucide-react';
 import { Card, Avatar, Badge, Button, EmptyState, Modal, Input } from '../../shared/components';
 import { useAuthStore } from '../../identity/authentication/auth-store';
-import { getUserById, getOrCreateConversation } from '../../infrastructure/local-storage/data-service';
+import { getUserById } from '../../infrastructure/local-storage/data-service';
 import { formatDate, formatTime } from '../../foundation/helpers';
 import { useToastStore } from '../../shared/notifications/toast-store';
 import { apiClient } from '../../infrastructure/api/api-client';
@@ -73,10 +73,9 @@ export function SessionsPage() {
         return;
       }
     } catch {
-      // fallback
+      // ignore
     }
-    const conv = getOrCreateConversation(user.id, partnerId);
-    navigate(`/messages/${conv.id}`);
+    navigate('/messages');
   };
 
   const handleStartTutoringCall = (session: any, partner: any, mode: 'video' | 'voice') => {

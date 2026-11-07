@@ -22,13 +22,8 @@ import { apiClient } from '../../infrastructure/api/api-client';
 import { socketClient } from '../../infrastructure/socket/socket-client';
 import { TutoringCallModal } from '../session-booking/TutoringCallModal';
 import {
-  getConversationsByUser,
-  getMessagesByConversation,
   getUserById,
-  addMessage,
   markMessagesRead,
-  getOrCreateConversation,
-  getConnectedUsers,
   isUserConnected,
   sendConnectionRequest,
 } from '../../infrastructure/local-storage/data-service';
@@ -46,20 +41,18 @@ export function ConversationCenterPage() {
 
   if (!user) return null;
 
-  const handleStartChatWithPeer = async (peerId: string) => {
+  const handleStartChatWithPeer = async (peerIdOrEmail: string) => {
     try {
-      const conv = await apiClient.startConversation(peerId);
+      const conv = await apiClient.startConversation(peerIdOrEmail);
       if (conv && conv.id) {
         setIsComposeOpen(false);
         navigate(`/messages/${conv.id}`);
         return;
       }
     } catch (err) {
-      console.warn('API start conversation failed, fallback local:', err);
+      console.warn('API start conversation error:', err);
     }
-    const conv = getOrCreateConversation(user.id, peerId);
     setIsComposeOpen(false);
-    navigate(`/messages/${conv.id}`);
   };
 
   return (
@@ -123,24 +116,32 @@ function ConversationList({
 }) {
   const navigate = useNavigate();
 
-  const [conversations, setConversations] = useState<Conversation[]>(() => {
-    return getConversationsByUser(userId).sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
-  });
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [livePeers, setLivePeers] = useState<any[]>([]);
+  const [isLoadingConvs, setIsLoadingConvs] = useState(true);
 
   const loadConversations = async () => {
     try {
       const apiConvs = await apiClient.getConversations();
-      if (apiConvs && apiConvs.length > 0) {
-        setConversations(apiConvs.sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()));
-      }
-    } catch {
-      // keep existing
+      setConversations(apiConvs.sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()));
+    } catch (err) {
+      console.warn('Could not load conversations:', err);
+    } finally {
+      setIsLoadingConvs(false);
     }
   };
 
   useEffect(() => {
     loadConversations();
     socketClient.connect();
+
+    apiClient.getPeerSuggestions()
+      .then((peers) => {
+        if (peers && Array.isArray(peers)) {
+          setLivePeers(peers.filter(p => p.id !== userId));
+        }
+      })
+      .catch(() => {});
 
     const unsubscribeConv = socketClient.onConversationUpdated(({ conversationId, lastMessage }) => {
       setConversations((prev) => {
@@ -184,12 +185,11 @@ function ConversationList({
     };
   }, [userId]);
 
-  const connectedPeers = useMemo(() => getConnectedUsers(userId), [userId]);
-
   const filtered = conversations.filter(c => {
     if (!search) return true;
-    const other = getUserById(c.participantIds.find(p => p !== userId) || '');
-    return other?.fullName.toLowerCase().includes(search.toLowerCase());
+    const rawOther = (c as any).otherUser;
+    const name = rawOther?.profile?.fullName || (typeof rawOther?.email === 'string' ? rawOther.email : '') || getUserById(c.participantIds.find(p => p !== userId) || '')?.fullName || '';
+    return name.toLowerCase().includes(search.toLowerCase());
   });
 
   return (
@@ -227,24 +227,24 @@ function ConversationList({
         </div>
       </div>
 
-      {/* ── CONNECTED PEERS TRAY ── */}
-      {connectedPeers.length > 0 && !search && (
+      {/* ── LIVE PEERS QUICK TRAY ── */}
+      {livePeers.length > 0 && !search && (
         <div className="p-3 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
               <Users className="w-3 h-3 text-violet-600" />
-              Connected Peers ({connectedPeers.length})
+              Campus Peers ({livePeers.length})
             </span>
             <Link
               to="/network"
               className="text-[10px] font-semibold text-violet-600 hover:underline"
             >
-              View Network &rarr;
+              Directory &rarr;
             </Link>
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {connectedPeers.map(peer => (
+            {livePeers.slice(0, 10).map(peer => (
               <button
                 key={peer.id}
                 type="button"
@@ -274,7 +274,7 @@ function ConversationList({
             <div>
               <p className="text-sm font-semibold text-slate-700">No conversations yet</p>
               <p className="text-xs text-slate-400 mt-1">
-                Reach out to your connected classmates and peer mentors to start chatting.
+                Reach out to your classmates, mentors, and peers across campus to start chatting in real time.
               </p>
             </div>
             <Button
@@ -289,8 +289,19 @@ function ConversationList({
         ) : (
           filtered.map(conv => {
             const otherId = conv.participantIds.find(p => p !== userId) || '';
-            const other = getUserById(otherId);
-            const unread = conv.unreadCount[userId] || 0;
+            const rawOther = (conv as any).otherUser;
+            const other = rawOther ? {
+              id: rawOther.id,
+              fullName: rawOther.profile?.fullName || (typeof rawOther.email === 'string' && rawOther.email.includes('@') ? rawOther.email.split('@')[0] : 'Campus Peer'),
+              avatar: rawOther.profile?.avatarUrl || '',
+              onlineStatus: rawOther.profile?.onlineStatus || 'available',
+            } : getUserById(otherId) || {
+              id: otherId,
+              fullName: 'Campus Peer',
+              avatar: '',
+              onlineStatus: 'available' as const,
+            };
+            const unread = conv.unreadCount?.[userId] || 0;
             const isActive = conv.id === activeId;
             const isConnected = isUserConnected(userId, otherId);
 
@@ -377,14 +388,13 @@ function ChatArea({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { addToast } = useToastStore();
 
-  const [messages, setMessages] = useState<Message[]>(() => getMessagesByConversation(conversationId));
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [activeConv, setActiveConv] = useState<Conversation | null>(null);
 
   const loadMessages = async () => {
     try {
       const apiMsgs = await apiClient.getMessages(conversationId);
-      if (apiMsgs && apiMsgs.length > 0) {
-        setMessages(apiMsgs);
-      }
+      setMessages(apiMsgs);
     } catch {
       // keep existing
     }
@@ -393,6 +403,11 @@ function ChatArea({
   useEffect(() => {
     loadMessages();
     socketClient.joinConversation(conversationId);
+
+    apiClient.getConversations().then((convs) => {
+      const found = convs.find(c => c.id === conversationId);
+      if (found) setActiveConv(found);
+    }).catch(() => {});
 
     const unsubscribeMsg = socketClient.onMessageReceived((msg: any) => {
       if (msg.conversationId === conversationId) {
@@ -431,14 +446,19 @@ function ChatArea({
     };
   }, [conversationId, userId]);
 
-  const conversation = useMemo(() => {
-    const convs = getConversationsByUser(userId);
-    return convs.find(c => c.id === conversationId);
-  }, [conversationId, userId, refreshKey]);
-
-  const otherId = conversation?.participantIds.find(p => p !== userId) || '';
+  const otherId = activeConv?.participantIds.find(p => p !== userId) || '';
+  const rawOther = (activeConv as any)?.otherUser;
   const localOther = getUserById(otherId);
-  const other = localOther || {
+  const other = rawOther ? {
+    id: rawOther.id,
+    fullName: rawOther.profile?.fullName || (typeof rawOther.email === 'string' && rawOther.email.includes('@') ? rawOther.email.split('@')[0] : 'Campus Peer'),
+    department: rawOther.profile?.department || 'Engineering',
+    year: rawOther.profile?.currentYear || 'NIT Nagaland',
+    university: rawOther.profile?.university || 'NIT Nagaland',
+    avatar: rawOther.profile?.avatarUrl || '',
+    role: (rawOther.role || 'mentee').toLowerCase() as any,
+    onlineStatus: (rawOther.profile?.onlineStatus || 'available') as any,
+  } : localOther || {
     id: otherId,
     fullName: otherId ? 'Campus Peer' : 'Peer',
     department: 'Engineering',
@@ -476,9 +496,6 @@ function ChatArea({
       isRead: true,
     };
     setMessages(prev => [...prev, optimisticMsg]);
-
-    // Send via real-time WebSocket
-    socketClient.sendMessage(conversationId, content);
 
     try {
       const sent = await apiClient.sendMessage(conversationId, content);
@@ -797,7 +814,23 @@ function ConnectedPeersDashboard({
   userId: string;
   onStartChat: (peerId: string) => void;
 }) {
-  const connectedPeers = useMemo(() => getConnectedUsers(userId), [userId]);
+  const [peers, setPeers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    apiClient.getPeerSuggestions()
+      .then((data) => {
+        if (active && data && Array.isArray(data)) {
+          setPeers(data.filter((u: any) => u.id !== userId));
+        }
+      })
+      .catch((e) => console.warn('Could not load campus peers:', e))
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, [userId]);
 
   return (
     <div className="hidden md:flex flex-1 flex-col overflow-y-auto p-8 bg-slate-50/50">
@@ -809,33 +842,35 @@ function ConnectedPeersDashboard({
             <span>Campus Network Messenger</span>
           </div>
           <h2 className="text-xl font-bold text-slate-900 font-heading">
-            Connect &amp; Message Your Campus Peers
+            Message Any Student or Mentor Across Campus
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-2xl">
-            You are connected with {connectedPeers.length} fellow students and mentors. Select any connected peer below to immediately open a chat thread or propose a technical skill barter.
+            SkillBridge connects everyone in the university directory. Select any registered peer below to immediately launch a real-time messaging thread or discuss technical skill barters.
           </p>
         </div>
 
-        {/* Connected Peers Grid */}
+        {/* Peers Grid */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider text-xs">
-              Your Connected Peers ({connectedPeers.length})
+              Available Campus Peers ({peers.length})
             </h3>
             <Link
               to="/network"
               className="text-xs font-semibold text-violet-600 hover:underline flex items-center gap-1"
             >
-              <span>Manage Network</span>
+              <span>View Full Directory</span>
               <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
 
-          {connectedPeers.length === 0 ? (
+          {loading ? (
+            <div className="py-12 text-center text-xs text-slate-400">Loading campus peers...</div>
+          ) : peers.length === 0 ? (
             <Card padding="lg" className="text-center space-y-3">
               <EmptyState
-                title="No connected peers yet"
-                description="Connect with classmates in your department or browse mentors in the network."
+                title="No other peers registered yet"
+                description="Invite classmates or browse the directory to start chatting."
                 action={
                   <Link to="/network">
                     <Button size="sm">Browse Campus Network</Button>
@@ -845,7 +880,7 @@ function ConnectedPeersDashboard({
             </Card>
           ) : (
             <div className="grid sm:grid-cols-2 gap-4">
-              {connectedPeers.map(peer => (
+              {peers.map(peer => (
                 <div
                   key={peer.id}
                   className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-violet-300 hover:shadow-xs transition-all space-y-3 flex flex-col justify-between"
@@ -861,20 +896,20 @@ function ConnectedPeersDashboard({
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-bold text-slate-900 truncate">{peer.fullName}</p>
-                        <Badge variant="success" size="sm">
-                          Connected
+                        <Badge variant="violet" size="sm">
+                          {peer.role || 'Peer'}
                         </Badge>
                       </div>
                       <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
                         {peer.headline || `${peer.department} • ${peer.year}`}
                       </p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">{peer.university}</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{peer.university || 'NIT Nagaland'}</p>
                     </div>
                   </div>
 
                   <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                     <span className="text-[11px] text-emerald-700 font-medium truncate max-w-[150px]">
-                      Teaches: {peer.skillsOffered?.[0]?.skillName || 'Engineering'}
+                      {peer.skillsOffered?.[0]?.skillName ? `Offers: ${peer.skillsOffered[0].skillName}` : peer.department}
                     </span>
                     <Button
                       size="sm"
@@ -908,45 +943,88 @@ function ComposeChatModal({
   onSelectPeer: (peerId: string) => void;
 }) {
   const [search, setSearch] = useState('');
-  const connectedPeers = useMemo(() => getConnectedUsers(userId), [userId]);
+  const [directEmail, setDirectEmail] = useState('');
+  const [peers, setPeers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const filtered = connectedPeers.filter(p => {
-    if (!search) return true;
-    const s = search.toLowerCase();
-    return (
-      p.fullName.toLowerCase().includes(s) ||
-      p.department.toLowerCase().includes(s) ||
-      (p.headline || '').toLowerCase().includes(s)
-    );
-  });
+  useEffect(() => {
+    if (!isOpen) return;
+    let active = true;
+    setLoading(true);
+
+    apiClient.getPeerSuggestions({ search: search.trim() })
+      .then((data) => {
+        if (active && data && Array.isArray(data)) {
+          setPeers(data.filter((u: any) => u.id !== userId));
+        }
+      })
+      .catch((e) => console.warn('Could not load suggestions:', e))
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => { active = false; };
+  }, [isOpen, search, userId]);
+
+  const handleDirectSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (directEmail.trim()) {
+      onSelectPeer(directEmail.trim());
+    }
+  };
 
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="New Message to Connected Peer">
+    <Modal isOpen={isOpen} onClose={onClose} title="New Message • Campus Student Directory">
       <div className="space-y-4">
         <p className="text-xs text-slate-500">
-          Select any connected classmate or mentor from your professional network to start chatting:
+          Everyone can message everyone on SkillBridge. Select any registered classmate, mentor, or peer:
         </p>
 
+        {/* Live Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-sm placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20"
-            placeholder="Search by name, department, or topic..."
+            placeholder="Search by student name, department, or skill..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             autoFocus
           />
         </div>
 
+        {/* Direct Email Option */}
+        <form onSubmit={handleDirectSubmit} className="flex gap-2">
+          <input
+            type="email"
+            placeholder="Or enter campus email (e.g. vidya.gupta@campus.edu)"
+            value={directEmail}
+            onChange={e => setDirectEmail(e.target.value)}
+            className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-violet-500"
+          />
+          <Button
+            size="sm"
+            type="submit"
+            disabled={!directEmail.trim()}
+            className="text-xs font-semibold py-1.5 px-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white"
+          >
+            Chat
+          </Button>
+        </form>
+
+        {/* Directory List */}
         <div className="max-h-72 overflow-y-auto divide-y divide-slate-100">
-          {filtered.length === 0 ? (
+          {loading ? (
             <div className="py-8 text-center text-xs text-slate-400">
-              No matching connected peers found.
+              Searching campus directory...
+            </div>
+          ) : peers.length === 0 ? (
+            <div className="py-8 text-center text-xs text-slate-400">
+              No matching students or mentors found. You can enter an email directly above.
             </div>
           ) : (
-            filtered.map(peer => (
+            peers.map(peer => (
               <button
                 key={peer.id}
                 type="button"
@@ -959,12 +1037,15 @@ function ComposeChatModal({
                     <p className="text-xs font-bold text-slate-900 group-hover:text-violet-700 truncate">
                       {peer.fullName}
                     </p>
-                    <p className="text-[11px] text-slate-500 truncate">{peer.department} &bull; {peer.year}</p>
+                    <p className="text-[11px] text-slate-500 truncate">
+                      {peer.headline || `${peer.department} • ${peer.year}`}
+                    </p>
+                    <p className="text-[10px] text-slate-400 truncate">{peer.university || 'NIT Nagaland'}</p>
                   </div>
                 </div>
 
-                <span className="text-xs font-semibold text-violet-600 group-hover:underline shrink-0">
-                  Chat &rarr;
+                <span className="text-xs font-semibold text-violet-600 group-hover:underline shrink-0 flex items-center gap-1">
+                  Start Chat &rarr;
                 </span>
               </button>
             ))

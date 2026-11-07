@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, MessageSquare, Search, BookOpen, Clock, ArrowRight, TrendingUp, Users } from 'lucide-react';
 import { useAuthStore } from '../../identity/authentication/auth-store';
 import { Card, Avatar, Badge, Button, StarRating, EmptyState } from '../../shared/components';
-import { getSessionsByUser, getConversationsByUser, getUserById, getOrCreateConversation } from '../../infrastructure/local-storage/data-service';
+import { getSessionsByUser, getConversationsByUser, getUserById } from '../../infrastructure/local-storage/data-service';
+import { apiClient } from '../../infrastructure/api/api-client';
 import { computeMatchScores, getAllMentorProfiles } from '../../domain/matching-engine';
 import { formatDate, formatTime, getMatchScoreLabel } from '../../foundation/helpers';
 import type { MentorProfile } from '../../foundation/types';
@@ -133,10 +134,18 @@ export function LearnerDashboard() {
                       variant="outline"
                       className="w-full text-xs hover:bg-violet-50 hover:text-violet-700 hover:border-violet-300 font-semibold"
                       leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation();
-                        const conv = getOrCreateConversation(user?.id || 'user-vidya', mentor.id);
-                        navigate(`/messages/${conv.id}`);
+                        if (!user) {
+                          navigate('/login');
+                          return;
+                        }
+                        const conv = await apiClient.startConversation(mentor.id);
+                        if (conv?.id) {
+                          navigate(`/messages/${conv.id}`);
+                        } else {
+                          navigate('/messages');
+                        }
                       }}
                     >
                       Start Messaging

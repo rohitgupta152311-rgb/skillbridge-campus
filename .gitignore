@@ -27,3 +27,5 @@ server/.env
 *.sw?
 
 .vercel
+apk-staging
+

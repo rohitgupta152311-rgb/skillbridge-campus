@@ -168,163 +168,144 @@ export const apiClient = {
   // ── MESSAGING & REAL-TIME CONVERSATIONS (DATABASE PERSISTED) ──
   async getConversations(): Promise<Conversation[]> {
     const token = getAuthToken();
-    if (token) {
-      try {
-        const res = await fetch(`${API_BASE}/messages/conversations`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const json = await res.json();
-          const backendConvs = json.data || [];
-          // Map backend conversations to frontend Conversation type
-          return backendConvs.map((conv: any) => {
-            // If backend returned otherUser, persist otherUser into LocalData so UI avatar/status works
-            if (conv.otherUser && conv.otherUser.id) {
-              const existing = LocalData.getUserById(conv.otherUser.id);
-              if (!existing) {
-                LocalData.addUser({
-                  id: conv.otherUser.id,
-                  email: conv.otherUser.email,
-                  fullName: conv.otherUser.profile?.fullName || (typeof conv.otherUser.email === 'string' && conv.otherUser.email.includes('@') ? conv.otherUser.email.split('@')[0] : 'Campus Peer'),
-                  avatar: conv.otherUser.profile?.avatarUrl || '',
-                  role: (conv.otherUser.role || 'mentee').toLowerCase(),
-                  department: conv.otherUser.profile?.department || 'Engineering',
-                  year: conv.otherUser.profile?.currentYear || '2nd Year',
-                  university: conv.otherUser.profile?.university || 'NIT Nagaland',
-                  bio: conv.otherUser.profile?.bio || '',
-                  headline: conv.otherUser.profile?.headline || '',
-                  isVerified: true,
-                  isSuspended: false,
-                  learningPreferences: [],
-                  languages: ['English'],
-                  onlineStatus: 'available',
-                });
-              }
+    if (!token) return [];
+
+    try {
+      const res = await fetch(`${API_BASE}/messages/conversations`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const backendConvs = json.data || [];
+        return backendConvs.map((conv: any) => {
+          // If backend returned otherUser, persist otherUser into LocalData cache so helper lookups work
+          if (conv.otherUser && conv.otherUser.id) {
+            const existing = LocalData.getUserById(conv.otherUser.id);
+            if (!existing) {
+              LocalData.addUser({
+                id: conv.otherUser.id,
+                email: conv.otherUser.email,
+                fullName: conv.otherUser.profile?.fullName || (typeof conv.otherUser.email === 'string' && conv.otherUser.email.includes('@') ? conv.otherUser.email.split('@')[0] : 'Campus Peer'),
+                avatar: conv.otherUser.profile?.avatarUrl || '',
+                role: (conv.otherUser.role || 'mentee').toLowerCase(),
+                department: conv.otherUser.profile?.department || 'Engineering',
+                year: conv.otherUser.profile?.currentYear || '2nd Year',
+                university: conv.otherUser.profile?.university || 'NIT Nagaland',
+                bio: conv.otherUser.profile?.bio || '',
+                headline: conv.otherUser.profile?.headline || '',
+                isVerified: true,
+                isSuspended: false,
+                learningPreferences: [],
+                languages: ['English'],
+                onlineStatus: conv.otherUser.profile?.onlineStatus || 'available',
+              });
             }
+          }
 
-            return {
-              id: conv.id,
-              participantIds: conv.participantIds || [conv.otherUser?.id].filter(Boolean),
-              lastMessage: typeof conv.lastMessage === 'string' ? conv.lastMessage : (conv.lastMessage?.content || ''),
-              lastMessageAt: conv.lastMessage?.createdAt || conv.updatedAt || new Date().toISOString(),
-              createdAt: conv.createdAt || conv.updatedAt || new Date().toISOString(),
-              unreadCount: {},
-            };
-          });
-        }
-      } catch (e) {
-        console.warn('Backend conversations fetch error, falling back to local:', e);
-      }
-    }
-    const currentUser = JSON.parse(localStorage.getItem('sb_current_user') || '{}');
-    return currentUser.id ? LocalData.getConversationsByUser(currentUser.id) : [];
-  },
-
-  async startConversation(recipientId: string): Promise<Conversation | null> {
-    const token = getAuthToken();
-    if (token) {
-      try {
-        const res = await fetch(`${API_BASE}/messages/conversations`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ recipientId }),
-        });
-        if (res.ok) {
-          const json = await res.json();
-          const conv = json.data;
-          const mapped: Conversation = {
+          return {
             id: conv.id,
-            participantIds: conv.participantIds || [recipientId],
-            lastMessage: conv.lastMessage?.content || '',
+            participantIds: conv.participantIds || [conv.otherUser?.id].filter(Boolean),
+            otherUser: conv.otherUser,
+            lastMessage: typeof conv.lastMessage === 'string' ? conv.lastMessage : (conv.lastMessage?.content || ''),
             lastMessageAt: conv.lastMessage?.createdAt || conv.updatedAt || new Date().toISOString(),
             createdAt: conv.createdAt || conv.updatedAt || new Date().toISOString(),
             unreadCount: {},
           };
-          return mapped;
-        }
-      } catch (e) {
-        console.warn('Backend start conversation error, falling back to local:', e);
+        });
       }
+    } catch (e) {
+      console.warn('Backend conversations fetch error:', e);
     }
-    const currentUser = JSON.parse(localStorage.getItem('sb_current_user') || '{}');
-    if (currentUser.id) {
-      return LocalData.getOrCreateConversation(currentUser.id, recipientId);
+    return [];
+  },
+
+  async startConversation(recipientId: string): Promise<Conversation | null> {
+    const token = getAuthToken();
+    if (!token) return null;
+
+    try {
+      const res = await fetch(`${API_BASE}/messages/conversations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ recipientId }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const conv = json.data;
+        const mapped: Conversation = {
+          id: conv.id,
+          participantIds: conv.participantIds || [recipientId],
+          otherUser: conv.otherUser,
+          lastMessage: conv.lastMessage?.content || '',
+          lastMessageAt: conv.lastMessage?.createdAt || conv.updatedAt || new Date().toISOString(),
+          createdAt: conv.createdAt || conv.updatedAt || new Date().toISOString(),
+          unreadCount: {},
+        };
+        return mapped;
+      }
+    } catch (e) {
+      console.warn('Backend start conversation error:', e);
     }
     return null;
   },
 
   async getMessages(conversationId: string): Promise<Message[]> {
     const token = getAuthToken();
-    if (token) {
-      try {
-        const res = await fetch(`${API_BASE}/messages/conversations/${conversationId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const json = await res.json();
-          const backendMsgs = json.data || [];
-          return backendMsgs.map((m: any) => ({
-            id: m.id,
-            conversationId: m.conversationId || conversationId,
-            senderId: m.senderId,
-            content: m.content,
-            timestamp: m.createdAt || m.timestamp || new Date().toISOString(),
-            isRead: true,
-          }));
-        }
-      } catch (e) {
-        console.warn('Backend messages fetch error, falling back to local:', e);
+    if (!token || !conversationId || conversationId.startsWith('conv-')) return [];
+
+    try {
+      const res = await fetch(`${API_BASE}/messages/conversations/${conversationId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const backendMsgs = json.data || [];
+        return backendMsgs.map((m: any) => ({
+          id: m.id,
+          conversationId: m.conversationId || conversationId,
+          senderId: m.senderId,
+          content: m.content,
+          timestamp: m.createdAt || m.timestamp || new Date().toISOString(),
+          isRead: true,
+        }));
       }
+    } catch (e) {
+      console.warn('Backend messages fetch error:', e);
     }
-    return LocalData.getMessagesByConversation(conversationId);
+    return [];
   },
 
   async sendMessage(conversationId: string, content: string): Promise<Message | null> {
     const currentUser = JSON.parse(localStorage.getItem('sb_current_user') || '{}');
     const token = getAuthToken();
-    if (token) {
-      try {
-        const res = await fetch(`${API_BASE}/messages/conversations/${conversationId}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ content: content.trim() }),
-        });
-        if (res.ok) {
-          const json = await res.json();
-          const m = json.data;
-          const msgObj: Message = {
-            id: m.id,
-            conversationId: m.conversationId || conversationId,
-            senderId: m.senderId || currentUser.id,
-            content: m.content,
-            timestamp: m.createdAt || new Date().toISOString(),
-            isRead: true,
-          };
-          // Also record locally for instant smooth offline-compatible UI
-          LocalData.addMessage({
-            conversationId,
-            senderId: currentUser.id,
-            content: content.trim(),
-          });
-          return msgObj;
-        }
-      } catch (e) {
-        console.warn('Backend send message error, falling back to local:', e);
-      }
-    }
+    if (!token || !conversationId || conversationId.startsWith('conv-')) return null;
 
-    if (currentUser.id) {
-      return LocalData.addMessage({
-        conversationId,
-        senderId: currentUser.id,
-        content: content.trim(),
+    try {
+      const res = await fetch(`${API_BASE}/messages/conversations/${conversationId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: content.trim() }),
       });
+      if (res.ok) {
+        const json = await res.json();
+        const m = json.data;
+        return {
+          id: m.id,
+          conversationId: m.conversationId || conversationId,
+          senderId: m.senderId || currentUser.id,
+          content: m.content,
+          timestamp: m.createdAt || new Date().toISOString(),
+          isRead: true,
+        };
+      }
+    } catch (e) {
+      console.warn('Backend send message error:', e);
     }
     return null;
   },
