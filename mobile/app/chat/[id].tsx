@@ -210,6 +210,10 @@ export default function MobileChatScreen() {
         <FlatList
           data={messages}
           keyExtractor={(item) => item.id}
+          initialNumToRender={15}
+          maxToRenderPerBatch={10}
+          windowSize={7}
+          removeClippedSubviews={Platform.OS === 'android'}
           contentContainerStyle={styles.messageList}
           renderItem={({ item }) => {
             const isMe = item.sender === 'me';

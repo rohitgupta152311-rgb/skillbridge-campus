@@ -11,6 +11,7 @@ import {
   TextInput,
   Modal,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import {
   ThumbsUp,
@@ -176,6 +177,10 @@ export default function FeedScreen() {
         <FlatList
           data={posts}
           keyExtractor={(item) => item.id}
+          initialNumToRender={6}
+          maxToRenderPerBatch={8}
+          windowSize={5}
+          removeClippedSubviews={Platform.OS === 'android'}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }

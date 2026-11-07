@@ -9,6 +9,7 @@ import {
   Image,
   TextInput,
   RefreshControl,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MessageSquare, Phone, Video, Search, Sparkles } from 'lucide-react-native';
@@ -125,6 +126,10 @@ export default function MessagesScreen() {
       <FlatList
         data={filteredConversations}
         keyExtractor={(item) => item.id}
+        initialNumToRender={8}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={Platform.OS === 'android'}
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#7c3aed" />

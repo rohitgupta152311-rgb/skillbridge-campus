@@ -70,7 +70,12 @@ const manifestXml = `<?xml version="1.0" encoding="utf-8"?>
         android:roundIcon="@mipmap/ic_launcher"
         android:allowBackup="false"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:hardwareAccelerated="true"
+        android:largeHeap="true"
+        android:vmSafeMode="false">
+        
+        <meta-data android:name="android.max_aspect" android:value="2.4" />
         
         <activity
             android:name=".MainActivity"
@@ -78,6 +83,7 @@ const manifestXml = `<?xml version="1.0" encoding="utf-8"?>
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="portrait"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

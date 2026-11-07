@@ -36,6 +36,39 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
   }
 }
 
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+const memoryCache = new Map<string, CacheEntry<any>>();
+
+export function clearCache(pattern?: string) {
+  if (!pattern) {
+    memoryCache.clear();
+    return;
+  }
+  for (const key of memoryCache.keys()) {
+    if (key.includes(pattern)) {
+      memoryCache.delete(key);
+    }
+  }
+}
+
+export async function requestCached<T>(endpoint: string, ttlMs = 30000, options: RequestInit = {}): Promise<T> {
+  const cached = memoryCache.get(endpoint);
+  const now = Date.now();
+
+  // If cached and still valid, return instantaneously (0ms UI latency)
+  if (cached && (now - cached.timestamp < ttlMs)) {
+    return cached.data;
+  }
+
+  const data = await request<T>(endpoint, options);
+  memoryCache.set(endpoint, { data, timestamp: now });
+  return data;
+}
+
 export const MobileApi = {
   // Auth
   login: (email: string, password: string) =>
@@ -64,60 +97,74 @@ export const MobileApi = {
 
   getMe: () => request<any>('/auth/me'),
 
-  // Feed & Posts
-  getFeed: () => request<any>('/posts/feed'),
-  createPost: (postData: { content: string; postType?: string; tags?: string[]; mediaUrls?: string[] }) =>
-    request<any>('/posts', {
+  // Feed & Posts (SWR cached for 15s instant tab loading)
+  getFeed: () => requestCached<any>('/posts/feed', 15000),
+  createPost: async (postData: { content: string; postType?: string; tags?: string[]; mediaUrls?: string[] }) => {
+    clearCache('/posts/feed');
+    return request<any>('/posts', {
       method: 'POST',
       body: JSON.stringify(postData),
-    }),
-  likePost: (postId: string) =>
-    request<any>(`/posts/${postId}/react`, {
+    });
+  },
+  likePost: async (postId: string) => {
+    clearCache('/posts/feed');
+    return request<any>(`/posts/${postId}/react`, {
       method: 'POST',
       body: JSON.stringify({ type: 'LIKE' }),
-    }),
-  addComment: (postId: string, content: string) =>
-    request<any>(`/posts/${postId}/comments`, {
+    });
+  },
+  addComment: async (postId: string, content: string) => {
+    clearCache('/posts/feed');
+    return request<any>(`/posts/${postId}/comments`, {
       method: 'POST',
       body: JSON.stringify({ content }),
-    }),
+    });
+  },
 
-  // Networking & Connections
-  getConnections: () => request<any>('/network/connections'),
-  getSuggestions: () => request<any>('/network/suggestions'),
-  sendRequest: (receiverId: string) =>
-    request<any>('/network/request', {
+  // Networking & Connections (SWR cached for 30s)
+  getConnections: () => requestCached<any>('/network/connections', 30000),
+  getSuggestions: () => requestCached<any>('/network/suggestions', 30000),
+  sendRequest: async (receiverId: string) => {
+    clearCache('/network');
+    return request<any>('/network/request', {
       method: 'POST',
       body: JSON.stringify({ receiverId }),
-    }),
-  respondRequest: (connectionId: string, status: 'ACCEPTED' | 'REJECTED') =>
-    request<any>(`/network/respond/${connectionId}`, {
+    });
+  },
+  respondRequest: async (connectionId: string, status: 'ACCEPTED' | 'REJECTED') => {
+    clearCache('/network');
+    return request<any>(`/network/respond/${connectionId}`, {
       method: 'POST',
       body: JSON.stringify({ status }),
-    }),
+    });
+  },
 
-  // Mentorship & Matchmaker
+  // Mentorship & Matchmaker (SWR cached for 30s)
   getMentors: (topic?: string) =>
-    request<any>(`/mentorship/mentors${topic ? `?topic=${encodeURIComponent(topic)}` : ''}`),
+    requestCached<any>(`/mentorship/mentors${topic ? `?topic=${encodeURIComponent(topic)}` : ''}`, 30000),
   getMatches: (preferences: any) =>
     request<any>('/mentorship/smart-match', {
       method: 'POST',
       body: JSON.stringify(preferences),
     }),
-  bookSession: (bookingData: any) =>
-    request<any>('/mentorship/sessions/book', {
+  bookSession: async (bookingData: any) => {
+    clearCache('/mentorship');
+    return request<any>('/mentorship/sessions/book', {
       method: 'POST',
       body: JSON.stringify(bookingData),
-    }),
+    });
+  },
 
-  // Messages
-  getConversations: () => request<any>('/messages/conversations'),
-  getMessages: (conversationId: string) => request<any>(`/messages/${conversationId}`),
-  sendMessage: (conversationId: string, content: string) =>
-    request<any>(`/messages/${conversationId}`, {
+  // Messages (SWR cached for 10s)
+  getConversations: () => requestCached<any>('/messages/conversations', 10000),
+  getMessages: (conversationId: string) => requestCached<any>(`/messages/${conversationId}`, 8000),
+  sendMessage: async (conversationId: string, content: string) => {
+    clearCache('/messages');
+    return request<any>(`/messages/${conversationId}`, {
       method: 'POST',
       body: JSON.stringify({ content }),
-    }),
+    });
+  },
 
   // Image Upload
   uploadImage: (base64DataUri: string, folder = 'posts') =>
