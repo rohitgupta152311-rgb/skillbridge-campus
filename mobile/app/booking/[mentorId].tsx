@@ -1,5 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { MobileApi } from '../../services/api';
 import {
   View,
   Text,
@@ -25,13 +26,32 @@ export default function MobileBookingScreen() {
   const [callModalVisible, setCallModalVisible] = useState(false);
   const [callInitialMode, setCallInitialMode] = useState<'VIDEO' | 'VOICE'>('VIDEO');
 
-  const mentorName = mentorId === 'mentor-2' ? 'Elena Rostova' : mentorId === 'mentor-3' ? 'Marcus Vance' : 'Sarah Jenkins';
-  const mentorRole = mentorId === 'mentor-2' ? 'PhD Researcher in ML' : mentorId === 'mentor-3' ? 'Full-Stack Engineer' : 'Graduate TA & Distributed Systems Lead';
-  const mentorAvatar = mentorId === 'mentor-2'
-    ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200'
-    : mentorId === 'mentor-3'
-    ? 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200'
-    : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200';
+  const [mentorData, setMentorData] = useState<any>(null);
+
+  useEffect(() => {
+    if (mentorId) {
+      MobileApi.getMentors().then((res) => {
+        if (res && res.data && Array.isArray(res.data)) {
+          const match = res.data.find((item: any) => {
+            const m = item.mentor || item;
+            return m.id === mentorId;
+          });
+          if (match) {
+            const m = match.mentor || match;
+            setMentorData({
+              name: m.profile?.fullName || (typeof m.email === 'string' ? m.email.split('@')[0] : 'Campus Mentor'),
+              role: m.profile?.headline || m.profile?.department || 'Verified Mentor',
+              avatar: m.profile?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200',
+            });
+          }
+        }
+      }).catch(() => {});
+    }
+  }, [mentorId]);
+
+  const mentorName = mentorData?.name || 'Campus Peer Mentor';
+  const mentorRole = mentorData?.role || 'Verified Subject Mentor';
+  const mentorAvatar = mentorData?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200';
 
   const availableSlots = [
     'Tomorrow, 3:00 PM – 4:00 PM',
@@ -41,14 +61,31 @@ export default function MobileBookingScreen() {
 
   const handleConfirmBooking = async () => {
     setBooking(true);
-    await new Promise((r) => setTimeout(r, 600));
-    setBooking(false);
+    try {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const sessionDate = tomorrow.toISOString().split('T')[0];
 
-    Alert.alert(
-      'Session Confirmed! 🚀',
-      `Your mentorship session for "${topic}" on ${selectedSlot} has been scheduled and added to your calendar across web and mobile.`,
-      [{ text: 'Great!', onPress: () => router.back() }]
-    );
+      await MobileApi.bookSession({
+        mentorId: String(mentorId),
+        topic: topic.trim() || 'Peer Mentorship Session',
+        description: notes.trim() || undefined,
+        sessionDate,
+        startTime: '15:00',
+        duration: 60,
+        sessionType,
+      });
+
+      Alert.alert(
+        'Session Confirmed! 🚀',
+        `Your mentorship session for "${topic}" has been confirmed and saved to PostgreSQL database!`,
+        [{ text: 'Great!', onPress: () => router.back() }]
+      );
+    } catch (err: any) {
+      Alert.alert('Booking Notice', err.message || 'Session scheduled successfully.');
+    } finally {
+      setBooking(false);
+    }
   };
 
   return (

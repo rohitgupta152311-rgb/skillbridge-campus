@@ -23,7 +23,7 @@ import { useAuth } from '../../services/auth-context';
 
 export default function MobileLoginScreen() {
   const router = useRouter();
-  const { login, loginWithDemo } = useAuth();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -41,10 +41,7 @@ export default function MobileLoginScreen() {
     router.replace('/(tabs)');
   };
 
-  const handleDemo = async (role: 'mentee' | 'mentor' | 'admin') => {
-    await loginWithDemo(role);
-    router.replace('/(tabs)');
-  };
+
 
   const handleLinkedInOIDC = () => {
     // Open LinkedIn Profile Import Review screen
@@ -80,14 +77,14 @@ export default function MobileLoginScreen() {
           <View style={styles.socialRow}>
             <TouchableOpacity
               style={styles.socialBtn}
-              onPress={() => handleDemo('mentee')}
+              onPress={() => Alert.alert('Campus SSO', 'Please sign in with your verified campus email and password.')}
             >
               <Text style={styles.socialBtnText}>Google SSO</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.socialBtn}
-              onPress={() => handleDemo('mentor')}
+              onPress={() => Alert.alert('Campus SSO', 'Please sign in with your verified campus email and password.')}
             >
               <Text style={styles.socialBtnText}>GitHub</Text>
             </TouchableOpacity>
@@ -152,35 +149,7 @@ export default function MobileLoginScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* 1-Click Demo Section */}
-        <View style={styles.demoSection}>
-          <Text style={styles.demoTitle}>1-CLICK QUICK ACCESS</Text>
-          <View style={styles.demoRow}>
-            <TouchableOpacity
-              style={styles.demoPill}
-              onPress={() => handleDemo('mentee')}
-            >
-              <Text style={styles.demoEmoji}>🎓</Text>
-              <Text style={styles.demoLabel}>Mentee</Text>
-            </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.demoPill}
-              onPress={() => handleDemo('mentor')}
-            >
-              <Text style={styles.demoEmoji}>👨‍🏫</Text>
-              <Text style={styles.demoLabel}>Mentor</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.demoPill}
-              onPress={() => handleDemo('admin')}
-            >
-              <Text style={styles.demoEmoji}>🛡️</Text>
-              <Text style={styles.demoLabel}>Admin</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
 
         {/* Register Link */}
         <TouchableOpacity
@@ -341,44 +310,6 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 14,
     fontWeight: '700',
-  },
-  demoSection: {
-    marginTop: 24,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
-    alignItems: 'center',
-  },
-  demoTitle: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#94a3b8',
-    marginBottom: 10,
-  },
-  demoRow: {
-    flexDirection: 'row',
-    gap: 8,
-    width: '100%',
-  },
-  demoPill: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    backgroundColor: '#f8fafc',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    paddingVertical: 8,
-    borderRadius: 12,
-  },
-  demoEmoji: {
-    fontSize: 14,
-  },
-  demoLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#334155',
   },
   switchAuth: {
     alignItems: 'center',

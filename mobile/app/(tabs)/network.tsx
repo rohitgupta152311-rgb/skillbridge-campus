@@ -1,5 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { MobileApi } from '../../services/api';
+import { ActivityIndicator } from 'react-native';
 import {
   View,
   Text,
@@ -13,57 +15,68 @@ import { UserCheck, UserPlus, ShieldCheck, Search } from 'lucide-react-native';
 export default function NetworkScreen() {
   const [activeTab, setActiveTab] = useState<'connections' | 'requests' | 'suggestions'>('suggestions');
 
-  const [connections, setConnections] = useState([
-    {
-      id: 'c-1',
-      name: 'Sarah Jenkins',
-      headline: 'Graduate CS • Distributed Systems Mentor',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
-      connectedAt: 'Connected 3d ago',
-    },
-    {
-      id: 'c-2',
-      name: 'David Kim',
-      headline: '2nd Year SE • Full-Stack Developer',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
-      connectedAt: 'Connected 1w ago',
-    },
-  ]);
+  const [connections, setConnections] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [suggestions, setSuggestions] = useState([
-    {
-      id: 's-1',
-      name: 'Marcus Vance',
-      headline: '4th Year CS • Machine Learning Lead',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200',
-      department: 'Computer Science',
-      mutuals: 8,
-      status: 'none',
-    },
-    {
-      id: 's-2',
-      name: 'Priya Patel',
-      headline: '3rd Year Data Science • President ACM',
-      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200',
-      department: 'Data Science',
-      mutuals: 14,
-      status: 'none',
-    },
-    {
-      id: 's-3',
-      name: 'Elena Rostova',
-      headline: 'Graduate AI Researcher • LinkedIn Verified',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200',
-      department: 'Artificial Intelligence',
-      mutuals: 5,
-      status: 'none',
-    },
-  ]);
+  useEffect(() => {
+    loadNetwork();
+  }, [activeTab]);
 
-  const handleConnect = (id: string) => {
-    setSuggestions((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status: 'sent' } : s))
-    );
+  const loadNetwork = async () => {
+    setLoading(true);
+    try {
+      if (activeTab === 'connections') {
+        const res = await MobileApi.getConnections();
+        if (res && res.data && Array.isArray(res.data)) {
+          const mapped = res.data.map((c: any) => {
+            const peer = c.partner || c.receiver || c.sender;
+            return {
+              id: c.id,
+              name: peer?.profile?.fullName || (typeof peer?.email === 'string' ? peer.email.split('@')[0] : 'Campus Peer'),
+              headline: peer?.profile?.headline || peer?.profile?.department || 'Connected Student',
+              avatar: peer?.profile?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200',
+              connectedAt: c.createdAt ? `Connected ${new Date(c.createdAt).toLocaleDateString()}` : 'Connected',
+            };
+          });
+          setConnections(mapped);
+        } else {
+          setConnections([]);
+        }
+      } else {
+        const res = await MobileApi.getSuggestions();
+        if (res && res.data && Array.isArray(res.data)) {
+          const mapped = res.data.map((s: any) => ({
+            id: s.id,
+            name: s.profile?.fullName || (typeof s.email === 'string' ? s.email.split('@')[0] : 'Campus Peer'),
+            headline: s.profile?.headline || s.profile?.department || 'Campus Student',
+            avatar: s.profile?.avatarUrl || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200',
+            department: s.profile?.department || 'Engineering',
+            mutuals: s.matchScore || 0,
+            status: 'none',
+          }));
+          setSuggestions(mapped);
+        } else {
+          setSuggestions([]);
+        }
+      }
+    } catch {
+      setConnections([]);
+      setSuggestions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConnect = async (id: string) => {
+    try {
+      await MobileApi.sendRequest(id);
+      setSuggestions((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, status: 'sent' } : s))
+      );
+    } catch (e: any) {
+      console.warn('Connect error:', e.message);
+    }
   };
 
   return (
@@ -165,6 +178,29 @@ export default function NetworkScreen() {
 }
 
 const styles = StyleSheet.create({
+  emptyContainer: {
+    padding: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    marginHorizontal: 16,
+    marginVertical: 24,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 6,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',

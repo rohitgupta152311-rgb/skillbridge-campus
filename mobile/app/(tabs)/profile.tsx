@@ -25,13 +25,12 @@ export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const [syncing, setSyncing] = useState(false);
 
-  const skills = [
-    { name: 'TypeScript', endorsements: 12 },
-    { name: 'Distributed Systems', endorsements: 19 },
-    { name: 'React Native', endorsements: 8 },
-    { name: 'System Design', endorsements: 15 },
-    { name: 'Algorithms & Data Structures', endorsements: 22 },
-  ];
+  const profileAny = user?.profile as any;
+  const userSkills: string[] = Array.isArray(profileAny?.skillsOffered) && profileAny.skillsOffered.length > 0
+    ? profileAny.skillsOffered
+    : Array.isArray(profileAny?.skills) && profileAny.skills.length > 0
+    ? profileAny.skills
+    : [];
 
   const handleSyncWithWeb = async () => {
     setSyncing(true);
@@ -92,23 +91,29 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Endorsed Skills */}
+        {/* Skills & Competencies */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Award size={16} color="#7c3aed" />
-            <Text style={styles.sectionTitle}>Peer Skill Endorsements</Text>
+            <Text style={styles.sectionTitle}>Skills & Competencies</Text>
           </View>
 
-          <View style={styles.skillsList}>
-            {skills.map((s) => (
-              <View key={s.name} style={styles.skillItem}>
-                <Text style={styles.skillName}>{s.name}</Text>
-                <View style={styles.endorseBadge}>
-                  <Text style={styles.endorseCount}>+{s.endorsements}</Text>
+          {userSkills.length > 0 ? (
+            <View style={styles.skillsList}>
+              {userSkills.map((s) => (
+                <View key={s} style={styles.skillItem}>
+                  <Text style={styles.skillName}>{s}</Text>
+                  <View style={styles.endorseBadge}>
+                    <CheckCircle size={12} color="#7c3aed" />
+                  </View>
                 </View>
-              </View>
-            ))}
-          </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic', paddingVertical: 8 }}>
+              No skills added yet. Add your skills on the web dashboard to get matched with peers!
+            </Text>
+          )}
         </View>
 
         {/* Account Info */}

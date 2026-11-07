@@ -43,22 +43,6 @@ export function setupSocketIO(io: SocketIOServer) {
       }
     }
 
-    // 3. Fallback for demo / development tokens
-    if (rawToken === 'demo-token' || rawToken.startsWith('local-demo-token')) {
-      const demoUser = await prisma.user.findFirst({
-        where: { isSuspended: false },
-        orderBy: { createdAt: 'asc' },
-      });
-      if (demoUser) {
-        socket.user = {
-          id: demoUser.id,
-          email: demoUser.email,
-          role: demoUser.role,
-        };
-        return next();
-      }
-    }
-
     return next(new Error('Invalid or expired socket authentication token.'));
   });
 

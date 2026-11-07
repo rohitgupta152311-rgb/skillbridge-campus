@@ -22,6 +22,9 @@ import {
   MessageSquare,
 } from 'lucide-react-native';
 import { TutoringCallModal } from '../../components/TutoringCallModal';
+import { MobileApi } from '../../services/api';
+import { useEffect } from 'react';
+import { ActivityIndicator } from 'react-native';
 
 export default function MentorshipScreen() {
   const router = useRouter();
@@ -48,62 +51,42 @@ export default function MentorshipScreen() {
 
   const topics = ['All', 'Algorithms & DSA', 'Distributed Systems', 'Machine Learning', 'Full-Stack Web', 'Operating Systems'];
 
-  const mentors = [
-    {
-      id: 'mentor-1',
-      name: 'Sarah Jenkins',
-      role: 'Graduate TA & Distributed Systems Lead',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
-      matchScore: 98,
-      rating: 4.95,
-      reviewsCount: 38,
-      topics: ['Distributed Systems', 'Algorithms & DSA', 'Cloud Architecture'],
-      availability: 'Tomorrow, 3:00 PM',
-      breakdown: {
-        topic: '35/35',
-        schedule: '25/25',
-        rating: '19/20',
-        skills: '10/10',
-        preference: '9/10',
-      },
-    },
-    {
-      id: 'mentor-2',
-      name: 'Elena Rostova',
-      role: 'PhD Researcher in Deep Learning',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200',
-      matchScore: 94,
-      rating: 4.9,
-      reviewsCount: 24,
-      topics: ['Machine Learning', 'PyTorch', 'Computer Vision'],
-      availability: 'Thursday, 5:00 PM',
-      breakdown: {
-        topic: '33/35',
-        schedule: '23/25',
-        rating: '19/20',
-        skills: '10/10',
-        preference: '9/10',
-      },
-    },
-    {
-      id: 'mentor-3',
-      name: 'Marcus Vance',
-      role: 'Senior Full-Stack Engineer & GDSC President',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200',
-      matchScore: 91,
-      rating: 4.88,
-      reviewsCount: 42,
-      topics: ['Full-Stack Web', 'React', 'TypeScript', 'Node.js'],
-      availability: 'Friday, 2:00 PM',
-      breakdown: {
-        topic: '31/35',
-        schedule: '24/25',
-        rating: '18/20',
-        skills: '9/10',
-        preference: '9/10',
-      },
-    },
-  ];
+  const [mentorsList, setMentorsList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadMentors();
+  }, [selectedTopic]);
+
+  const loadMentors = async () => {
+    setLoading(true);
+    try {
+      const res = await MobileApi.getMentors(selectedTopic === 'All' ? undefined : selectedTopic);
+      if (res && res.data && Array.isArray(res.data)) {
+        const mapped = res.data.map((item: any) => {
+          const m = item.mentor || item;
+          return {
+            id: m.id,
+            name: m.profile?.fullName || (typeof m.email === 'string' ? m.email.split('@')[0] : 'Campus Mentor'),
+            role: m.profile?.headline || m.profile?.department || 'Verified Peer Mentor',
+            avatar: m.profile?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200',
+            matchScore: item.matchScore || 85,
+            rating: m.averageRating || 4.8,
+            reviewsCount: m.totalReviews || 0,
+            topics: Array.isArray(m.expertise) && m.expertise.length > 0 ? m.expertise.map((e: any) => e.topic) : ['Peer Tutoring'],
+            availability: Array.isArray(m.availability) && m.availability.length > 0 ? `${m.availability[0].dayOfWeek}, ${m.availability[0].startTime}` : 'Available on request',
+          };
+        });
+        setMentorsList(mapped);
+      } else {
+        setMentorsList([]);
+      }
+    } catch {
+      setMentorsList([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -144,9 +127,24 @@ export default function MentorshipScreen() {
       </View>
 
       <FlatList
-        data={mentors}
+        data={mentorsList}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
+        ListEmptyComponent={
+          loading ? (
+            <View style={{ padding: 40, alignItems: 'center' }}>
+              <ActivityIndicator size="large" color="#7c3aed" />
+            </View>
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Sparkles size={36} color="#7c3aed" style={{ marginBottom: 12 }} />
+              <Text style={styles.emptyTitle}>No Mentors Available</Text>
+              <Text style={styles.emptySubtitle}>
+                No verified peer mentors are currently listed for "{selectedTopic}". Try selecting another category or check back soon!
+              </Text>
+            </View>
+          )
+        }
         renderItem={({ item }) => (
           <View style={styles.card}>
             {/* Match Header */}
@@ -178,7 +176,7 @@ export default function MentorshipScreen() {
 
             {/* Topics */}
             <View style={styles.topicsRow}>
-              {item.topics.map((top) => (
+              {item.topics.map((top: string) => (
                 <View key={top} style={styles.topPill}>
                   <Text style={styles.topText}>{top}</Text>
                 </View>
@@ -195,7 +193,7 @@ export default function MentorshipScreen() {
               <View style={styles.cardActions}>
                 <TouchableOpacity
                   style={styles.cardActionMsg}
-                  onPress={() => router.push(`/chat/${item.id === 'mentor-2' ? 'conv-3' : item.id === 'mentor-3' ? 'conv-2' : 'conv-1'}` as any)}
+                  onPress={() => router.push(`/chat/${item.id}` as any)}
                   accessibilityLabel="Message Mentor"
                 >
                   <MessageSquare size={13} color="#475569" />
@@ -244,6 +242,29 @@ export default function MentorshipScreen() {
 }
 
 const styles = StyleSheet.create({
+  emptyContainer: {
+    padding: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    marginHorizontal: 16,
+    marginVertical: 24,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 6,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',

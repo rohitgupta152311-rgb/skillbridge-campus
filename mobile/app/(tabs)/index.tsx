@@ -37,48 +37,6 @@ export default function FeedScreen() {
   const [postContent, setPostContent] = useState('');
   const [posting, setPosting] = useState(false);
 
-  const initialPosts = [
-    {
-      id: 'p-1',
-      authorName: 'Alex Chen',
-      authorHeadline: 'Junior Computer Science Major',
-      authorAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200',
-      timeAgo: '2h ago',
-      content:
-        '🚀 Just pushed our new open-source Campus Peer Tutoring backend architecture! Built with Node.js, TypeScript, PostgreSQL, and Socket.IO for real-time messaging. Looking for peers to test our 5-factor matching algorithm.',
-      likes: 18,
-      comments: 6,
-      liked: false,
-      tags: ['TypeScript', 'NodeJS', 'SystemDesign'],
-    },
-    {
-      id: 'p-2',
-      authorName: 'Sarah Jenkins',
-      authorHeadline: 'Distributed Systems TA & Peer Mentor',
-      authorAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
-      timeAgo: '4h ago',
-      content:
-        'Hosting an open review session this Thursday at 5 PM on Cache Coherence and Paxos Consensus. Available for 1-on-1 tutoring slots on StudyBridge for midterm prep! Drop your questions below.',
-      likes: 42,
-      comments: 14,
-      liked: true,
-      tags: ['StudyGroup', 'Algorithms', 'Mentorship'],
-    },
-    {
-      id: 'p-3',
-      authorName: 'David Kim',
-      authorHeadline: 'Sophomore Software Engineering',
-      authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
-      timeAgo: 'Yesterday',
-      content:
-        'Big shoutout to Sarah Jenkins for the mentorship session on Dynamic Programming! Solved all memoization practice problems for CS301 with her guidance. StudyBridge matching works wonders.',
-      likes: 29,
-      comments: 3,
-      liked: false,
-      tags: ['SuccessStory', 'PeerLearning'],
-    },
-  ];
-
   useEffect(() => {
     loadFeed();
   }, []);
@@ -86,13 +44,15 @@ export default function FeedScreen() {
   const loadFeed = async () => {
     try {
       const res = await MobileApi.getFeed();
-      if (res && res.data && res.data.posts) {
+      if (res && res.data && Array.isArray(res.data.posts)) {
         setPosts(res.data.posts);
+      } else if (res && res.data && Array.isArray(res.data)) {
+        setPosts(res.data);
       } else {
-        setPosts(initialPosts);
+        setPosts([]);
       }
     } catch {
-      setPosts(initialPosts);
+      setPosts([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -183,6 +143,22 @@ export default function FeedScreen() {
           removeClippedSubviews={Platform.OS === 'android'}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Sparkles size={36} color="#a855f7" style={{ marginBottom: 12 }} />
+              <Text style={styles.emptyTitle}>No Campus Updates Yet</Text>
+              <Text style={styles.emptySubtitle}>
+                Be the first to share an update, study question, or project showcase!
+              </Text>
+              <TouchableOpacity
+                style={styles.emptyCta}
+                onPress={() => setModalVisible(true)}
+              >
+                <Plus size={16} color="#ffffff" />
+                <Text style={styles.emptyCtaText}>Create First Post</Text>
+              </TouchableOpacity>
+            </View>
           }
           contentContainerStyle={styles.listContent}
           renderItem={({ item }) => (
@@ -289,6 +265,44 @@ export default function FeedScreen() {
 }
 
 const styles = StyleSheet.create({
+  emptyContainer: {
+    padding: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    marginHorizontal: 16,
+    marginVertical: 24,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 6,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  emptyCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#7c3aed',
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 9999,
+  },
+  emptyCtaText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',

@@ -12,10 +12,12 @@ import {
 import { useRouter } from 'expo-router';
 import { User, Mail, Lock, Building2, CheckCircle2 } from 'lucide-react-native';
 import { useAuth } from '../../services/auth-context';
+import { MobileApi } from '../../services/api';
 
 export default function MobileRegisterScreen() {
   const router = useRouter();
-  const { loginWithDemo } = useAuth();
+  const { login } = useAuth();
+  const [loading, setLoading] = useState(false);
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -30,10 +32,30 @@ export default function MobileRegisterScreen() {
       return;
     }
 
-    // Auto-login with selected role
-    await loginWithDemo(role);
-    Alert.alert('Account Created', `Welcome to StudyBridge, ${fullName}! Your mobile profile has been initialized.`);
-    router.replace('/(tabs)');
+    setLoading(true);
+    try {
+      const regRes = await MobileApi.register({
+        fullName,
+        email,
+        password,
+        role: role.toUpperCase(),
+        department,
+        currentYear: year,
+        university: 'Campus University',
+      });
+
+      if (regRes.success) {
+        await login(email, password);
+        Alert.alert('Account Created', `Welcome to SkillBridge, ${fullName}!`);
+        router.replace('/(tabs)');
+      } else {
+        Alert.alert('Registration Failed', regRes.message || 'Unable to register account.');
+      }
+    } catch (err: any) {
+      Alert.alert('Registration Error', err.message || 'Could not connect to server.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
