@@ -27,7 +27,7 @@ const STORAGE_KEYS = {
   connections: 'sb_connections',
   projects: 'sb_projects',
   projectApplications: 'sb_project_applications',
-  initialized: 'sb_initialized_v15_connected_messaging',
+  initialized: 'sb_initialized_v17_rohit_gupta_nit_ngl_eee',
 } as const;
 
 // Isomorphic storage fallback for SSR, headless Node environments, and testing
@@ -126,7 +126,7 @@ export function getUsers(): User[] {
     if (idx === -1) {
       merged.push(mu);
       changed = true;
-    } else if (['user-vidya', 'user-nyoimei', 'user-salini', 'user-kasturika', 'user-betimansa'].includes(mu.id)) {
+    } else if (['user-rohit', 'user-vidya', 'user-nyoimei', 'user-salini', 'user-kasturika', 'user-betimansa'].includes(mu.id)) {
       if (merged[idx].fullName !== mu.fullName || merged[idx].email !== mu.email) {
         merged[idx].fullName = mu.fullName;
         merged[idx].email = mu.email;

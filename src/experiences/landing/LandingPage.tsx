@@ -34,6 +34,17 @@ export function LandingPage() {
 
   const featuredMentors = [
     {
+      id: 'rohit',
+      name: 'Rohit Gupta',
+      university: 'NIT Nagaland',
+      dept: 'Electrical & Electronics Engineering',
+      year: '2nd Year',
+      teaches: 'Power Electronics & IoT',
+      seeks: 'Full-Stack Web & Python',
+      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=faces',
+      rating: 4.9,
+    },
+    {
       id: 'vidya',
       name: 'Vidya Gupta',
       university: 'NIT Nagaland',

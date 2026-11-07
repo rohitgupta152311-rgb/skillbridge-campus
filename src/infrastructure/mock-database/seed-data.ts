@@ -578,6 +578,44 @@ export const mockUsers: User[] = [
     availableDays: ['tuesday', 'thursday', 'friday'],
     badges: [{ id: 'b20', title: 'Startup Mentor', icon: 'Briefcase', tier: 'gold', description: 'Mentored 8 campus student startups', earnedAt: '2024-10-19' }],
   },
+  // 17b. Rohit Gupta (NIT Nagaland - Electrical & Electronics Engineering)
+  {
+    id: 'user-rohit',
+    email: 'rohit.gupta@campus.edu',
+    fullName: 'Rohit Gupta',
+    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=faces',
+    role: 'mentor',
+    department: 'Electrical & Electronics Engineering',
+    year: '2nd Year',
+    university: 'National Institute of Technology (NIT) Nagaland',
+    headline: 'EEE Student | NIT Nagaland | Power Electronics, IoT & Embedded Systems',
+    bio: 'Electrical & Electronics Engineering (EEE) student at National Institute of Technology (NIT) Nagaland. Specializing in power electronic circuits, MATLAB Simulink modeling, IoT telemetry, and embedded microcontrollers. Passionate about reciprocal technical skill exchange and engineering project collaboration.',
+    joinedAt: '2024-09-01T00:00:00Z',
+    isVerified: true,
+    isSuspended: false,
+    learningPreferences: ['visual', 'kinesthetic'],
+    languages: ['English', 'Hindi'],
+    onlineStatus: 'available',
+    githubUrl: 'https://github.com/rohitgupta-nitn',
+    linkedinUrl: 'https://linkedin.com/in/rohitgupta-nitn',
+    skillsOffered: [
+      { skillName: 'Power Electronics', proficiency: 'expert', yearsExperience: 2.5 },
+      { skillName: 'Circuit Analysis', proficiency: 'advanced', yearsExperience: 2.5 },
+      { skillName: 'MATLAB & Simulink', proficiency: 'advanced', yearsExperience: 2 },
+      { skillName: 'Embedded Systems & IoT', proficiency: 'intermediate', yearsExperience: 2 },
+    ],
+    skillsWanted: [
+      { skillName: 'Full-Stack Web Development', proficiency: 'beginner', yearsExperience: 0 },
+      { skillName: 'Python & Machine Learning', proficiency: 'beginner', yearsExperience: 0 },
+      { skillName: 'ReactJS', proficiency: 'beginner', yearsExperience: 0 },
+      { skillName: 'Data Structures & Algorithms', proficiency: 'beginner', yearsExperience: 0 },
+    ],
+    availableDays: ['monday', 'wednesday', 'friday', 'saturday'],
+    badges: [
+      { id: 'b-rohit-1', title: 'Circuit Specialist', icon: 'Zap', tier: 'gold', description: 'Led 10+ peer workshops on power electronic circuits', earnedAt: '2024-10-15' },
+      { id: 'b-rohit-2', title: 'Hardware Innovator', icon: 'Cpu', tier: 'gold', description: 'Built IoT microgrid monitor prototype at NIT Nagaland lab', earnedAt: '2024-11-01' },
+    ],
+  },
   // 18. Vidya Gupta (NIT Nagaland - Electrical & Electronics Engineering)
   {
     id: 'user-vidya',
@@ -1238,6 +1276,8 @@ Looking for a peer collaborator to help build a lightweight React web dashboard 
 // COMPATIBILITY SEEDS & PLACEHOLDERS
 // ==========================================
 export const mockExpertise: MentorExpertise[] = [
+  { id: 'exp-rohit-1', mentorId: 'user-rohit', topic: 'Power Electronics & MATLAB Simulink', category: 'technical', proficiencyLevel: 5, description: 'Power semiconductor converters, inverter modeling, and MATLAB simulations', yearsOfExperience: 2.5 },
+  { id: 'exp-rohit-2', mentorId: 'user-rohit', topic: 'Embedded Systems & IoT Hardware', category: 'technical', proficiencyLevel: 5, description: 'ESP32 firmware, sensor telemetry, and microcontrollers', yearsOfExperience: 2 },
   { id: 'exp-9', mentorId: 'user-vidya', topic: 'Power Electronics & MATLAB Simulink', category: 'technical', proficiencyLevel: 5, description: 'Power semiconductor converters, inverter modeling, and MATLAB simulations', yearsOfExperience: 2.5 },
   { id: 'exp-10', mentorId: 'user-nyoimei', topic: 'Embedded Microcontrollers & C', category: 'technical', proficiencyLevel: 5, description: '8051 and ARM microcontroller interfacing, timers, interrupts, and sensors', yearsOfExperience: 2.5 },
   { id: 'exp-11', mentorId: 'user-salini', topic: 'Renewable Solar PV & Smart Grid Systems', category: 'technical', proficiencyLevel: 5, description: 'Solar microgrid architectures, MPPT algorithms, and power quality', yearsOfExperience: 3 },
@@ -1289,6 +1329,22 @@ export const mockReviews: SessionReview[] = [
 
 export const mockConversations: Conversation[] = [
   {
+    id: 'conv-rohit-1',
+    participantIds: ['user-rohit', 'user-vidya'],
+    lastMessage: 'Hey Vidya! Have you tested the MATLAB simulation for the inverter circuit?',
+    lastMessageAt: '2026-11-07T11:45:00Z',
+    createdAt: '2026-11-07T10:00:00Z',
+    unreadCount: { 'user-rohit': 0, 'user-vidya': 0 },
+  },
+  {
+    id: 'conv-rohit-2',
+    participantIds: ['user-rohit', 'user-nyoimei'],
+    lastMessage: 'I have the ESP32 code ready for our EEE IoT lab sensor project.',
+    lastMessageAt: '2026-11-07T12:15:00Z',
+    createdAt: '2026-11-07T11:00:00Z',
+    unreadCount: { 'user-rohit': 0, 'user-nyoimei': 0 },
+  },
+  {
     id: 'conv-1',
     participantIds: ['user-kabir', 'user-ananya'],
     lastMessage: 'Looking forward to our skill barter session on Wednesday!',
@@ -1315,6 +1371,30 @@ export const mockConversations: Conversation[] = [
 ];
 
 export const mockMessages: Message[] = [
+  {
+    id: 'msg-rohit-1',
+    conversationId: 'conv-rohit-1',
+    senderId: 'user-vidya',
+    content: 'Hi Rohit! Welcome to SkillBridge. Are you free to review the power electronics circuit simulation together?',
+    timestamp: '2026-11-07T10:15:00Z',
+    isRead: true,
+  },
+  {
+    id: 'msg-rohit-2',
+    conversationId: 'conv-rohit-1',
+    senderId: 'user-rohit',
+    content: 'Hey Vidya! Yes, absolutely. Have you tested the MATLAB simulation for the inverter circuit?',
+    timestamp: '2026-11-07T11:45:00Z',
+    isRead: true,
+  },
+  {
+    id: 'msg-rohit-3',
+    conversationId: 'conv-rohit-2',
+    senderId: 'user-rohit',
+    content: 'Hey Nyoimei! I have the ESP32 code ready for our EEE IoT lab sensor project.',
+    timestamp: '2026-11-07T12:15:00Z',
+    isRead: true,
+  },
   {
     id: 'msg-1',
     conversationId: 'conv-1',
@@ -1402,6 +1482,11 @@ export const mockConnections: Connection[] = [
   { id: 'conn-2', senderId: 'user-kabir', receiverId: 'user-aarav', status: 'ACCEPTED', createdAt: '2026-10-25T00:00:00Z' },
   { id: 'conn-3', senderId: 'user-kabir', receiverId: 'user-akash', status: 'ACCEPTED', createdAt: '2026-11-02T00:00:00Z' },
   // NIT Nagaland Cohort Active Peer Connections
+  { id: 'conn-rohit-1', senderId: 'user-rohit', receiverId: 'user-vidya', status: 'ACCEPTED', createdAt: '2026-11-02T09:00:00Z' },
+  { id: 'conn-rohit-2', senderId: 'user-rohit', receiverId: 'user-nyoimei', status: 'ACCEPTED', createdAt: '2026-11-03T10:00:00Z' },
+  { id: 'conn-rohit-3', senderId: 'user-rohit', receiverId: 'user-salini', status: 'ACCEPTED', createdAt: '2026-11-04T11:00:00Z' },
+  { id: 'conn-rohit-4', senderId: 'user-rohit', receiverId: 'user-kasturika', status: 'ACCEPTED', createdAt: '2026-11-05T14:00:00Z' },
+  { id: 'conn-rohit-5', senderId: 'user-rohit', receiverId: 'user-betimansa', status: 'ACCEPTED', createdAt: '2026-11-06T09:30:00Z' },
   { id: 'conn-101', senderId: 'user-vidya', receiverId: 'user-nyoimei', status: 'ACCEPTED', createdAt: '2026-11-02T10:00:00Z' },
   { id: 'conn-102', senderId: 'user-vidya', receiverId: 'user-salini', status: 'ACCEPTED', createdAt: '2026-11-03T11:30:00Z' },
   { id: 'conn-103', senderId: 'user-vidya', receiverId: 'user-kasturika', status: 'ACCEPTED', createdAt: '2026-11-04T09:15:00Z' },

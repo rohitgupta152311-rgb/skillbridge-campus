@@ -4,8 +4,10 @@ export const APP_DESCRIPTION = 'Peer-to-Peer Campus Skill Exchange & Collaborati
 
 export const DEMO_CREDENTIALS = {
   admin: { email: 'admin@campus.edu', password: 'admin1234' },
-  student: { email: 'vidya.gupta@campus.edu', password: 'demo1234' },
+  student: { email: 'rohit.gupta@campus.edu', password: 'demo1234' },
   mentor: { email: 'nyoimei.konyak@campus.edu', password: 'demo1234' },
+  rohit: { email: 'rohit.gupta@campus.edu', password: 'demo1234' },
+  vidya: { email: 'vidya.gupta@campus.edu', password: 'demo1234' },
 };
 
 export const MATCH_WEIGHTS = {
