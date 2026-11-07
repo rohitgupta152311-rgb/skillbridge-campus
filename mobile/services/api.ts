@@ -175,4 +175,9 @@ export const MobileApi = {
 
   // Version Check
   checkVersion: () => request<any>('/auth/version'),
+
+  // Admin Controls
+  getAdminUsers: (status = 'ALL') => request<any>(`/admin/users?status=${status}&limit=50`),
+  approveUser: (userId: string) => request<any>(`/admin/users/${userId}/approve`, { method: 'PUT' }),
+  deleteUser: (userId: string) => request<any>(`/admin/users/${userId}`, { method: 'DELETE' }),
 };

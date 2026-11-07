@@ -197,14 +197,14 @@ async function main() {
   });
 
   
-  // 6. Rohit Gupta (2nd Year, NIT Nagaland, EEE)
+  // 6. Rohit Gupta (2nd Year, NIT Nagaland, EEE - Platform Admin)
   const rohit = await prisma.user.upsert({
     where: { email: 'rohit.gupta@campus.edu' },
-    update: {},
+    update: { role: UserRole.ADMIN },
     create: {
       email: 'rohit.gupta@campus.edu',
       passwordHash,
-      role: UserRole.MENTOR,
+      role: UserRole.ADMIN,
       isVerified: true,
       profile: {
         create: {

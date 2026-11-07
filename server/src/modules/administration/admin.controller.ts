@@ -152,6 +152,8 @@ export async function listUsers(req: Request, res: Response, next: NextFunction)
       where.isSuspended = false;
     } else if (status === 'VERIFIED') {
       where.isVerified = true;
+    } else if (status === 'PENDING') {
+      where.isVerified = false;
     }
 
     const [total, users] = await Promise.all([

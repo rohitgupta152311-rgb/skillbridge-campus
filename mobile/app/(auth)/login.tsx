@@ -174,12 +174,122 @@ export default function MobileLoginScreen() {
             <Text style={styles.switchHighlight}>Create account</Text>
           </Text>
         </TouchableOpacity>
+
+        {/* Institutional Evaluation Fast-Fill (Admin & Campus) */}
+        <View style={styles.fastFillBox}>
+          <Text style={styles.fastFillTitle}>INSTITUTIONAL EVALUATION ACCOUNTS</Text>
+          <View style={styles.fastFillGrid}>
+            <TouchableOpacity
+              style={styles.fastFillCard}
+              onPress={() => {
+                setEmail('admin@campus.edu');
+                setPassword('admin1234');
+              }}
+            >
+              <View style={styles.fastFillHeader}>
+                <Text style={styles.fastFillName}>Dr. Rajesh Sharma</Text>
+                <View style={styles.adminBadge}><Text style={styles.adminBadgeText}>ADMIN</Text></View>
+              </View>
+              <Text style={styles.fastFillEmail}>admin@campus.edu</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.fastFillCard}
+              onPress={() => {
+                setEmail('rohit.gupta@campus.edu');
+                setPassword('demo1234');
+              }}
+            >
+              <View style={styles.fastFillHeader}>
+                <Text style={styles.fastFillName}>Rohit Gupta</Text>
+                <View style={styles.adminBadge}><Text style={styles.adminBadgeText}>ADMIN</Text></View>
+              </View>
+              <Text style={styles.fastFillEmail}>rohit.gupta@campus.edu</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.fastFillCard}
+              onPress={() => {
+                setEmail('vidya.gupta@campus.edu');
+                setPassword('demo1234');
+              }}
+            >
+              <View style={styles.fastFillHeader}>
+                <Text style={styles.fastFillName}>Vidya Gupta</Text>
+                <View style={styles.mentorBadge}><Text style={styles.mentorBadgeText}>MENTOR</Text></View>
+              </View>
+              <Text style={styles.fastFillEmail}>vidya.gupta@campus.edu</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  fastFillBox: {
+    marginTop: 24,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  fastFillTitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#94a3b8',
+    letterSpacing: 0.5,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  fastFillGrid: {
+    gap: 8,
+  },
+  fastFillCard: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  fastFillHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  fastFillName: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  adminBadge: {
+    backgroundColor: '#ede9fe',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+  },
+  adminBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#7c3aed',
+  },
+  mentorBadge: {
+    backgroundColor: '#dcfce7',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+  },
+  mentorBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#15803d',
+  },
+  fastFillEmail: {
+    fontSize: 10,
+    color: '#64748b',
+    fontFamily: 'monospace',
+  },
   container: {
     flex: 1,
     backgroundColor: '#ffffff',

@@ -684,7 +684,7 @@ export function LoginPage() {
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[11px] font-bold text-violet-900 group-hover/btn:text-violet-700">Rohit Gupta</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-violet-200/80 text-violet-800 font-semibold">NIT NGL EEE</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-violet-200/80 text-violet-800 font-semibold">Admin • NIT NGL EEE</span>
                   </div>
                   <p className="text-[10px] text-violet-700 font-mono truncate">rohit.gupta@campus.edu</p>
                 </button>

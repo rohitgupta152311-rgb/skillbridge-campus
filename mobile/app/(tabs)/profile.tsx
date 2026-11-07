@@ -24,11 +24,52 @@ import {
 } from 'lucide-react-native';
 import { useAuth } from '../../services/auth-context';
 import { UpdateManager } from '../../services/updates';
+import { MobileApi } from '../../services/api';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const [syncing, setSyncing] = useState(false);
   const [checkingUpdates, setCheckingUpdates] = useState(false);
+  const [checkingPending, setCheckingPending] = useState(false);
+
+  const handleReviewPendingUsers = async () => {
+    setCheckingPending(true);
+    try {
+      const res = await MobileApi.getAdminUsers('PENDING');
+      const pendingUsers = res?.data?.users || res?.users || [];
+      if (pendingUsers.length === 0) {
+        Alert.alert('Campus Approvals', 'All campus registrations are currently approved and active. No accounts pending review.');
+      } else {
+        const u = pendingUsers[0];
+        Alert.alert(
+          'Pending Registration (' + pendingUsers.length + ' pending)',
+          'Applicant: ' + (u.profile?.fullName || 'Student') + '\nEmail: ' + u.email + '\nDepartment: ' + (u.profile?.department || 'EEE') + '\nRole: ' + u.role + '\n\nWould you like to approve this campus member?',
+          [
+            { text: 'Later', style: 'cancel' },
+            {
+              text: 'Reject / Delete',
+              style: 'destructive',
+              onPress: async () => {
+                await MobileApi.deleteUser(u.id);
+                Alert.alert('Deleted', 'Account ' + u.email + ' was removed.');
+              },
+            },
+            {
+              text: 'Approve & Activate',
+              onPress: async () => {
+                await MobileApi.approveUser(u.id);
+                Alert.alert('Approved!', 'Account ' + u.email + ' is now activated and can log in.');
+              },
+            },
+          ]
+        );
+      }
+    } catch (err: any) {
+      Alert.alert('Admin Error', err.message || 'Failed to check pending users.');
+    } finally {
+      setCheckingPending(false);
+    }
+  };
 
   const profileAny = user?.profile as any;
   const userSkills: string[] = Array.isArray(profileAny?.skillsOffered) && profileAny.skillsOffered.length > 0
@@ -181,6 +222,29 @@ export default function ProfileScreen() {
             <Text style={styles.accountVal}>Expo SecureStore (Encrypted)</Text>
           </View>
         </View>
+
+        {/* Administrator Controls */}
+        {user?.role === 'ADMIN' && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <ShieldCheck size={16} color="#7c3aed" />
+              <Text style={styles.sectionTitle}>Administrator Controls</Text>
+            </View>
+            <Text style={{ fontSize: 12, color: '#64748b', marginBottom: 10 }}>
+              You are logged in with full administrative governance privileges over SkillBridge Campus.
+            </Text>
+            <TouchableOpacity
+              style={styles.adminActionBtn}
+              onPress={handleReviewPendingUsers}
+              disabled={checkingPending}
+            >
+              <CheckCircle size={14} color="#ffffff" />
+              <Text style={styles.adminActionBtnText}>
+                {checkingPending ? 'Reviewing...' : 'Review & Approve Pending Registrations'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* In-App Updates & Version */}
         <View style={styles.section}>
@@ -356,6 +420,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#0f172a',
+  },
+  adminActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#0f172a',
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 4,
+  },
+  adminActionBtnText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
   },
   updateBtn: {
     flexDirection: 'row',

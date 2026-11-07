@@ -768,6 +768,7 @@ export function AdminUsersPage() {
         <div className="flex flex-wrap gap-1.5">
           {[
             { id: 'ALL', label: 'All Status' },
+            { id: 'PENDING', label: '⏳ Pending Approval' },
             { id: 'ACTIVE', label: 'Active' },
             { id: 'SUSPENDED', label: 'Suspended' },
             { id: 'VERIFIED', label: 'Verified' },
@@ -875,10 +876,10 @@ export function AdminUsersPage() {
                           className={`px-2.5 py-1 rounded-lg font-bold transition-colors ${
                             isVerified
                               ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                              : 'bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300'
                           }`}
                         >
-                          {isVerified ? 'Verified' : 'Verify'}
+                          {isVerified ? 'Verified' : 'Approve'}
                         </button>
                         <button
                           onClick={() =>
