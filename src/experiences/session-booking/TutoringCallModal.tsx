@@ -65,7 +65,7 @@ export function TutoringCallModal({
   const [chatMessages, setChatMessages] = useState<Array<{ sender: string; text: string; time: string }>>([
     {
       sender: partner.fullName,
-      text: `Hi ${user?.fullName ? user.fullName.split(' ')[0] : 'there'}! Ready to begin our session on ${topic}.`,
+      text: `Hi ${typeof user?.fullName === 'string' && user.fullName.trim() ? user.fullName.trim().split(' ')[0] : 'there'}! Ready to begin our session on ${topic}.`,
       time: 'Just now',
     },
   ]);

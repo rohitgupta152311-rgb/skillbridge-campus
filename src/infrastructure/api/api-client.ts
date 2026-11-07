@@ -111,6 +111,29 @@ export const apiClient = {
     }
   },
 
+  async loginWithFirebase(payload: {
+    idToken: string;
+    role?: string;
+    department?: string;
+    currentYear?: string;
+    university?: string;
+  }): Promise<{ success: boolean; data?: { token: string; user: any; firebaseProvider?: string }; message?: string }> {
+    try {
+      const res = await fetch(`${API_BASE}/auth/firebase-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        return { success: false, message: json.message || 'Firebase authentication failed' };
+      }
+      return { success: true, data: json.data, message: json.message };
+    } catch (err: any) {
+      return { success: false, message: err?.message || 'Network error during Firebase authentication' };
+    }
+  },
+
   async getMe(): Promise<any | null> {
     const token = getAuthToken();
     if (!token) return null;
@@ -148,7 +171,7 @@ export const apiClient = {
                 LocalData.addUser({
                   id: conv.otherUser.id,
                   email: conv.otherUser.email,
-                  fullName: conv.otherUser.profile?.fullName || (conv.otherUser.email ? conv.otherUser.email.split('@')[0] : 'Campus Peer'),
+                  fullName: conv.otherUser.profile?.fullName || (typeof conv.otherUser.email === 'string' && conv.otherUser.email.includes('@') ? conv.otherUser.email.split('@')[0] : 'Campus Peer'),
                   avatar: conv.otherUser.profile?.avatarUrl || '',
                   role: (conv.otherUser.role || 'mentee').toLowerCase(),
                   department: conv.otherUser.profile?.department || 'Engineering',

@@ -57,10 +57,17 @@ export function MentorDashboard() {
   ];
   const completionPct = Math.round((profileSteps.filter(s => s.done).length / profileSteps.length) * 100);
 
+  const displayName = (typeof user?.fullName === 'string' && user.fullName.trim())
+    ? user.fullName
+    : (typeof user?.email === 'string' && user.email.trim())
+      ? user.email
+      : 'Mentor';
+  const firstName = displayName.split(' ')[0] || 'Mentor';
+
   return (
     <div className="space-y-6 pb-20 lg:pb-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Welcome back, {(user?.fullName || user?.email || 'Mentor').split(' ')[0]}! 🎓</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Welcome back, {firstName}! 🎓</h1>
         <p className="text-slate-500 mt-1">Here's your mentoring activity overview and analytics.</p>
       </div>
 

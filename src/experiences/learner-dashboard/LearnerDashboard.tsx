@@ -37,11 +37,18 @@ export function LearnerDashboard() {
     { icon: MessageSquare, label: 'Conversations', value: conversations.length, color: 'text-blue-600 bg-blue-50' },
   ];
 
+  const displayName = (typeof user?.fullName === 'string' && user.fullName.trim())
+    ? user.fullName
+    : (typeof user?.email === 'string' && user.email.trim())
+      ? user.email
+      : 'Student';
+  const firstName = displayName.split(' ')[0] || 'Student';
+
   return (
     <div className="space-y-6 pb-20 lg:pb-6 animate-fade-in">
       {/* Welcome */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Welcome back, {(user?.fullName || user?.email || 'Student').split(' ')[0]}! 👋</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Welcome back, {firstName}! 👋</h1>
         <p className="text-slate-500 mt-1">Here's what's happening with your learning journey.</p>
       </div>
 

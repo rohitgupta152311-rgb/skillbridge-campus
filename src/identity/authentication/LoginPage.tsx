@@ -38,7 +38,7 @@ const GOOGLE_CLIENT_ID =
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, loginWithOAuth, isLoading, error, clearError } = useAuthStore();
+  const { login, loginWithOAuth, loginWithFirebase, isLoading, error, clearError } = useAuthStore();
   const { addToast } = useToastStore();
 
   const [email, setEmail] = useState('');
@@ -329,11 +329,65 @@ export function LoginPage() {
 
 
 
+  const handleFirebaseGoogleLogin = async () => {
+    try {
+      const { signInWithFirebaseGoogle } = await import('../../infrastructure/firebase/firebase-client');
+      const { idToken, user } = await signInWithFirebaseGoogle();
+      const success = await loginWithFirebase(idToken, {
+        department: 'Computer Science',
+        year: '3rd Year',
+        university: 'NIT Nagaland',
+      });
+      if (success) {
+        addToast({
+          type: 'success',
+          title: 'Google Sign-In Verified',
+          message: `Welcome, ${user.displayName || user.email}! Connected via Firebase Auth.`,
+        });
+        navigate('/feed');
+        return;
+      }
+    } catch (err: any) {
+      console.warn('Firebase Google Auth popup cancelled or error:', err);
+      if (err?.code === 'auth/popup-closed-by-user') {
+        return;
+      }
+      handleLaunchOfficialGooglePrompt();
+    }
+  };
+
+  const handleFirebaseGithubLogin = async () => {
+    try {
+      const { signInWithFirebaseGithub } = await import('../../infrastructure/firebase/firebase-client');
+      const { idToken, user } = await signInWithFirebaseGithub();
+      const success = await loginWithFirebase(idToken, {
+        department: 'Computer Science',
+        year: '3rd Year',
+        university: 'NIT Nagaland',
+      });
+      if (success) {
+        addToast({
+          type: 'success',
+          title: 'GitHub Authentication Verified',
+          message: `Welcome, ${user.displayName || user.email}! Connected via Firebase Auth.`,
+        });
+        navigate('/feed');
+        return;
+      }
+    } catch (err: any) {
+      console.warn('Firebase GitHub Auth popup cancelled or error:', err);
+      if (err?.code === 'auth/popup-closed-by-user') {
+        return;
+      }
+      setGithubModalOpen(true);
+    }
+  };
+
   const handleOAuthClick = (provider: 'Google' | 'GitHub' | 'LinkedIn') => {
     if (provider === 'Google') {
-      handleLaunchOfficialGooglePrompt();
+      handleFirebaseGoogleLogin();
     } else if (provider === 'GitHub') {
-      setGithubModalOpen(true);
+      handleFirebaseGithubLogin();
     } else if (provider === 'LinkedIn') {
       startSampleLinkedInImport();
     }

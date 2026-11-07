@@ -21,7 +21,12 @@ export function ActivityFeedPage() {
   const { user } = useAuthStore();
   const hour = new Date().getHours();
   const timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  const firstName = (user?.fullName || user?.email || 'Student').split(' ')[0] || 'Student';
+  const rawName = (typeof user?.fullName === 'string' && user.fullName.trim())
+    ? user.fullName
+    : (typeof user?.email === 'string' && user.email.trim())
+      ? user.email
+      : 'Student';
+  const firstName = rawName.split(' ')[0] || 'Student';
   const navigate = useNavigate();
   const { addToast } = useToastStore();
 
@@ -59,11 +64,11 @@ export function ActivityFeedPage() {
       const feed = await apiClient.getPosts();
       const sanitized = (feed || []).map((p: any) => ({
         ...p,
-        authorName: p.authorName || p.author?.profile?.fullName || (p.author?.email ? p.author.email.split('@')[0] : 'Campus Student'),
+        authorName: p.authorName || p.author?.profile?.fullName || (typeof p.author?.email === 'string' && p.author.email.includes('@') ? p.author.email.split('@')[0] : 'Campus Student'),
         tags: Array.isArray(p.tags) ? p.tags : [],
         comments: (p.comments || []).map((c: any) => ({
           ...c,
-          authorName: c.authorName || (c.author?.email ? c.author.email.split('@')[0] : 'Student'),
+          authorName: c.authorName || (typeof c.author?.email === 'string' && c.author.email.includes('@') ? c.author.email.split('@')[0] : 'Student'),
         })),
       }));
       setPosts(sanitized);

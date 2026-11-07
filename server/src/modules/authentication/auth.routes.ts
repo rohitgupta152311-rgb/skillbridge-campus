@@ -17,6 +17,8 @@ import {
   unlinkAccount,
   logoutAllDevices,
   getSystemVersion,
+  handleFirebaseAuth,
+  getFirebaseConfig,
 } from './auth.controller.js';
 import { requireAuth } from '../../middleware/authentication.js';
 
@@ -26,6 +28,11 @@ export const authRouter = Router();
 authRouter.post('/register', register);
 authRouter.post('/login', login);
 authRouter.get('/me', requireAuth, getMe);
+
+// Firebase Authentication (Google & GitHub Secure Federated Sign-In)
+authRouter.post('/firebase', handleFirebaseAuth);
+authRouter.post('/firebase-login', handleFirebaseAuth);
+authRouter.get('/firebase-config', getFirebaseConfig);
 
 // OAuth Initiation & Status
 authRouter.get('/oauth-status', getOAuthStatus);

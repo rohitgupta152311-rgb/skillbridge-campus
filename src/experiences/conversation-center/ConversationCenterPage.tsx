@@ -214,7 +214,7 @@ function ConversationList({
                   <Avatar name={peer?.fullName || 'Peer'} src={peer?.avatar} size="md" showStatus status={peer?.onlineStatus} />
                 </div>
                 <span className="text-[10px] font-medium text-slate-700 truncate w-full group-hover:text-violet-700">
-                  {(peer?.fullName || 'Peer').split(' ')[0]}
+                  {(typeof peer?.fullName === 'string' && peer.fullName.trim() ? peer.fullName : 'Peer').split(' ')[0]}
                 </span>
               </button>
             ))}

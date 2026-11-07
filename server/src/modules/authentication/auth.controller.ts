@@ -9,6 +9,7 @@ import { AuthenticatedUser } from '../../middleware/authentication.js';
 import { LinkedInService, OAuthImportProfile } from '../../integrations/linkedin/linkedin.service.js';
 import { GoogleService } from '../../integrations/google/google.service.js';
 import { GitHubService } from '../../integrations/github/github.service.js';
+import { FirebaseService } from '../../integrations/firebase/firebase.service.js';
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -833,4 +834,125 @@ export async function configureOAuth(req: Request, res: Response) {
   } catch (err: any) {
     return res.status(500).json({ success: false, message: err.message });
   }
+}
+
+
+// ─────────────────────────────────────────────
+// FIREBASE AUTH (GOOGLE & GITHUB SECURE LOGIN)
+// ─────────────────────────────────────────────
+
+export async function handleFirebaseAuth(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { idToken, role, department, currentYear, university } = req.body;
+    if (!idToken) {
+      throw new AppError('Firebase ID token is required.', 400);
+    }
+
+    const firebaseUser = await FirebaseService.verifyFirebaseIdToken(idToken);
+
+    // 1. Check if user with this email already exists
+    let user = await prisma.user.findUnique({
+      where: { email: firebaseUser.email },
+      include: { profile: true, accounts: true },
+    });
+
+    if (user) {
+      // User exists -> check if provider account is linked
+      const hasAccountLinked = user.accounts.some(
+        (a) => a.provider === firebaseUser.provider && a.providerAccountId === firebaseUser.uid
+      );
+
+      if (!hasAccountLinked) {
+        await prisma.account.create({
+          data: {
+            userId: user.id,
+            provider: firebaseUser.provider,
+            providerAccountId: firebaseUser.uid,
+          },
+        });
+      }
+
+      // Update avatar or verify email if missing
+      if (!user.profile?.avatarUrl && firebaseUser.avatarUrl) {
+        await prisma.profile.update({
+          where: { userId: user.id },
+          data: { avatarUrl: firebaseUser.avatarUrl },
+        });
+      }
+    } else {
+      // 2. New user -> register automatically in PostgreSQL database
+      const userRole = (role && ['MENTEE', 'MENTOR', 'FACULTY', 'ALUMNI'].includes(String(role).toUpperCase()))
+        ? (String(role).toUpperCase() as any)
+        : 'MENTEE';
+
+      const userDept = department || 'Computer Science';
+      const userYear = currentYear || '3rd Year';
+      const userUniv = university || 'NIT Nagaland';
+
+      user = await prisma.user.create({
+        data: {
+          email: firebaseUser.email,
+          role: userRole,
+          isVerified: firebaseUser.emailVerified ?? true,
+          profile: {
+            create: {
+              fullName: firebaseUser.fullName,
+              avatarUrl: firebaseUser.avatarUrl,
+              department: userDept,
+              currentYear: userYear,
+              university: userUniv,
+              headline: `${userRole === 'MENTOR' ? 'Student Mentor & ' : ''}${userDept} Student at ${userUniv}`,
+            },
+          },
+          accounts: {
+            create: {
+              provider: firebaseUser.provider,
+              providerAccountId: firebaseUser.uid,
+            },
+          },
+        },
+        include: { profile: true, accounts: true },
+      });
+    }
+
+    // 3. Generate our application JWT
+    const token = signToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    return res.json({
+      success: true,
+      message: `Authenticated successfully via Firebase (${firebaseUser.provider.toUpperCase()}).`,
+      data: {
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          isVerified: user.isVerified,
+          isSuspended: user.isSuspended,
+          profile: user.profile,
+        },
+        firebaseProvider: firebaseUser.provider,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export function getFirebaseConfig(_req: Request, res: Response) {
+  return res.json({
+    success: true,
+    data: {
+      apiKey: process.env.VITE_FIREBASE_API_KEY || process.env.FIREBASE_API_KEY || '',
+      authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN || process.env.FIREBASE_AUTH_DOMAIN || 'skillbridge-campus.firebaseapp.com',
+      projectId: process.env.VITE_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || 'skillbridge-campus',
+      storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET || 'skillbridge-campus.appspot.com',
+      messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+      appId: process.env.VITE_FIREBASE_APP_ID || '',
+    },
+  });
 }

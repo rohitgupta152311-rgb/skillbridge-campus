@@ -23,6 +23,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   register: (data: RegisterData) => Promise<boolean>;
   loginWithOAuth: (profile: OAuthProfileData) => Promise<boolean>;
+  loginWithFirebase: (idToken: string, extraProfile?: { role?: UserRole; department?: string; year?: string; university?: string }) => Promise<boolean>;
   logout: () => void;
   clearError: () => void;
   syncDatabaseProfile: () => Promise<void>;
@@ -44,7 +45,7 @@ function mapBackendUserToFrontend(backendUser: any, token: string): User {
   return {
     id: backendUser.id,
     email: backendUser.email,
-    fullName: profile.fullName || (backendUser.email ? backendUser.email.split('@')[0] : 'Campus Student'),
+    fullName: profile.fullName || (typeof backendUser.email === 'string' && backendUser.email.includes('@') ? backendUser.email.split('@')[0] : 'Campus Student'),
     avatar: profile.avatarUrl || '',
     role: (backendUser.role || 'mentee').toLowerCase() as UserRole,
     department: profile.department || 'General Engineering',
@@ -266,6 +267,39 @@ export const useAuthStore = create<AuthState>((set, get) => {
       setAuthSession(user.token || 'oauth-token', user);
       set({ user, isAuthenticated: true, isLoading: false });
       return true;
+    },
+
+    loginWithFirebase: async (idToken: string, extraProfile?: any): Promise<boolean> => {
+      set({ isLoading: true, error: null });
+
+      // 1. Send ID Token to backend to authenticate and sync PostgreSQL
+      const result = await apiClient.loginWithFirebase({
+        idToken,
+        role: extraProfile?.role,
+        department: extraProfile?.department,
+        currentYear: extraProfile?.year,
+        university: extraProfile?.university,
+      });
+
+      if (result.success && result.data) {
+        const userObj = mapBackendUserToFrontend(result.data.user, result.data.token);
+
+        if (!getUserById(userObj.id)) {
+          addUser(userObj);
+        } else {
+          updateUser(userObj.id, userObj);
+        }
+
+        setAuthSession(result.data.token, userObj);
+        set({ user: userObj, isAuthenticated: true, isLoading: false, error: null });
+        return true;
+      }
+
+      set({
+        isLoading: false,
+        error: result.message || 'Firebase login failed. Please try again.',
+      });
+      return false;
     },
 
     logout: () => {
