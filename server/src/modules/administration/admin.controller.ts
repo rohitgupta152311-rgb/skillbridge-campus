@@ -341,6 +341,171 @@ export async function verifyMentor(req: Request, res: Response, next: NextFuncti
   }
 }
 
+export async function approveUser(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { userId } = req.params;
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { isVerified: true },
+      include: { profile: true },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: req.user?.id,
+        action: 'APPROVE_USER',
+        entityType: 'USER',
+        entityId: userId,
+        details: { approvedEmail: user.email, adminEmail: req.user?.email },
+        ipAddress: req.ip,
+      },
+    });
+
+    return res.json({
+      success: true,
+      message: 'User ' + user.email + ' has been approved and activated.',
+      data: user,
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function deleteUser(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { userId } = req.params;
+
+    if (userId === req.user?.id) {
+      throw new AppError('Cannot delete your own administrator account.', 400);
+    }
+
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!targetUser) {
+      throw new AppError('User not found.', 404);
+    }
+
+    if (targetUser.role === 'ADMIN') {
+      throw new AppError('Cannot delete an administrator account.', 403);
+    }
+
+    await prisma.tutoringSession.deleteMany({
+      where: {
+        OR: [{ mentorId: userId }, { menteeId: userId }],
+      },
+    });
+
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: req.user?.id,
+        action: 'DELETE_USER',
+        entityType: 'USER',
+        entityId: userId,
+        details: { deletedEmail: targetUser.email, adminEmail: req.user?.email },
+        ipAddress: req.ip,
+      },
+    });
+
+    return res.json({
+      success: true,
+      message: 'User ' + targetUser.email + ' permanently deleted.',
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function purgeNonWhitelistedUsers(req: Request, res: Response, next: NextFunction) {
+  try {
+    const WHITELIST_EMAILS = [
+      'admin@campus.edu',
+      'vidya.gupta@campus.edu',
+      'nyoimei.konyak@campus.edu',
+      'devrapalli.salini@campus.edu',
+      'kasturika.narzary@campus.edu',
+      'betimansa.chang@campus.edu',
+      'rohit.gupta@campus.edu',
+    ];
+
+    const usersToDelete = await prisma.user.findMany({
+      where: {
+        email: { notIn: WHITELIST_EMAILS },
+      },
+      select: { id: true, email: true },
+    });
+
+    const userIds = usersToDelete.map((u) => u.id);
+    const emails = usersToDelete.map((u) => u.email);
+
+    if (userIds.length > 0) {
+      await prisma.tutoringSession.deleteMany({
+        where: {
+          OR: [
+            { mentorId: { in: userIds } },
+            { menteeId: { in: userIds } },
+          ],
+        },
+      });
+
+      await prisma.conversationParticipant.deleteMany({
+        where: { userId: { in: userIds } },
+      });
+
+      await prisma.message.deleteMany({
+        where: { senderId: { in: userIds } },
+      });
+
+      await prisma.user.deleteMany({
+        where: { id: { in: userIds } },
+      });
+    }
+
+    await prisma.user.updateMany({
+      where: {
+        email: { in: WHITELIST_EMAILS },
+      },
+      data: {
+        isVerified: true,
+        isSuspended: false,
+      },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: req.user?.id,
+        action: 'PURGE_USERS',
+        entityType: 'USER',
+        details: {
+          purgedCount: userIds.length,
+          purgedEmails: emails,
+          remainingWhitelist: WHITELIST_EMAILS,
+          adminEmail: req.user?.email,
+        },
+        ipAddress: req.ip,
+      },
+    });
+
+    return res.json({
+      success: true,
+      message: 'Cleaned up ' + userIds.length + ' accounts. Only Rohit, the 5 girls, and Admin remain.',
+      data: {
+        deletedCount: userIds.length,
+        deletedEmails: emails,
+        activeAccounts: WHITELIST_EMAILS,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 // ============================================================================
 // 3. ADMIN CONVERSATION MONITORING & SAFETY OVERSIGHT
 // ============================================================================

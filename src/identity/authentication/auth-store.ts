@@ -182,6 +182,10 @@ export const useAuthStore = create<AuthState>((set, get) => {
       });
 
       if (result.success && result.data) {
+        if ((result.data as any)?.pendingApproval || !result.data?.token) {
+          set({ isLoading: false, error: null });
+          return true;
+        }
         const newUser = mapBackendUserToFrontend(result.data.user, result.data.token);
 
         // Record in local cache

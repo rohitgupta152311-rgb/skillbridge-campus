@@ -6,6 +6,9 @@ import {
   updateUserStatus,
   toggleUserSuspension,
   verifyMentor,
+  approveUser,
+  deleteUser,
+  purgeNonWhitelistedUsers,
   listConversations,
   inspectConversation,
   getLiveActivity,
@@ -26,12 +29,15 @@ adminRouter.use(requireRoles('ADMIN'));
 adminRouter.get('/dashboard', getDashboardMetrics);
 adminRouter.get('/metrics', getDashboardMetrics);
 
-// User Management
+// User Management & Access Control
 adminRouter.get('/users', listUsers);
 adminRouter.get('/users/:userId', getUserDetails);
 adminRouter.patch('/users/:userId/status', updateUserStatus);
 adminRouter.put('/users/:userId/suspend', toggleUserSuspension);
 adminRouter.put('/users/:userId/verify', verifyMentor);
+adminRouter.put('/users/:userId/approve', approveUser);
+adminRouter.delete('/users/:userId', deleteUser);
+adminRouter.post('/users/purge-non-whitelisted', purgeNonWhitelistedUsers);
 
 // Safety & Conversation Monitoring (Audit-Logged)
 adminRouter.get('/conversations', listConversations);

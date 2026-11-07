@@ -486,6 +486,20 @@ export function LoginPage() {
             <span className="text-xl font-bold text-slate-900">SkillBridge</span>
           </div>
 
+          {new URLSearchParams(location.search).get('pending') === 'true' && (
+            <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5 text-amber-700 font-bold">
+                ⏳
+              </div>
+              <div>
+                <p className="font-semibold text-amber-950">Registration Submitted</p>
+                <p className="mt-0.5 text-amber-800">
+                  Your account has been registered and is pending administrator review and approval. You will be able to sign in once an administrator approves your profile.
+                </p>
+              </div>
+            </div>
+          )}
+
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">Welcome back</h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1 mb-6">
             Enter your campus credentials or sign in with Google.

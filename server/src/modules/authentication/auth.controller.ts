@@ -96,22 +96,17 @@ export async function register(req: Request, res: Response, next: NextFunction) 
       },
     });
 
-    const token = signToken({
-      id: newUser.id,
-      email: newUser.email,
-      role: newUser.role,
-    });
-
     return res.status(201).json({
       success: true,
-      message: 'Account registered successfully.',
+      message: 'Account registered successfully. Your account requires administrator approval before you can sign in.',
       data: {
-        token,
+        pendingApproval: true,
         user: {
           id: newUser.id,
           email: newUser.email,
           role: newUser.role,
           profile: newUser.profile,
+          isVerified: false,
         },
       },
     });
@@ -135,6 +130,13 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 
     if (user.isSuspended) {
       throw new AppError('This account has been suspended by campus administration.', 403);
+    }
+
+    if (!user.isVerified && user.role !== 'ADMIN') {
+      throw new AppError(
+        'Account pending administrator approval. Please wait for an administrator to review and activate your campus account.',
+        403
+      );
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);

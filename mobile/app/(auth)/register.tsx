@@ -63,9 +63,16 @@ export default function MobileRegisterScreen() {
       });
 
       if (regRes.success) {
-        await login(cleanEmail, password);
-        Alert.alert('Account Created', `Welcome to SkillBridge, ${cleanName}!`);
-        router.replace('/(tabs)');
+        Alert.alert(
+          'Registration Submitted',
+          `Thank you, ${cleanName}! Your account has been registered and is pending administrator approval. You will be able to sign in once an administrator approves your profile.`,
+          [
+            {
+              text: 'Go to Sign In',
+              onPress: () => router.replace('/(auth)/login'),
+            },
+          ]
+        );
       } else {
         Alert.alert('Registration Failed', regRes.message || 'Unable to register account.');
       }

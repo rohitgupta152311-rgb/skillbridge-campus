@@ -59,7 +59,7 @@ export function RegisterPage() {
       year: form.year,
     });
     if (success) {
-      navigate('/feed');
+      navigate('/login?pending=true');
     }
   };
 
