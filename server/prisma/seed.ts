@@ -239,6 +239,34 @@ async function main() {
     },
   });
 
+  // 7. Harsh Sharma (2nd Year, NIT Nagaland, EEE)
+  const harsh = await prisma.user.upsert({
+    where: { email: 'harsh.sharma@campus.edu' },
+    update: {},
+    create: {
+      email: 'harsh.sharma@campus.edu',
+      passwordHash,
+      role: UserRole.MENTEE,
+      isVerified: true,
+      profile: {
+        create: {
+          fullName: 'Harsh Sharma',
+          department: 'Electrical & Electronics Engineering',
+          currentYear: '2nd Year',
+          university: 'National Institute of Technology (NIT) Nagaland',
+          headline: 'EEE Student | NIT Nagaland | Circuit Analysis & Digital Systems',
+          bio: 'Electrical & Electronics Engineering student at National Institute of Technology (NIT) Nagaland. Enthusiastic about embedded systems, circuit design, power electronics, and peer mentorship.',
+          avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400',
+          githubUrl: 'https://github.com/harshsharma-nitn',
+          linkedinUrl: 'https://linkedin.com/in/harshsharma-nitn',
+          languages: ['English', 'Hindi'],
+          learningPreferences: ['visual', 'kinesthetic'],
+          onlineStatus: 'available',
+        },
+      },
+    },
+  });
+
   // Communities
   const eeeCommunity = await prisma.community.upsert({
     where: { slug: 'eee-nit-nagaland' },
