@@ -41,12 +41,15 @@ import { SkillExchangePage } from '../experiences/skill-exchange/SkillExchangePa
 import { ProjectSpacePage } from '../experiences/projects/ProjectSpacePage';
 import { ProjectDetailPage } from '../experiences/projects/ProjectDetailPage';
 import { OnboardingPage } from '../experiences/onboarding/OnboardingPage';
+import { DownloadAppPage } from '../experiences/download-app/DownloadAppPage';
 
 const router = createBrowserRouter([
   // Public routes
   { path: '/', element: <LandingPage />, errorElement: <RouteErrorBoundary /> },
   { path: '/login', element: <LoginPage />, errorElement: <RouteErrorBoundary /> },
   { path: '/register', element: <RegisterPage />, errorElement: <RouteErrorBoundary /> },
+  { path: '/download', element: <DownloadAppPage />, errorElement: <RouteErrorBoundary /> },
+  { path: '/download-app', element: <DownloadAppPage />, errorElement: <RouteErrorBoundary /> },
   { path: '/redirect', element: <RoleRedirect />, errorElement: <RouteErrorBoundary /> },
 
   // Universal Authenticated Campus Network Routes (Mentee, Mentor, Admin)

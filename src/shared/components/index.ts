@@ -8,3 +8,4 @@ export { Modal } from './Modal';
 export { LoadingSkeleton, CardSkeleton, PageSkeleton } from './Skeletons';
 export { EmptyState } from './EmptyState';
 export { RouteErrorBoundary } from './RouteErrorBoundary';
+export { DownloadAppModal } from './DownloadAppModal';

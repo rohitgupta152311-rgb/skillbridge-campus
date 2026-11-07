@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   GraduationCap,
@@ -26,11 +26,14 @@ import {
   Check,
   Clock,
   Compass,
+  Smartphone,
+  Download,
 } from 'lucide-react';
-import { Avatar, Button } from '../../shared/components';
+import { Avatar, Button, DownloadAppModal } from '../../shared/components';
 
 export function LandingPage() {
   const navigate = useNavigate();
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
 
   const featuredMentors = [
     {
@@ -166,7 +169,14 @@ export function LandingPage() {
           </nav>
 
           {/* Action CTAs */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowDownloadModal(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 text-xs font-bold transition-all shadow-2xs"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-violet-600" />
+              <span>Download App</span>
+            </button>
             <Button
               variant="ghost"
               size="sm"
@@ -223,6 +233,16 @@ export function LandingPage() {
               <Repeat className="w-4 h-4 text-violet-600" />
               <span>Share a skill</span>
             </Button>
+          </div>
+
+          <div className="pt-2 flex items-center justify-center gap-2 text-xs text-slate-500">
+            <span>📱 Available on mobile &bull;</span>
+            <button
+              onClick={() => setShowDownloadModal(true)}
+              className="text-violet-600 font-bold hover:text-violet-800 underline inline-flex items-center gap-1"
+            >
+              <Download className="w-3.5 h-3.5" /> Download Android APK (v3.0.0)
+            </button>
           </div>
         </div>
       </section>
@@ -440,6 +460,76 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* ── MOBILE APP SHOWCASE SECTION ── */}
+      <section className="py-16 bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-950 text-white border-y border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-5">
+              <span className="text-xs font-bold uppercase tracking-wider text-violet-300 bg-violet-500/20 px-3 py-1 rounded-full border border-violet-500/30">
+                Official Android Release &bull; v3.0.0
+              </span>
+              <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight font-heading text-white">
+                Learn, Chat &amp; Tutor on the Go
+              </h2>
+              <p className="text-sm text-slate-300 max-w-xl leading-relaxed">
+                SkillBridge Mobile brings real-time peer messaging via Socket.IO, 1-on-1 video &amp; voice calls, and reciprocal barter matching directly to your smartphone.
+              </p>
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <Button
+                  size="md"
+                  className="bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs px-5 py-3 rounded-xl flex items-center gap-2 shadow-lg shadow-violet-600/30"
+                  onClick={() => setShowDownloadModal(true)}
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download Android App (.APK)</span>
+                </Button>
+                <Link
+                  to="/download"
+                  className="px-4 py-3 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                >
+                  <Smartphone className="w-3.5 h-3.5 text-violet-400" />
+                  <span>View Installation Guide &rarr;</span>
+                </Link>
+              </div>
+            </div>
+            <div className="lg:col-span-5 flex justify-center">
+              <div className="p-6 bg-slate-900/90 rounded-3xl border border-slate-800 shadow-xl space-y-4 max-w-sm w-full">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-violet-600/20 border border-violet-500/30 text-violet-400 flex items-center justify-center font-bold">
+                    <Smartphone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">SkillBridge for Android</h3>
+                    <p className="text-[11px] text-slate-400">Package: com.studybridge.campus</p>
+                  </div>
+                </div>
+                <div className="space-y-2 text-xs text-slate-300">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>Real-time Socket.IO peer notifications</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>1-on-1 WebRTC Video &amp; Voice tutoring</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>Campus peer directory &amp; skill barter</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowDownloadModal(true)}
+                  className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5 text-violet-400" />
+                  <span>Get APK Package (38 MB)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── CALL TO ACTION ── */}
       <section className="py-20 bg-slate-900 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
@@ -489,6 +579,13 @@ export function LandingPage() {
             <Link to="/explore" className="hover:text-slate-900">Directory</Link>
             <Link to="/exchange" className="hover:text-slate-900">Skill Exchange</Link>
             <Link to="/projects" className="hover:text-slate-900">ProjectSpace</Link>
+            <button
+              onClick={() => setShowDownloadModal(true)}
+              className="hover:text-violet-700 font-semibold text-violet-600 flex items-center gap-1"
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>Download App</span>
+            </button>
             <Link to="/login" className="hover:text-slate-900">Sign In</Link>
             <Link to="/login" className="text-violet-700 font-semibold hover:text-violet-900">Faculty & Staff Access</Link>
           </div>
@@ -498,6 +595,12 @@ export function LandingPage() {
           </p>
         </div>
       </footer>
+
+      {/* Download App Modal */}
+      <DownloadAppModal
+        isOpen={showDownloadModal}
+        onClose={() => setShowDownloadModal(false)}
+      />
     </div>
   );
 }
