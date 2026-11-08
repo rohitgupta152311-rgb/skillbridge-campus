@@ -7,14 +7,16 @@ export class AppError extends Error {
 
   constructor(message: string, statusCode = 500) {
     super(message);
+    this.name = 'AppError';
     this.statusCode = statusCode;
     this.isOperational = true;
+    Object.setPrototypeOf(this, AppError.prototype);
     Error.captureStackTrace(this, this.constructor);
   }
 }
 
 export function errorHandler(
-  err: Error | AppError | ZodError,
+  err: Error | AppError | ZodError | any,
   _req: Request,
   res: Response,
   _next: NextFunction
@@ -30,8 +32,11 @@ export function errorHandler(
     });
   }
 
-  if (err instanceof AppError) {
-    return res.status(err.statusCode).json({
+  const statusCode = (err && typeof err.statusCode === 'number') ? err.statusCode : (err instanceof AppError ? err.statusCode : null);
+  const isOperational = (err && (err.isOperational === true || err.name === 'AppError')) || err instanceof AppError;
+
+  if (statusCode && (isOperational || statusCode < 500)) {
+    return res.status(statusCode).json({
       success: false,
       message: err.message,
     });

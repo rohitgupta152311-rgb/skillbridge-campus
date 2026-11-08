@@ -13,6 +13,7 @@ async function main() {
   const admin = await prisma.user.upsert({
     where: { email: 'admin@campus.edu' },
     update: {
+      passwordHash: adminPasswordHash,
       role: UserRole.ADMIN,
       isVerified: true,
       profile: {
@@ -46,7 +47,11 @@ async function main() {
   // 1. Vidya Gupta (2nd Year, NIT Nagaland, EEE)
   const vidya = await prisma.user.upsert({
     where: { email: 'vidya.gupta@campus.edu' },
-    update: {},
+    update: {
+      passwordHash,
+      role: UserRole.MENTOR,
+      isVerified: true,
+    },
     create: {
       email: 'vidya.gupta@campus.edu',
       passwordHash,
@@ -87,7 +92,11 @@ async function main() {
   // 2. Nyoimei C Konyak (2nd Year, NIT Nagaland, EEE)
   const nyoimei = await prisma.user.upsert({
     where: { email: 'nyoimei.konyak@campus.edu' },
-    update: {},
+    update: {
+      passwordHash,
+      role: UserRole.MENTOR,
+      isVerified: true,
+    },
     create: {
       email: 'nyoimei.konyak@campus.edu',
       passwordHash,
@@ -128,7 +137,11 @@ async function main() {
   // 3. Devrapalli Salini (2nd Year, NIT Nagaland, EEE)
   await prisma.user.upsert({
     where: { email: 'devrapalli.salini@campus.edu' },
-    update: {},
+    update: {
+      passwordHash,
+      role: UserRole.MENTOR,
+      isVerified: true,
+    },
     create: {
       email: 'devrapalli.salini@campus.edu',
       passwordHash,
@@ -155,7 +168,11 @@ async function main() {
   // 4. Kasturika Narzary (2nd Year, NIT Nagaland, EEE)
   await prisma.user.upsert({
     where: { email: 'kasturika.narzary@campus.edu' },
-    update: {},
+    update: {
+      passwordHash,
+      role: UserRole.MENTOR,
+      isVerified: true,
+    },
     create: {
       email: 'kasturika.narzary@campus.edu',
       passwordHash,
@@ -182,7 +199,11 @@ async function main() {
   // 5. Betimansa S Chang (2nd Year, NIT Nagaland, EEE)
   await prisma.user.upsert({
     where: { email: 'betimansa.chang@campus.edu' },
-    update: {},
+    update: {
+      passwordHash,
+      role: UserRole.MENTOR,
+      isVerified: true,
+    },
     create: {
       email: 'betimansa.chang@campus.edu',
       passwordHash,
@@ -206,15 +227,18 @@ async function main() {
     },
   });
 
-  
   // 6. Rohit Gupta (2nd Year, NIT Nagaland, EEE - Peer Mentor)
   const rohit = await prisma.user.upsert({
     where: { email: 'rohit.gupta@campus.edu' },
-    update: { role: UserRole.MENTOR },
+    update: {
+      passwordHash,
+      role: UserRole.MENTOR,
+      isVerified: true,
+    },
     create: {
       email: 'rohit.gupta@campus.edu',
       passwordHash,
-      role: UserRole.ADMIN,
+      role: UserRole.MENTOR,
       isVerified: true,
       profile: {
         create: {
@@ -272,26 +296,36 @@ async function main() {
     },
   });
 
-  // Sample Posts in Feed
-  await prisma.post.create({
-    data: {
-      authorId: vidya.id,
-      communityId: eeeCommunity.id,
-      content: 'Leading a peer study sprint on MATLAB Simulink modeling for power electronic DC-DC converters this Wednesday. Happy to swap with anyone working on Python control system scripts!',
-      postType: 'ACHIEVEMENT',
-      tags: ['MATLAB', 'PowerElectronics', 'NITNagaland', 'EEE'],
-    },
+  // Sample Posts in Feed (Idempotent)
+  const existingPost1 = await prisma.post.findFirst({
+    where: { authorId: vidya.id, content: { startsWith: 'Leading a peer study sprint' } },
   });
+  if (!existingPost1) {
+    await prisma.post.create({
+      data: {
+        authorId: vidya.id,
+        communityId: eeeCommunity.id,
+        content: 'Leading a peer study sprint on MATLAB Simulink modeling for power electronic DC-DC converters this Wednesday. Happy to swap with anyone working on Python control system scripts!',
+        postType: 'ACHIEVEMENT',
+        tags: ['MATLAB', 'PowerElectronics', 'NITNagaland', 'EEE'],
+      },
+    });
+  }
 
-  await prisma.post.create({
-    data: {
-      authorId: nyoimei.id,
-      communityId: embeddedClub.id,
-      content: 'Successfully flashed custom FreeRTOS firmware on our ARM Cortex-M board for the campus weather telemetry node. Shoutout to Vidya Gupta for the circuit analysis review!',
-      postType: 'PROJECT_SHOWCASE',
-      tags: ['EmbeddedSystems', 'ARM', 'FreeRTOS', 'PeerReview'],
-    },
+  const existingPost2 = await prisma.post.findFirst({
+    where: { authorId: nyoimei.id, content: { startsWith: 'Successfully flashed custom FreeRTOS' } },
   });
+  if (!existingPost2) {
+    await prisma.post.create({
+      data: {
+        authorId: nyoimei.id,
+        communityId: embeddedClub.id,
+        content: 'Successfully flashed custom FreeRTOS firmware on our ARM Cortex-M board for the campus weather telemetry node. Shoutout to Vidya Gupta for the circuit analysis review!',
+        postType: 'PROJECT_SHOWCASE',
+        tags: ['EmbeddedSystems', 'ARM', 'FreeRTOS', 'PeerReview'],
+      },
+    });
+  }
 
   console.log('SkillBridge NIT Nagaland database seeding completed successfully!');
 }
