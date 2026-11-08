@@ -25,7 +25,7 @@ interface DownloadAppModalProps {
 export function DownloadAppModal({ isOpen, onClose }: DownloadAppModalProps) {
   const [copied, setCopied] = useState(false);
   const [downloadStarted, setDownloadStarted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'apk' | 'playstore' | 'pwa'>('apk');
+  const [activeTab, setActiveTab] = useState<'pwa' | 'expo' | 'apk'>('pwa');
 
   if (!isOpen) return null;
 
@@ -101,28 +101,6 @@ export function DownloadAppModal({ isOpen, onClose }: DownloadAppModalProps) {
         {/* Tab Switcher */}
         <div className="flex border-b border-slate-200 bg-slate-50 px-6 pt-3 gap-2">
           <button
-            onClick={() => setActiveTab('apk')}
-            className={`pb-3 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
-              activeTab === 'apk'
-                ? 'border-violet-600 text-violet-700'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Direct APK (Android)</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('playstore')}
-            className={`pb-3 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
-              activeTab === 'playstore'
-                ? 'border-violet-600 text-violet-700'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            <Smartphone className="w-3.5 h-3.5" />
-            <span>Google Play Store</span>
-          </button>
-          <button
             onClick={() => setActiveTab('pwa')}
             className={`pb-3 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
               activeTab === 'pwa'
@@ -131,7 +109,29 @@ export function DownloadAppModal({ isOpen, onClose }: DownloadAppModalProps) {
             }`}
           >
             <Globe className="w-3.5 h-3.5" />
-            <span>Web App / iOS</span>
+            <span>Instant App (Home Screen)</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('expo')}
+            className={`pb-3 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
+              activeTab === 'expo'
+                ? 'border-violet-600 text-violet-700'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Smartphone className="w-3.5 h-3.5" />
+            <span>Expo Go (Native Phone)</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('apk')}
+            className={`pb-3 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
+              activeTab === 'apk'
+                ? 'border-violet-600 text-violet-700'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Cloud APK (EAS)</span>
           </button>
         </div>
 
@@ -196,33 +196,35 @@ export function DownloadAppModal({ isOpen, onClose }: DownloadAppModalProps) {
             </div>
           )}
 
-          {activeTab === 'playstore' && (
+          {activeTab === 'expo' && (
             <div className="space-y-4">
               <div className="p-5 border border-slate-200 rounded-2xl bg-white space-y-4 text-center">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center text-3xl shadow-inner">
-                  ▶
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-violet-50 flex items-center justify-center text-violet-600 shadow-inner">
+                  <Smartphone className="w-7 h-7" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-base font-bold text-slate-900">Google Play Store Release</h3>
+                  <h3 className="text-base font-bold text-slate-900">Run Natively with Expo Go</h3>
                   <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
-                    The official StudyBridge Campus client is configured for Google Play production deployment under package ID <code className="text-violet-700 bg-violet-50 px-1 py-0.5 rounded text-[11px]">com.studybridge.campus</code>.
+                    Test the real native React Native mobile app on your Android phone or iPhone with 100% native gestures, camera, and real-time Socket.IO chat.
                   </p>
                 </div>
 
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                  Play Console Release Pipeline: Ready for Deployment
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-left space-y-2 text-xs">
+                  <p className="font-bold text-slate-800">Quick 2-Step Instructions:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-slate-600">
+                    <li>Install the free <strong>Expo Go</strong> app from Google Play Store or Apple App Store.</li>
+                    <li>In the project terminal, run: <code className="bg-slate-200 px-1.5 py-0.5 rounded font-mono text-[11px]">cd mobile; npx expo start --tunnel</code></li>
+                    <li>Scan the QR code in your terminal with Expo Go to launch immediately!</li>
+                  </ol>
                 </div>
 
-                <div className="pt-2">
+                <div className="pt-1">
                   <Button
-                    variant="outline"
                     size="md"
-                    className="w-full text-xs font-semibold flex items-center justify-center gap-2 border-slate-300"
-                    onClick={() => setActiveTab('apk')}
+                    className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-2"
+                    onClick={() => setActiveTab('pwa')}
                   >
-                    <Download className="w-4 h-4 text-violet-600" />
-                    <span>Download Instant APK While Store Review Completes &rarr;</span>
+                    <span>Or Use Instant Home Screen App &rarr;</span>
                   </Button>
                 </div>
               </div>

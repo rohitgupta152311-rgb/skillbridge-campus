@@ -28,4 +28,10 @@ server/.env
 
 .vercel
 apk-staging
+.expo
+mobile/.expo
+mobile/dist
+mobile/android
+local.properties
+*.apk
 

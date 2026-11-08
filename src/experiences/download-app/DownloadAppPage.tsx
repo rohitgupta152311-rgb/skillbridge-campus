@@ -96,26 +96,16 @@ export function DownloadAppPage() {
               Take peer tutoring everywhere. Connect with campus peers, receive instant real-time message alerts via Socket.IO, and join 1-on-1 video tutoring sessions straight from your Android device.
             </p>
 
-            {/* Download CTA Card */}
+            {/* Download & Launch CTA Card */}
             <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4">
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <Button
-                  size="lg"
+                <Link
+                  to="/feed"
                   className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-sm py-4 rounded-2xl shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
-                  onClick={handleDownloadApk}
                 >
-                  {downloadStarted ? (
-                    <>
-                      <Check className="w-5 h-5 text-emerald-300" />
-                      <span>Download Started...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Download className="w-5 h-5" />
-                      <span>Download Android APK (v3.0.0)</span>
-                    </>
-                  )}
-                </Button>
+                  <Smartphone className="w-5 h-5" />
+                  <span>Install App on Phone (PWA)</span>
+                </Link>
 
                 <Button
                   variant="outline"
@@ -131,18 +121,27 @@ export function DownloadAppPage() {
                   ) : (
                     <>
                       <Copy className="w-4 h-4" />
-                      <span>Share App Link</span>
+                      <span>Share Mobile Link</span>
                     </>
                   )}
                 </Button>
               </div>
 
+              <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 space-y-2">
+                <p className="font-bold text-white flex items-center gap-1.5">
+                  <Zap className="w-4 h-4 text-amber-400" /> Instant 0-Second Installation (Recommended)
+                </p>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Open this link in Chrome on Android &rarr; tap the three dots (&vellip;) &rarr; tap <strong>&quot;Install App&quot;</strong> (or &quot;Add to Home Screen&quot;). It installs directly without any APK download warnings, runs full-screen, and connects to live PostgreSQL!
+                </p>
+              </div>
+
               <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400 pt-1 border-t border-slate-800">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <span>SHA-256 Verified Android Package</span>
+                  <span>Expo Native Code: Run via Expo Go or EAS Cloud Build</span>
                 </div>
-                <span>Size: ~38.4 MB &bull; Android 8.0+</span>
+                <span>React Native 0.76 &bull; Expo SDK 52</span>
               </div>
             </div>
 
