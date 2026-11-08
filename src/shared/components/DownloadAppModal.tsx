@@ -25,7 +25,7 @@ interface DownloadAppModalProps {
 export function DownloadAppModal({ isOpen, onClose }: DownloadAppModalProps) {
   const [copied, setCopied] = useState(false);
   const [downloadStarted, setDownloadStarted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'pwa' | 'expo' | 'apk'>('pwa');
+  const [activeTab, setActiveTab] = useState<'pwa' | 'expo' | 'apk'>('apk');
 
   if (!isOpen) return null;
 
@@ -151,7 +151,7 @@ export function DownloadAppModal({ isOpen, onClose }: DownloadAppModalProps) {
                   <div className="flex items-center gap-3 text-[11px] text-slate-500 font-medium pt-1">
                     <span>Package: com.studybridge.campus</span>
                     <span>&bull;</span>
-                    <span>Size: ~38 MB</span>
+                    <span>Size: ~465 KB (Lightweight &amp; Fast)</span>
                   </div>
                 </div>
               </div>

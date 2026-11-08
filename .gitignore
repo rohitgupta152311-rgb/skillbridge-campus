@@ -34,4 +34,15 @@ mobile/dist
 mobile/android
 local.properties
 *.apk
+!public/downloads/*.apk
+
+# Standalone Android builder build artifacts
+standalone-builder/bin
+standalone-builder/gen
+standalone-builder/compiled_res.zip
+standalone-builder/unaligned.apk
+standalone-builder/assets/www
+standalone-builder/*.apk
+standalone-builder/*.idsig
+
 

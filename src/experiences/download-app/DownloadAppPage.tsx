@@ -99,13 +99,23 @@ export function DownloadAppPage() {
             {/* Download & Launch CTA Card */}
             <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4">
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <Link
-                  to="/feed"
+                <Button
+                  size="lg"
                   className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-sm py-4 rounded-2xl shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
+                  onClick={handleDownloadApk}
                 >
-                  <Smartphone className="w-5 h-5" />
-                  <span>Install App on Phone (PWA)</span>
-                </Link>
+                  {downloadStarted ? (
+                    <>
+                      <Check className="w-5 h-5 text-emerald-400" />
+                      <span>Download Started...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-5 h-5" />
+                      <span>Download Android APK (v3.0.0)</span>
+                    </>
+                  )}
+                </Button>
 
                 <Button
                   variant="outline"

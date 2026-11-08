@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SkillBridge Campus</string>
+    <string name="loading_title">SkillBridge Campus</string>
+    <string name="loading_subtitle">NIT Nagaland Institutional Learning Platform</string>
+    <string name="error_title">Connection Notice</string>
+    <string name="error_message">Connecting to SkillBridge Campus cloud servers. Please check your network connection.</string>
+    <string name="retry_button">Retry Connection</string>
+</resources>
