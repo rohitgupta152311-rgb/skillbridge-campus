@@ -18,7 +18,7 @@ services:
           name: skillbridge-postgres
           property: connectionString
       - key: FRONTEND_URL
-        value: https://skillbridge-campus.onrender.com
+        value: https://skillbridge-frontend-yezp.onrender.com
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
