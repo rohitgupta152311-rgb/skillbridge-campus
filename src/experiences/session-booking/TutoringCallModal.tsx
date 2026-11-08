@@ -291,7 +291,7 @@ export function TutoringCallModal({
                 <div className="space-y-1 relative z-10">
                   <h3 className="text-2xl font-bold text-white">{partner.fullName}</h3>
                   <p className="text-xs sm:text-sm text-slate-400">
-                    High-Definition Voice Tutoring Channel &bull; Connected
+                    Voice Tutoring Session &bull; Active Room
                   </p>
                 </div>
 
@@ -309,8 +309,8 @@ export function TutoringCallModal({
                   ))}
                 </div>
 
-                <p className="text-xs text-slate-500 font-mono">
-                  Audio Bitrate: 48kHz Stereo &bull; Low Latency (14ms)
+                <p className="text-xs text-slate-400 font-mono">
+                  Microphone: {isMicOn ? 'Transmitting' : 'Muted'} &bull; Duration: {formatCallTime(callDuration)}
                 </p>
               </div>
             )}

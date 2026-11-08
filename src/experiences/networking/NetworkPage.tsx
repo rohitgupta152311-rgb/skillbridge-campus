@@ -55,7 +55,7 @@ export function NetworkPage() {
         .map(c => c.senderId === user.id ? c.receiverId : c.senderId)
     ]);
 
-    return allUsers.filter(u => !connectedUserIds.has(u.id) && u.role !== 'admin');
+    return allUsers.filter(u => !connectedUserIds.has(u.id) && u.role !== 'admin' && u.id !== 'user-admin' && u.fullName?.toLowerCase() !== 'admin');
   }, [allUsers, allConnections, user]);
 
   // Filtered connections list

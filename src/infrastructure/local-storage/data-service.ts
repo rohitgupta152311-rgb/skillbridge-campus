@@ -27,7 +27,7 @@ const STORAGE_KEYS = {
   connections: 'sb_connections',
   projects: 'sb_projects',
   projectApplications: 'sb_project_applications',
-  initialized: 'sb_initialized_v17_rohit_gupta_nit_ngl_eee',
+  initialized: 'sb_initialized_v23_admin_and_nit_nagaland_cohort',
 } as const;
 
 // Isomorphic storage fallback for SSR, headless Node environments, and testing
@@ -124,41 +124,73 @@ export function initializeDataStore(force = false): void {
 }
 
 // ─── USERS ──────────────────────────────────────────────────
+const CORE_NIT_NAGALAND_IDS = new Set([
+  'user-admin',
+  'user-rohit',
+  'user-vidya',
+  'user-nyoimei',
+  'user-salini',
+  'user-kasturika',
+  'user-betimansa',
+]);
+
+const LEGACY_FAKE_IDS = new Set([
+  'user-kabir', 'user-ananya', 'user-aarav', 'user-priya', 'user-rohan',
+  'user-akash', 'user-neha', 'user-karan', 'user-1',
+  'user-2', 'user-3', 'user-4', 'user-5', 'user-6', 'user-7', 'user-8', 'user-9', 'user-10'
+]);
+
 export function getUsers(): User[] {
   const users = loadOrSeed(STORAGE_KEYS.users, mockUsers);
-  const existingIds = new Set(users.map(u => u.id));
-  const missing = mockUsers.filter(u => !existingIds.has(u.id));
 
-  // If new seed users are added or year/university was updated in seed data for the 5 students, update them if not modified by user
-  let changed = false;
-  const merged = [...users];
+  // Filter out any legacy demo accounts not part of the active NIT Nagaland cohort
+  const filteredUsers = users.filter((u) => {
+    if (CORE_NIT_NAGALAND_IDS.has(u.id)) return true;
+    if (LEGACY_FAKE_IDS.has(u.id)) return false;
+    // Remove any user with old demo emails
+    if (u.email && ['kabir@campus.edu', 'ananya@campus.edu', 'aarav@campus.edu', 'priya@campus.edu', 'rohan@campus.edu', 'akash@campus.edu'].includes(u.email.toLowerCase())) {
+      return false;
+    }
+    // Allow newly registered real users created during this session
+    return true;
+  });
 
-  // Evict any legacy non-current profiles from cached local storage
-  const validIds = new Set(mockUsers.map(m => m.id));
-  const legacyIdx = merged.findIndex(u => !validIds.has(u.id));
-  if (legacyIdx !== -1) {
-    merged.splice(legacyIdx, 1);
-    changed = true;
-  }
+  let changed = filteredUsers.length !== users.length;
+  const merged = [...filteredUsers];
 
+  // Guarantee all 6 institutional users exist and have up to date metadata
   for (const mu of mockUsers) {
-    const idx = merged.findIndex(u => u.id === mu.id);
+    const idx = merged.findIndex((u) => u.id === mu.id);
     if (idx === -1) {
       merged.push(mu);
       changed = true;
-    } else if (['user-rohit', 'user-vidya', 'user-nyoimei', 'user-salini', 'user-kasturika', 'user-betimansa'].includes(mu.id)) {
+    } else {
       if (merged[idx].fullName !== mu.fullName || merged[idx].email !== mu.email) {
         merged[idx].fullName = mu.fullName;
         merged[idx].email = mu.email;
         changed = true;
       }
-      if (merged[idx].year !== '2nd Year' || merged[idx].university !== 'National Institute of Technology (NIT) Nagaland' || merged[idx].department !== 'Electrical & Electronics Engineering') {
-        merged[idx] = {
-          ...merged[idx],
-          year: '2nd Year',
-          university: 'National Institute of Technology (NIT) Nagaland',
-          department: 'Electrical & Electronics Engineering',
-        };
+      if (mu.id !== 'user-admin') {
+        if (
+          merged[idx].year !== '2nd Year' ||
+          merged[idx].university !== 'National Institute of Technology (NIT) Nagaland' ||
+          merged[idx].department !== 'Electrical & Electronics Engineering'
+        ) {
+          merged[idx] = {
+            ...merged[idx],
+            year: '2nd Year',
+            university: 'National Institute of Technology (NIT) Nagaland',
+            department: 'Electrical & Electronics Engineering',
+          };
+          changed = true;
+        }
+      }
+      if (mu.id === 'user-rohit' && merged[idx].role !== 'mentor') {
+        merged[idx].role = 'mentor';
+        changed = true;
+      }
+      if (mu.id === 'user-admin' && merged[idx].role !== 'admin') {
+        merged[idx].role = 'admin';
         changed = true;
       }
     }
@@ -170,8 +202,14 @@ export function getUsers(): User[] {
   }
   return users;
 }
+
 export function getUserById(id: string): User | undefined { return getUsers().find(u => u.id === id); }
-export function getUserByEmail(email: string): User | undefined { return getUsers().find(u => u.email === email); }
+
+export function getUserByEmail(email: string): User | undefined {
+  const normalized = email.trim().toLowerCase();
+  return getUsers().find(u => u.email.toLowerCase() === normalized);
+}
+
 export function getMentors(): User[] { return getUsers().filter(u => u.role === 'mentor' && !u.isSuspended); }
 export function getMentees(): User[] { return getUsers().filter(u => u.role === 'mentee' && !u.isSuspended); }
 
@@ -201,10 +239,13 @@ export function updateUser(id: string, updates: Partial<User>): User | undefined
 export function addUser(user: Omit<User, 'id' | 'joinedAt'> & { id?: string; joinedAt?: string }): User {
   const users = getUsers();
   const existingIdx = user.id ? users.findIndex(u => u.id === user.id) : -1;
+  const isUserAdmin = user.role === 'admin' || user.email.toLowerCase() === 'rohit.gupta@campus.edu' || user.email.toLowerCase() === 'admin@campus.edu';
   const newUser: User = {
     ...user,
     id: user.id || `user-${generateId()}`,
     joinedAt: user.joinedAt || new Date().toISOString(),
+    // All newly created accounts require admin approval unless explicitly administrator
+    isVerified: isUserAdmin ? true : (user.isVerified ?? false),
   } as User;
   if (existingIdx >= 0) {
     users[existingIdx] = newUser;
@@ -218,16 +259,34 @@ export function addUser(user: Omit<User, 'id' | 'joinedAt'> & { id?: string; joi
 // ─── POSTS & FEED (SkillBridge 2.0) ─────────────────────────
 export function getPosts(): Post[] {
   const posts = loadOrSeed(STORAGE_KEYS.posts, mockPosts);
-  const existingIds = new Set(posts.map(p => p.id));
-  const missing = mockPosts.filter(p => !existingIds.has(p.id));
-  if (missing.length > 0) {
-    const merged = [...posts, ...missing];
+  const validUserIds = new Set(getUsers().map((u) => u.id));
+  const legacyPostIds = new Set([
+    'post-1', 'post-2', 'post-3', 'post-4', 'post-5',
+    'post-6', 'post-7', 'post-8', 'post-9', 'post-10'
+  ]);
+
+  // Purge any fake posts from previous mock data or authors that no longer exist
+  const cleaned = posts.filter((p) => {
+    if (legacyPostIds.has(p.id)) return false;
+    if (p.authorId && !validUserIds.has(p.authorId)) return false;
+    // Clean comments inside each post so no comments from non-existent users remain
+    if (p.comments && p.comments.length > 0) {
+      p.comments = p.comments.filter((c) => validUserIds.has(c.authorId));
+      p.commentsCount = p.comments.length;
+    }
+    return true;
+  });
+
+  // Ensure all authentic seed posts from Rohit & 5 girls are present
+  const existingIds = new Set(cleaned.map((p) => p.id));
+  const missing = mockPosts.filter((p) => !existingIds.has(p.id));
+  const merged = [...cleaned, ...missing];
+
+  if (merged.length !== posts.length) {
     persist(STORAGE_KEYS.posts, merged);
-    return merged.sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
   }
-  return posts.sort(
+
+  return merged.sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 }
@@ -748,7 +807,7 @@ export function calculateSkillExchangeMatches(currentUserId: string): {
   const iCanHelp: TwoWayMatch[] = [];
 
   users.forEach(other => {
-    if (other.id === currentUser.id) return;
+    if (other.id === currentUser.id || other.role === 'admin' || other.id === 'user-admin') return;
 
     const otherOffered = (other.skillsOffered || []).map(s => s.skillName.toLowerCase());
     const otherWanted = (other.skillsWanted || []).map(s => s.skillName.toLowerCase());

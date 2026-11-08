@@ -78,7 +78,7 @@ export function FindMyTeamModal({ isOpen, onClose, onApply }: FindMyTeamModalPro
     if (!targetProject) return [];
 
     return allUsers
-      .filter(u => u.id !== user?.id)
+      .filter(u => u.id !== user?.id && u.role !== 'admin' && u.id !== 'user-admin' && u.fullName?.toLowerCase() !== 'admin')
       .map(candidate => {
         const candidateOffered = candidate.skillsOffered?.map(s => s.skillName.toLowerCase()) || [];
         const matchingSkills = targetProject.requiredSkills.filter(req =>

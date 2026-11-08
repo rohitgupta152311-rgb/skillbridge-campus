@@ -22,21 +22,36 @@ export function MentorDashboard() {
   const avgRating = reviews.length > 0 ? averageOf(reviews.map(r => r.overallRating)) : 0;
   const uniqueMentees = new Set(sessions.map(s => s.menteeId)).size;
 
-  // Chart data: weekly teaching metrics
+  // Chart data: weekly teaching metrics derived truthfully from real reviews
   const performanceData = useMemo(() => [
-    { metric: 'Overall', score: avgRating ? Number(avgRating.toFixed(1)) : 5.0 },
-    { metric: 'Teaching', score: reviews.length > 0 ? Number(averageOf(reviews.map(r => r.teachingQuality)).toFixed(1)) : 4.9 },
-    { metric: 'Communication', score: reviews.length > 0 ? Number(averageOf(reviews.map(r => r.communication)).toFixed(1)) : 4.8 },
-    { metric: 'Knowledge', score: reviews.length > 0 ? Number(averageOf(reviews.map(r => r.subjectKnowledge)).toFixed(1)) : 5.0 },
+    { metric: 'Overall', score: avgRating ? Number(avgRating.toFixed(1)) : 0 },
+    { metric: 'Teaching', score: reviews.length > 0 ? Number(averageOf(reviews.map(r => r.teachingQuality)).toFixed(1)) : 0 },
+    { metric: 'Communication', score: reviews.length > 0 ? Number(averageOf(reviews.map(r => r.communication)).toFixed(1)) : 0 },
+    { metric: 'Knowledge', score: reviews.length > 0 ? Number(averageOf(reviews.map(r => r.subjectKnowledge)).toFixed(1)) : 0 },
   ], [avgRating, reviews]);
 
-  const activityData = useMemo(() => [
-    { period: 'W1', sessions: 2, hours: 2.5 },
-    { period: 'W2', sessions: 4, hours: 5.0 },
-    { period: 'W3', sessions: 3, hours: 3.5 },
-    { period: 'W4', sessions: 5, hours: 6.0 },
-    { period: 'This Wk', sessions: sessions.length || 3, hours: 4.5 },
-  ], [sessions.length]);
+  const activityData = useMemo(() => {
+    const now = new Date();
+    const periods = [
+      { label: 'W-3', daysAgoStart: 28, daysAgoEnd: 21 },
+      { label: 'W-2', daysAgoStart: 21, daysAgoEnd: 14 },
+      { label: 'W-1', daysAgoStart: 14, daysAgoEnd: 7 },
+      { label: 'This Wk', daysAgoStart: 7, daysAgoEnd: 0 },
+    ];
+    return periods.map(p => {
+      const start = new Date(now.getTime() - p.daysAgoStart * 86400000);
+      const end = new Date(now.getTime() - p.daysAgoEnd * 86400000);
+      const count = sessions.filter(s => {
+        const d = new Date(s.date);
+        return d >= start && d <= end;
+      }).length;
+      return {
+        period: p.label,
+        sessions: count,
+        hours: Number((count * 1.0).toFixed(1)),
+      };
+    });
+  }, [sessions]);
 
   if (!user) return null;
 
@@ -125,19 +140,27 @@ export function MentorDashboard() {
             </h3>
             <span className="text-xs text-slate-400">Scale: 1 – 5</span>
           </div>
-          <div className="h-52 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={performanceData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="metric" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                <YAxis domain={[0, 5]} stroke="#94a3b8" fontSize={12} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0' }}
-                />
-                <Bar dataKey="score" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {reviews.length === 0 ? (
+            <div className="h-52 flex flex-col items-center justify-center text-center p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              <Star className="w-8 h-8 text-slate-300 mb-2" />
+              <p className="text-sm font-semibold text-slate-600">No Review Telemetry Yet</p>
+              <p className="text-xs text-slate-400 mt-0.5">Ratings and competency bars update automatically as mentees submit verified reviews.</p>
+            </div>
+          ) : (
+            <div className="h-52 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={performanceData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                  <XAxis dataKey="metric" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                  <YAxis domain={[0, 5]} stroke="#94a3b8" fontSize={12} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                  />
+                  <Bar dataKey="score" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </Card>
       </div>
 

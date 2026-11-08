@@ -8,6 +8,10 @@ export const DEMO_CREDENTIALS = {
   mentor: { email: 'nyoimei.konyak@campus.edu', password: 'demo1234' },
   rohit: { email: 'rohit.gupta@campus.edu', password: 'demo1234' },
   vidya: { email: 'vidya.gupta@campus.edu', password: 'demo1234' },
+  nyoimei: { email: 'nyoimei.konyak@campus.edu', password: 'demo1234' },
+  salini: { email: 'devrapalli.salini@campus.edu', password: 'demo1234' },
+  kasturika: { email: 'kasturika.narzary@campus.edu', password: 'demo1234' },
+  betimansa: { email: 'betimansa.chang@campus.edu', password: 'demo1234' },
 };
 
 export const MATCH_WEIGHTS = {

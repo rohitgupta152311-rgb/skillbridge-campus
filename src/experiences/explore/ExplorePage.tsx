@@ -98,7 +98,7 @@ export function ExplorePage() {
   // Filtered People
   const filteredUsers = useMemo(() => {
     return allUsers.filter(u => {
-      if (u.id === user?.id) return false;
+      if (u.id === user?.id || u.role === 'admin' || u.id === 'user-admin' || u.fullName?.toLowerCase() === 'admin') return false;
       const q = searchQuery.toLowerCase();
       const matchesSearch =
         !q ||

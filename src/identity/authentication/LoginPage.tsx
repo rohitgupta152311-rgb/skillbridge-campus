@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   GraduationCap,
@@ -6,30 +6,19 @@ import {
   Lock,
   Eye,
   EyeOff,
-  AlertCircle,
   CheckCircle2,
+  AlertCircle,
   X,
-  ExternalLink,
-  Shield,
-  ShieldCheck,
-  Sparkles,
-  HelpCircle,
-  Code,
-  User,
   ArrowRight,
-  ChevronDown,
-  ChevronUp,
-  KeyRound,
-  Globe,
-  Settings,
+  Shield,
+  ExternalLink,
+  Code,
 } from 'lucide-react';
 import { Button, Input } from '../../shared/components';
-import { useAuthStore, OAuthProfileData } from './auth-store';
+import { useAuthStore } from './auth-store';
 import { useToastStore } from '../../shared/notifications/toast-store';
-import {
-  LinkedInImportModal,
-  LinkedInPreviewData,
-} from '../../experiences/personal-profile/LinkedInImportModal';
+import { apiClient } from '../../infrastructure/api/api-client';
+import { LinkedInImportModal, LinkedInPreviewData } from '../../experiences/personal-profile/LinkedInImportModal';
 
 const GOOGLE_CLIENT_ID =
   import.meta.env.VITE_GOOGLE_CLIENT_ID ||
@@ -38,7 +27,7 @@ const GOOGLE_CLIENT_ID =
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, loginWithOAuth, loginWithFirebase, isLoading, error, clearError } = useAuthStore();
+  const { login, loginWithOAuth, isLoading, error, clearError } = useAuthStore();
   const { addToast } = useToastStore();
 
   const [email, setEmail] = useState('');
@@ -46,19 +35,19 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
-  // Modals state
+  // Password reset modal state
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
-  const [forgotSent, setForgotSent] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
 
-  // Dedicated OAuth Dialogs
-  const [googleModalOpen, setGoogleModalOpen] = useState(false);
-  const [githubModalOpen, setGithubModalOpen] = useState(false);
-  const [customGoogleEmail, setCustomGoogleEmail] = useState('');
-  const [customGithubUser, setCustomGithubUser] = useState('');
+  // GitHub OAuth App Configuration Modal
+  const [githubConfigModalOpen, setGithubConfigModalOpen] = useState(false);
+  const [githubClientId, setGithubClientId] = useState('');
+  const [githubClientSecret, setGithubClientSecret] = useState('');
+  const [configuringGithub, setConfiguringGithub] = useState(false);
 
-  // LinkedIn Import Modal
+  // LinkedIn Import State
   const [linkedinImport, setLinkedinImport] = useState<{
     isOpen: boolean;
     data: LinkedInPreviewData | null;
@@ -66,12 +55,6 @@ export function LoginPage() {
     isOpen: false,
     data: null,
   });
-
-  const apiUrl =
-    import.meta.env.VITE_API_URL ||
-    (window.location.hostname === 'localhost'
-      ? 'http://localhost:5000/api/v1'
-      : 'https://skillbridge-backend-15a7.onrender.com/api/v1');
 
   // Decode and handle Google Identity Services (GIS) Response
   const handleGoogleCredentialResponse = async (response: any) => {
@@ -92,18 +75,17 @@ export function LoginPage() {
         email: googleUser.email,
         fullName: googleUser.name,
         avatar: googleUser.picture,
-        department: 'Computer Science',
+        department: 'Computer Science & Engineering',
         year: '3rd Year',
-        headline: `${googleUser.name} • Google Verified Student (${googleUser.email})`,
+        headline: `${googleUser.name} • Google Verified Account (${googleUser.email})`,
       });
 
       if (success) {
         addToast({
           type: 'success',
-          title: 'Google Sign-In Successful',
+          title: 'Google Sign-In Verified',
           message: `Authenticated as ${googleUser.name} (${googleUser.email})`,
         });
-        setGoogleModalOpen(false);
         navigate('/feed');
       }
     } catch (err) {
@@ -122,15 +104,15 @@ export function LoginPage() {
           cancel_on_tap_outside: true,
         });
 
-        // Render official button on the page if container is mounted
-        const btnContainer = document.getElementById('googleSignInRealBtn');
-        if (btnContainer) {
-          (window as any).google.accounts.id.renderButton(btnContainer, {
+        const mainBtn = document.getElementById('googleSignInMainBtn');
+        if (mainBtn) {
+          (window as any).google.accounts.id.renderButton(mainBtn, {
             theme: 'outline',
             size: 'large',
             width: 360,
             text: 'continue_with',
             shape: 'rectangular',
+            logo_alignment: 'left',
           });
         }
       }
@@ -147,7 +129,7 @@ export function LoginPage() {
       }, 300);
       return () => clearInterval(interval);
     }
-  }, [googleModalOpen]);
+  }, []);
 
   // Handle URL params on redirect
   useEffect(() => {
@@ -161,16 +143,44 @@ export function LoginPage() {
         const oauthUser = JSON.parse(decodeURIComponent(oauthUserStr));
         localStorage.setItem('sb_current_user', JSON.stringify(oauthUser));
         useAuthStore.setState({ user: oauthUser, isAuthenticated: true });
+        const providerName = oauthUser.provider === 'github' ? 'GitHub' : 'Google';
         addToast({
           type: 'success',
-          title: 'Google Sign-In Verified',
-          message: `Welcome, ${oauthUser.fullName}! Successfully authenticated via Google.`,
+          title: `${providerName} Sign-In Verified`,
+          message: `Welcome, ${oauthUser.fullName}! Successfully authenticated via ${providerName}.`,
         });
         navigate('/feed');
         return;
       } catch (e) {
         console.error('Failed to parse oauth_user', e);
       }
+    }
+
+    // 2. Check for oauth_demo redirects when credentials are missing on server
+    const oauthDemo = params.get('oauth_demo');
+    if (oauthDemo === 'google') {
+      addToast({
+        type: 'info',
+        title: 'Google OAuth Notice',
+        message: 'Redirecting through official Google Accounts OAuth flow.',
+      });
+      handleLaunchRealGoogleRedirect();
+    } else if (oauthDemo === 'github') {
+      setGithubConfigModalOpen(true);
+      addToast({
+        type: 'info',
+        title: 'GitHub OAuth Setup Required',
+        message: 'Please configure your GitHub OAuth App credentials to connect live with GitHub.',
+      });
+    }
+
+    const oauthError = params.get('error');
+    if (oauthError) {
+      addToast({
+        type: 'error',
+        title: 'Authentication Notice',
+        message: oauthError,
+      });
     }
 
     const previewParam = params.get('linkedin_preview');
@@ -187,34 +197,54 @@ export function LoginPage() {
     }
   }, [location.search]);
 
-  const handleLaunchOfficialGooglePrompt = () => {
-    if (typeof window !== 'undefined' && (window as any).google?.accounts?.id) {
-      (window as any).google.accounts.id.prompt((notification: any) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // If One Tap is skipped or blocked by browser, open the Google modal
-          setGoogleModalOpen(true);
-        }
-      });
-    } else {
-      setGoogleModalOpen(true);
-    }
-  };
-
   const handleLaunchRealGoogleRedirect = () => {
-    // Official Google OAuth 2.0 redirect
-    const params = new URLSearchParams({
-      client_id: GOOGLE_CLIENT_ID,
-      redirect_uri: `${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1')}/auth/google/callback`,
-      response_type: 'code',
-      scope: 'openid email profile',
-      prompt: 'select_account',
-      access_type: 'offline',
-    });
-    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    // Official Google OAuth 2.0 direct authorization redirect
+    const callbackUri = encodeURIComponent(`${apiClient.getApiBase()}/auth/google/callback`);
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${callbackUri}&response_type=code&scope=openid%20email%20profile&prompt=select_account&access_type=offline`;
   };
 
   const handleLaunchRealGitHubAuth = () => {
-    window.location.href = `${apiUrl}/auth/github`;
+    window.location.href = `${apiClient.getApiBase()}/auth/github`;
+  };
+
+  const handleSaveGitHubOAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!githubClientId.trim()) return;
+    setConfiguringGithub(true);
+    try {
+      const res = await fetch(`${apiClient.getApiBase()}/auth/configure-oauth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          githubClientId: githubClientId.trim(),
+          githubClientSecret: githubClientSecret.trim(),
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        addToast({
+          type: 'success',
+          title: 'GitHub OAuth Configured',
+          message: 'Redirecting to official GitHub authorization...',
+        });
+        const callbackUri = encodeURIComponent(`${apiClient.getApiBase()}/auth/github/callback`);
+        window.location.href = `https://github.com/login/oauth/authorize?client_id=${githubClientId.trim()}&redirect_uri=${callbackUri}&scope=read:user%20user:email`;
+      } else {
+        addToast({
+          type: 'error',
+          title: 'Configuration Error',
+          message: json.message || 'Failed to configure GitHub OAuth on server.',
+        });
+      }
+    } catch (err: any) {
+      addToast({
+        type: 'error',
+        title: 'Network Error',
+        message: err?.message || 'Could not communicate with campus server.',
+      });
+    } finally {
+      setConfiguringGithub(false);
+    }
   };
 
   const handleConfirmLinkedInImport = async (finalData: any) => {
@@ -240,81 +270,7 @@ export function LoginPage() {
     }
   };
 
-  const startSampleLinkedInImport = () => {
-    setLinkedinImport({
-      isOpen: true,
-      data: {
-        provider: 'linkedin',
-        providerAccountId: 'urn:li:person:9872149b',
-        fullName: 'Vidya Gupta',
-        email: 'vidya.gupta@campus.edu',
-        avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300',
-        headline: 'EEE Student | NIT Nagaland | Power Electronics & MATLAB Simulink',
-        linkedinUrl: 'https://www.linkedin.com/in/vidyagupta-nitn',
-        verifiedEmail: true,
-      },
-    });
-  };
-
-  const handleGoogleSignIn = async (account: {
-    email: string;
-    fullName: string;
-    department: string;
-    year: string;
-    avatar: string;
-  }) => {
-    const success = await loginWithOAuth({
-      provider: 'google',
-      email: account.email,
-      fullName: account.fullName,
-      avatar: account.avatar,
-      department: account.department,
-      year: account.year,
-      headline: `${account.department} Student • Google Workspace Verified`,
-    });
-
-    if (success) {
-      addToast({
-        type: 'success',
-        title: 'Signed in with Google',
-        message: `Authenticated as ${account.fullName} (${account.email})`,
-      });
-      setGoogleModalOpen(false);
-      navigate('/feed');
-    }
-  };
-
-  const handleGithubSignIn = async (developer: {
-    username: string;
-    email: string;
-    fullName: string;
-    department: string;
-    year: string;
-    avatar: string;
-    bio: string;
-  }) => {
-    const success = await loginWithOAuth({
-      provider: 'github',
-      email: developer.email,
-      fullName: developer.fullName,
-      avatar: developer.avatar,
-      department: developer.department,
-      year: developer.year,
-      headline: `${developer.bio} • GitHub @${developer.username}`,
-    });
-
-    if (success) {
-      addToast({
-        type: 'success',
-        title: 'Signed in with GitHub',
-        message: `Authenticated as @${developer.username} (${developer.fullName})`,
-      });
-      setGithubModalOpen(false);
-      navigate('/feed');
-    }
-  };
-
-  const EMAIL_FORMAT_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const EMAIL_FORMAT_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -343,72 +299,6 @@ export function LoginPage() {
       } else {
         navigate('/feed');
       }
-    }
-  };
-
-
-
-  const handleFirebaseGoogleLogin = async () => {
-    try {
-      const { signInWithFirebaseGoogle } = await import('../../infrastructure/firebase/firebase-client');
-      const { idToken, user } = await signInWithFirebaseGoogle();
-      const success = await loginWithFirebase(idToken, {
-        department: 'Computer Science',
-        year: '3rd Year',
-        university: 'NIT Nagaland',
-      });
-      if (success) {
-        addToast({
-          type: 'success',
-          title: 'Google Sign-In Verified',
-          message: `Welcome, ${user.displayName || user.email}! Connected via Firebase Auth.`,
-        });
-        navigate('/feed');
-        return;
-      }
-    } catch (err: any) {
-      console.warn('Firebase Google Auth popup cancelled or error:', err);
-      if (err?.code === 'auth/popup-closed-by-user') {
-        return;
-      }
-      handleLaunchOfficialGooglePrompt();
-    }
-  };
-
-  const handleFirebaseGithubLogin = async () => {
-    try {
-      const { signInWithFirebaseGithub } = await import('../../infrastructure/firebase/firebase-client');
-      const { idToken, user } = await signInWithFirebaseGithub();
-      const success = await loginWithFirebase(idToken, {
-        department: 'Computer Science',
-        year: '3rd Year',
-        university: 'NIT Nagaland',
-      });
-      if (success) {
-        addToast({
-          type: 'success',
-          title: 'GitHub Authentication Verified',
-          message: `Welcome, ${user.displayName || user.email}! Connected via Firebase Auth.`,
-        });
-        navigate('/feed');
-        return;
-      }
-    } catch (err: any) {
-      console.warn('Firebase GitHub Auth popup cancelled or error:', err);
-      if (err?.code === 'auth/popup-closed-by-user') {
-        return;
-      }
-      setGithubModalOpen(true);
-    }
-  };
-
-  const handleOAuthClick = (provider: 'Google' | 'GitHub' | 'LinkedIn') => {
-    if (provider === 'Google') {
-      handleFirebaseGoogleLogin();
-    } else if (provider === 'GitHub') {
-      handleFirebaseGithubLogin();
-    } else if (provider === 'LinkedIn') {
-      startSampleLinkedInImport();
     }
   };
 
@@ -502,46 +392,36 @@ export function LoginPage() {
 
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">Welcome back</h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1 mb-6">
-            Enter your campus credentials or sign in with Google.
+            Enter your campus credentials or sign in with Google or GitHub.
           </p>
 
-          {/* Social OAuth Buttons */}
+          {/* Real Social OAuth Integrations */}
           <div className="space-y-2.5 mb-6">
-            {/* Real Google Button Container for GIS */}
-            <div className="flex flex-col items-center gap-2">
-              <button
-                type="button"
-                onClick={() => handleOAuthClick('Google')}
-                className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 text-sm font-semibold transition-all shadow-xs group"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                  />
-                </svg>
-                <span>Continue with Google</span>
-                
-              </button>
+            {/* Google Identity Services Official Button Container */}
+            <div className="w-full flex justify-center">
+              <div id="googleSignInMainBtn" className="w-full min-h-[44px] flex justify-center"></div>
             </div>
+
+            {/* Direct Google OAuth 2.0 Fallback Action */}
+            <button
+              type="button"
+              onClick={handleLaunchRealGoogleRedirect}
+              className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 text-sm font-semibold transition-all shadow-xs group"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+              </svg>
+              <span>Continue with Google</span>
+            </button>
 
             <div className="grid grid-cols-2 gap-2.5">
               {/* GitHub */}
               <button
                 type="button"
-                onClick={() => handleOAuthClick('GitHub')}
+                onClick={handleLaunchRealGitHubAuth}
                 className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 text-xs sm:text-sm font-semibold transition-all shadow-xs"
               >
                 <svg className="w-4 h-4 text-slate-900" fill="currentColor" viewBox="0 0 24 24">
@@ -552,20 +432,20 @@ export function LoginPage() {
                   />
                 </svg>
                 <span>GitHub</span>
-                
               </button>
 
               {/* LinkedIn */}
               <button
                 type="button"
-                onClick={() => handleOAuthClick('LinkedIn')}
+                onClick={() => {
+                  window.location.href = `${apiClient.getApiBase()}/auth/linkedin`;
+                }}
                 className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 text-xs sm:text-sm font-semibold transition-all shadow-xs"
               >
                 <svg className="w-4 h-4 text-[#0077b5]" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
                 </svg>
                 <span>LinkedIn</span>
-                
               </button>
             </div>
           </div>
@@ -662,7 +542,7 @@ export function LoginPage() {
             </Link>
           </p>
 
-          {/* Institutional Fast-Fill Helper (Expandable) */}
+          {/* Institutional Fast-Fill Helper */}
           <div className="mt-6 pt-4 border-t border-slate-200">
             <details className="group">
               <summary className="text-[11px] font-semibold text-slate-500 hover:text-slate-800 cursor-pointer flex items-center justify-between list-none py-1">
@@ -677,31 +557,31 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setEmail('rohit.gupta@campus.edu');
-                    setPassword('demo1234');
+                    setEmail('admin@campus.edu');
+                    setPassword('admin1234');
                   }}
-                  className="p-2.5 rounded-xl bg-violet-50/80 hover:bg-violet-100 border border-violet-200 text-left transition-all group/btn col-span-2 sm:col-span-1"
+                  className="p-2.5 rounded-xl bg-violet-50/80 hover:bg-violet-100 border border-violet-200 text-left transition-all group/btn col-span-2"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] font-bold text-violet-900 group-hover/btn:text-violet-700">Rohit Gupta</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-violet-200/80 text-violet-800 font-semibold">Admin • NIT NGL EEE</span>
+                    <span className="text-[11px] font-bold text-violet-900 group-hover/btn:text-violet-700">Admin</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-violet-200/80 text-violet-800 font-semibold">Platform Administrator</span>
                   </div>
-                  <p className="text-[10px] text-violet-700 font-mono truncate">rohit.gupta@campus.edu</p>
+                  <p className="text-[10px] text-violet-700 font-mono truncate">admin@campus.edu</p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => {
-                    setEmail('admin@campus.edu');
-                    setPassword('admin1234');
+                    setEmail('rohit.gupta@campus.edu');
+                    setPassword('demo1234');
                   }}
                   className="p-2.5 rounded-xl bg-slate-50 hover:bg-violet-50/60 border border-slate-200/80 hover:border-violet-300 text-left transition-all group/btn"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] font-bold text-slate-900 group-hover/btn:text-violet-700">Dr. Rajesh Sharma</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 font-semibold">Admin</span>
+                    <span className="text-[11px] font-bold text-slate-900 group-hover/btn:text-violet-700">Rohit Gupta</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">NIT Nagaland EEE</span>
                   </div>
-                  <p className="text-[10px] text-slate-500 font-mono truncate">admin@campus.edu</p>
+                  <p className="text-[10px] text-slate-500 font-mono truncate">rohit.gupta@campus.edu</p>
                 </button>
 
                 <button
@@ -728,55 +608,10 @@ export function LoginPage() {
                   className="p-2.5 rounded-xl bg-slate-50 hover:bg-violet-50/60 border border-slate-200/80 hover:border-violet-300 text-left transition-all group/btn"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] font-bold text-slate-900 group-hover/btn:text-violet-700">Nyoimei C Konyak</span>
+                    <span className="text-[11px] font-bold text-slate-900 group-hover/btn:text-violet-700">Nyoimel C Konyak</span>
                     <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">NIT Nagaland</span>
                   </div>
                   <p className="text-[10px] text-slate-500 font-mono truncate">nyoimei.konyak@campus.edu</p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail('devrapalli.salini@campus.edu');
-                    setPassword('demo1234');
-                  }}
-                  className="p-2.5 rounded-xl bg-slate-50 hover:bg-violet-50/60 border border-slate-200/80 hover:border-violet-300 text-left transition-all group/btn"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] font-bold text-slate-900 group-hover/btn:text-violet-700">Devrapalli Salini</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">NIT Nagaland</span>
-                  </div>
-                  <p className="text-[10px] text-slate-500 font-mono truncate">devrapalli.salini@campus.edu</p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail('kasturika.narzary@campus.edu');
-                    setPassword('demo1234');
-                  }}
-                  className="p-2.5 rounded-xl bg-slate-50 hover:bg-violet-50/60 border border-slate-200/80 hover:border-violet-300 text-left transition-all group/btn"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] font-bold text-slate-900 group-hover/btn:text-violet-700">Kasturika Narzary</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">NIT Nagaland</span>
-                  </div>
-                  <p className="text-[10px] text-slate-500 font-mono truncate">kasturika.narzary@campus.edu</p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail('betimansa.chang@campus.edu');
-                    setPassword('demo1234');
-                  }}
-                  className="p-2.5 rounded-xl bg-slate-50 hover:bg-violet-50/60 border border-slate-200/80 hover:border-violet-300 text-left transition-all group/btn"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] font-bold text-slate-900 group-hover/btn:text-violet-700">Betimansa S Chang</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">NIT Nagaland</span>
-                  </div>
-                  <p className="text-[10px] text-slate-500 font-mono truncate">betimansa.chang@campus.edu</p>
                 </button>
               </div>
             </details>
@@ -785,73 +620,18 @@ export function LoginPage() {
       </div>
 
       {/* ─────────────────────────────────────────────
-          1. REAL GOOGLE OAUTH MODAL (Interactive & Live)
+          REAL GITHUB OAUTH CONFIGURATION MODAL
       ───────────────────────────────────────────── */}
-      {googleModalOpen && (
+      {githubConfigModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
           <div className="w-full max-w-lg bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 relative max-h-[92vh] overflow-y-auto">
             <button
-              onClick={() => setGoogleModalOpen(false)}
+              onClick={() => setGithubConfigModalOpen(false)}
               className="absolute right-4 top-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
             >
               <X className="w-5 h-5" />
             </button>
 
-            {/* Google Brand Header */}
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center shadow-xs">
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-slate-900 tracking-tight">Sign in with Google</h3>
-                <p className="text-xs text-slate-500">Choose your campus Google account to continue</p>
-              </div>
-            </div>
-
-            {/* Google Identity Services Render Container */}
-            <div className="space-y-3 mb-5">
-              {/* Native Google Identity Services Button */}
-              <div id="googleSignInRealBtn" className="flex justify-center min-h-[44px]"></div>
-
-              {/* Direct Redirect to Google Accounts */}
-              <button
-                type="button"
-                onClick={handleLaunchRealGoogleRedirect}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#151e4e] hover:bg-[#0f1638] text-white text-xs font-semibold shadow-xs transition-all"
-              >
-                <span>Continue with Google Account</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            <div className="pt-4 border-t border-slate-100 text-center">
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                SkillBridge securely verifies student identities via Google OAuth 2.0 without accessing your personal password.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ─────────────────────────────────────────────
-          2. GITHUB OAUTH MODAL (Interactive & Live)
-      ───────────────────────────────────────────── */}
-      {githubModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
-          <div className="w-full max-w-lg bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 relative max-h-[92vh] overflow-y-auto">
-            <button
-              onClick={() => setGithubModalOpen(false)}
-              className="absolute right-4 top-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {/* GitHub Brand Header */}
             <div className="flex items-center gap-3 mb-4">
               <div className="w-11 h-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-xs">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -859,27 +639,59 @@ export function LoginPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900 tracking-tight">GitHub Developer Authentication</h3>
-                <p className="text-xs text-slate-500 font-medium">Verified Campus Developer Profile</p>
+                <h3 className="text-lg font-bold text-slate-900 tracking-tight">Connect Real GitHub OAuth</h3>
+                <p className="text-xs text-slate-500 font-medium">Official GitHub Developer OAuth 2.0 Integration</p>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Connect your GitHub account to showcase your repositories, tech stacks, and open-source contributions on your campus profile.
-              </p>
+            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 mb-5 text-xs text-slate-600 space-y-2">
+              <p className="font-semibold text-slate-800">To enable real GitHub sign-in, register a free GitHub OAuth application:</p>
+              <ol className="list-decimal list-inside space-y-1 text-slate-600">
+                <li>Open <a href="https://github.com/settings/applications/new" target="_blank" rel="noreferrer" className="text-blue-600 underline font-semibold inline-flex items-center gap-0.5">GitHub Developer Settings <ExternalLink className="w-3 h-3" /></a></li>
+                <li>Set <strong>Application name</strong> to: <code className="bg-white px-1.5 py-0.5 rounded border border-slate-200 text-slate-800 font-mono">SkillBridge Campus</code></li>
+                <li>Set <strong>Homepage URL</strong> to: <code className="bg-white px-1.5 py-0.5 rounded border border-slate-200 text-slate-800 font-mono">{window.location.origin}</code></li>
+                <li>Set <strong>Authorization callback URL</strong> to: <code className="bg-white px-1.5 py-0.5 rounded border border-slate-200 text-slate-800 font-mono">{`${apiClient.getApiBase()}/auth/github/callback`}</code></li>
+              </ol>
+            </div>
+
+            <form onSubmit={handleSaveGitHubOAuth} className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">GitHub Client ID</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Iv1.8a2b3c4d5e6f7g8h"
+                  value={githubClientId}
+                  onChange={(e) => setGithubClientId(e.target.value)}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-900 font-mono"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">GitHub Client Secret</label>
+                <input
+                  type="password"
+                  placeholder="••••••••••••••••••••••••••••••••"
+                  value={githubClientSecret}
+                  onChange={(e) => setGithubClientSecret(e.target.value)}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-900 font-mono"
+                  required
+                />
+              </div>
+
               <button
-                type="button"
-                onClick={handleLaunchRealGitHubAuth}
-                className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2"
+                type="submit"
+                disabled={configuringGithub}
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 mt-4"
               >
-                <span>Authorize with GitHub</span>
+                <span>{configuringGithub ? 'Configuring OAuth...' : 'Save & Authorize with GitHub'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
-            </div>
-            <div className="pt-4 border-t border-slate-100 text-center">
+            </form>
+
+            <div className="pt-4 mt-5 border-t border-slate-100 text-center">
               <p className="text-[11px] text-slate-500 leading-relaxed">
-                Read-only profile verification for campus developer portfolios.
+                SkillBridge securely connects to GitHub OAuth 2.0 with read-only permissions for profile verification.
               </p>
             </div>
           </div>
@@ -887,7 +699,7 @@ export function LoginPage() {
       )}
 
       {/* ─────────────────────────────────────────────
-          3. LINKEDIN OIDC PROFILE IMPORT MODAL
+          LINKEDIN OIDC PROFILE IMPORT MODAL
       ───────────────────────────────────────────── */}
       {linkedinImport.isOpen && linkedinImport.data && (
         <LinkedInImportModal

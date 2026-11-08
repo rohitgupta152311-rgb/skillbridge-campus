@@ -68,7 +68,7 @@ export async function getDashboardMetrics(_req: Request, res: Response, next: Ne
     // Calculate online users (either explicitly marked online or updated in last 15 mins)
     const onlineUsers = profiles.filter(
       (p) => p.onlineStatus === 'online' || (p.updatedAt && new Date(p.updatedAt) >= fifteenMinutesAgo)
-    ).length || Math.max(1, Math.min(totalUsers, 3)); // Sensible campus baseline
+    ).length;
 
     // Calculate department breakdown
     const deptMap: Record<string, number> = {};

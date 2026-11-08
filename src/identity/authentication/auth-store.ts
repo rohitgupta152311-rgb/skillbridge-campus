@@ -64,6 +64,7 @@ function mapBackendUserToFrontend(backendUser: any, token: string): User {
     languages: profile.languages && profile.languages.length ? profile.languages : ['English'],
     onlineStatus: 'available',
     token,
+    accounts: Array.isArray(backendUser.accounts) ? backendUser.accounts : [],
   };
 }
 
@@ -127,6 +128,14 @@ export const useAuthStore = create<AuthState>((set, get) => {
       // 1. Try real backend database login
       const result = await apiClient.login({ email, password });
       if (result.success && result.data) {
+        if (result.data.user && !result.data.user.isVerified && result.data.user.role !== 'ADMIN' && result.data.user.role !== 'admin') {
+          set({
+            isLoading: false,
+            error: 'Your account is pending administrator approval. Please wait for an administrator to review and activate your campus account.',
+          });
+          return false;
+        }
+
         const userObj = mapBackendUserToFrontend(result.data.user, result.data.token);
         
         // Ensure user is recorded in local data store for components
@@ -141,17 +150,39 @@ export const useAuthStore = create<AuthState>((set, get) => {
         return true;
       }
 
+      // If backend explicitly indicated pending approval
+      if (result.message && (result.message.toLowerCase().includes('pending') || result.message.toLowerCase().includes('approval'))) {
+        set({
+          isLoading: false,
+          error: result.message,
+        });
+        return false;
+      }
+
       // 2. Demo credentials fallback (for offline or local demo accounts)
       const isDemoPass = password === 'demo1234' || password === 'admin1234' ||
         (email === DEMO_CREDENTIALS.student.email && password === DEMO_CREDENTIALS.student.password) ||
         (email === DEMO_CREDENTIALS.mentor.email && password === DEMO_CREDENTIALS.mentor.password) ||
-        (email === DEMO_CREDENTIALS.admin.email && password === DEMO_CREDENTIALS.admin.password);
+        (email === DEMO_CREDENTIALS.admin.email && password === DEMO_CREDENTIALS.admin.password) ||
+        (email === DEMO_CREDENTIALS.rohit.email && password === DEMO_CREDENTIALS.rohit.password) ||
+        (email === DEMO_CREDENTIALS.vidya.email && password === DEMO_CREDENTIALS.vidya.password) ||
+        (email === DEMO_CREDENTIALS.nyoimei.email && password === DEMO_CREDENTIALS.nyoimei.password) ||
+        (email === DEMO_CREDENTIALS.salini.email && password === DEMO_CREDENTIALS.salini.password) ||
+        (email === DEMO_CREDENTIALS.kasturika.email && password === DEMO_CREDENTIALS.kasturika.password) ||
+        (email === DEMO_CREDENTIALS.betimansa.email && password === DEMO_CREDENTIALS.betimansa.password);
 
       if (isDemoPass) {
         const localUser = getUserByEmail(email);
         if (localUser) {
           if (localUser.isSuspended) {
             set({ isLoading: false, error: 'This account has been suspended' });
+            return false;
+          }
+          if (!localUser.isVerified && localUser.role !== 'admin') {
+            set({
+              isLoading: false,
+              error: 'Your account is pending administrator approval. Please wait for an administrator to review and activate your campus account.',
+            });
             return false;
           }
           setAuthSession('demo-token', localUser);
@@ -182,17 +213,11 @@ export const useAuthStore = create<AuthState>((set, get) => {
       });
 
       if (result.success && result.data) {
-        if ((result.data as any)?.pendingApproval || !result.data?.token) {
-          set({ isLoading: false, error: null });
-          return true;
-        }
-        const newUser = mapBackendUserToFrontend(result.data.user, result.data.token);
-
-        // Record in local cache
+        const newUser = mapBackendUserToFrontend(result.data.user, result.data.token || '');
+        newUser.isVerified = false;
         addUser(newUser);
 
-        setAuthSession(result.data.token, newUser);
-        set({ user: newUser, isAuthenticated: true, isLoading: false, error: null });
+        set({ isLoading: false, error: null });
         return true;
       }
 
@@ -205,14 +230,14 @@ export const useAuthStore = create<AuthState>((set, get) => {
         return false;
       }
 
-      // Fallback: If network is completely offline, allow local creation
+      // Fallback: If network is completely offline, allow local creation pending approval
       const existingLocal = getUserByEmail(data.email);
       if (existingLocal) {
-        set({ isLoading: false, error: 'An account with this email already exists' });
+        set({ isLoading: false, error: 'An account with this email address already exists. Please log in instead.' });
         return false;
       }
 
-      const localNewUser = addUser({
+      addUser({
         email: data.email,
         fullName: data.fullName,
         avatar: '',
@@ -227,8 +252,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
         onlineStatus: 'available',
       });
 
-      setAuthSession('local-demo-token', localNewUser);
-      set({ user: localNewUser, isAuthenticated: true, isLoading: false });
+      set({ isLoading: false, error: null });
       return true;
     },
 

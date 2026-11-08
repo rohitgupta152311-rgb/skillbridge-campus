@@ -80,9 +80,18 @@ export default function ProfileScreen() {
 
   const handleSyncWithWeb = async () => {
     setSyncing(true);
-    await new Promise((r) => setTimeout(r, 600));
-    setSyncing(false);
-    Alert.alert('Cloud Synced', 'Mobile profile is fully synchronized with your Web account in PostgreSQL.');
+    try {
+      const res = await MobileApi.getMe();
+      if (res && res.data) {
+        Alert.alert('Profile Synced', 'Mobile profile successfully refreshed from the campus server.');
+      } else {
+        Alert.alert('Sync Notice', 'Server returned no profile updates. Displaying local profile.');
+      }
+    } catch (err: any) {
+      Alert.alert('Sync Offline', `Cannot reach campus server: ${err.message || 'Network unavailable'}. Using stored local profile.`);
+    } finally {
+      setSyncing(false);
+    }
   };
 
   const handleCheckForUpdates = async () => {
@@ -176,7 +185,7 @@ export default function ProfileScreen() {
           >
             <RefreshCw size={13} color="#7c3aed" />
             <Text style={styles.syncBtnText}>
-              {syncing ? 'Syncing...' : 'Synchronized with Web & Render DB'}
+              {syncing ? 'Syncing...' : 'Sync Profile with Server'}
             </Text>
           </TouchableOpacity>
         </View>

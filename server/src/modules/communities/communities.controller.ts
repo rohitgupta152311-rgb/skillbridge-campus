@@ -7,6 +7,7 @@ export async function listCommunities(req: Request, res: Response, next: NextFun
     const userId = req.user?.id;
 
     const communities = await prisma.community.findMany({
+      take: 50,
       include: {
         _count: {
           select: { memberships: true, posts: true },

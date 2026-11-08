@@ -9,10 +9,20 @@ async function main() {
   const passwordHash = await bcrypt.hash('demo1234', 10);
   const adminPasswordHash = await bcrypt.hash('admin1234', 10);
 
-  // 0. Administrator: Dr. Rajesh Sharma (Dean of Student Affairs, NIT Nagaland)
+  // 0. Administrator: Admin (Platform Administrator)
   const admin = await prisma.user.upsert({
     where: { email: 'admin@campus.edu' },
-    update: {},
+    update: {
+      role: UserRole.ADMIN,
+      isVerified: true,
+      profile: {
+        update: {
+          fullName: 'Admin',
+          department: 'Campus Administration',
+          headline: 'Platform Administrator & Safety Governance',
+        },
+      },
+    },
     create: {
       email: 'admin@campus.edu',
       passwordHash: adminPasswordHash,
@@ -20,12 +30,12 @@ async function main() {
       isVerified: true,
       profile: {
         create: {
-          fullName: 'Dr. Rajesh Sharma',
-          department: 'Academic Administration & Safety',
-          currentYear: 'Faculty / Dean',
-          university: 'National Institute of Technology (NIT) Nagaland',
-          headline: 'System Administrator & Dean of Student Affairs | NIT Nagaland',
-          bio: 'Oversees campus technical mentorship exchange, academic governance, safety compliance, and inter-departmental skill barter integrity.',
+          fullName: 'Admin',
+          department: 'Campus Administration',
+          currentYear: 'System Administrator',
+          university: 'SkillBridge Campus Governance',
+          headline: 'Platform Administrator & Safety Governance',
+          bio: 'Institutional Administrator for SkillBridge campus ecosystem. Oversees student safety, verification, report audits, and direct announcements.',
           languages: ['English', 'Hindi'],
           onlineStatus: 'available',
         },
@@ -197,10 +207,10 @@ async function main() {
   });
 
   
-  // 6. Rohit Gupta (2nd Year, NIT Nagaland, EEE - Platform Admin)
+  // 6. Rohit Gupta (2nd Year, NIT Nagaland, EEE - Peer Mentor)
   const rohit = await prisma.user.upsert({
     where: { email: 'rohit.gupta@campus.edu' },
-    update: { role: UserRole.ADMIN },
+    update: { role: UserRole.MENTOR },
     create: {
       email: 'rohit.gupta@campus.edu',
       passwordHash,

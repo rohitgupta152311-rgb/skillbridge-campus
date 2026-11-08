@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
@@ -16,8 +17,6 @@ import {
   Lock,
   Eye,
   EyeOff,
-  Sparkles,
-  ShieldCheck,
 } from 'lucide-react-native';
 import { useAuth } from '../../services/auth-context';
 
@@ -54,11 +53,23 @@ export default function MobileLoginScreen() {
     router.replace('/(tabs)');
   };
 
-
-
   const handleLinkedInOIDC = () => {
-    // Open LinkedIn Profile Import Review screen
     router.push('/(auth)/linkedin-import' as any);
+  };
+
+  const handleGoogleOAuth = () => {
+    const googleAuthUrl =
+      'https://accounts.google.com/o/oauth2/v2/auth?client_id=647527528972-e6hov032q5igkbfdu3af9vmpdq3t53ag.apps.googleusercontent.com&redirect_uri=https://skillbridge-backend-15a7.onrender.com/api/v1/auth/google/callback&response_type=code&scope=openid%20email%20profile&prompt=select_account';
+    Linking.openURL(googleAuthUrl).catch((err) => {
+      Alert.alert('Browser Error', 'Could not open Google Accounts authorization: ' + err.message);
+    });
+  };
+
+  const handleGithubOAuth = () => {
+    const githubAuthUrl = 'https://skillbridge-backend-15a7.onrender.com/api/v1/auth/github';
+    Linking.openURL(githubAuthUrl).catch((err) => {
+      Alert.alert('Browser Error', 'Could not open GitHub authorization: ' + err.message);
+    });
   };
 
   return (
@@ -78,7 +89,7 @@ export default function MobileLoginScreen() {
           <Text style={styles.tagline}>Campus Networking & Peer Mentorship</Text>
         </View>
 
-        {/* Social Logins */}
+        {/* Real OAuth Logins */}
         <View style={styles.socialBox}>
           <TouchableOpacity
             style={styles.linkedInBtn}
@@ -90,14 +101,14 @@ export default function MobileLoginScreen() {
           <View style={styles.socialRow}>
             <TouchableOpacity
               style={styles.socialBtn}
-              onPress={() => Alert.alert('Campus SSO', 'Please sign in with your verified campus email and password.')}
+              onPress={handleGoogleOAuth}
             >
               <Text style={styles.socialBtnText}>Google SSO</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.socialBtn}
-              onPress={() => Alert.alert('Campus SSO', 'Please sign in with your verified campus email and password.')}
+              onPress={handleGithubOAuth}
             >
               <Text style={styles.socialBtnText}>GitHub</Text>
             </TouchableOpacity>
@@ -157,37 +168,33 @@ export default function MobileLoginScreen() {
             disabled={loading}
           >
             <Text style={styles.signInBtnText}>
-              {loading ? 'Authenticating...' : 'Sign In to Campus'}
+              {loading ? 'Authenticating...' : 'Sign In'}
             </Text>
           </TouchableOpacity>
         </View>
 
+        {/* Switch to Register */}
+        <View style={styles.switchAuth}>
+          <Text style={styles.switchText}>Don't have an account? </Text>
+          <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
+            <Text style={styles.switchHighlight}>Register</Text>
+          </TouchableOpacity>
+        </View>
 
-
-        {/* Register Link */}
-        <TouchableOpacity
-          style={styles.switchAuth}
-          onPress={() => router.push('/(auth)/register' as any)}
-        >
-          <Text style={styles.switchText}>
-            Don't have an account?{' '}
-            <Text style={styles.switchHighlight}>Create account</Text>
-          </Text>
-        </TouchableOpacity>
-
-        {/* Institutional Evaluation Fast-Fill (Admin & Campus) */}
+        {/* Fast-Fill Account Buttons */}
         <View style={styles.fastFillBox}>
           <Text style={styles.fastFillTitle}>INSTITUTIONAL EVALUATION ACCOUNTS</Text>
+
           <View style={styles.fastFillGrid}>
             <TouchableOpacity
-              style={styles.fastFillCard}
+              style={[styles.fastFillCard, { backgroundColor: '#f5f3ff', borderColor: '#ddd6fe' }]}
               onPress={() => {
                 setEmail('admin@campus.edu');
                 setPassword('admin1234');
               }}
             >
               <View style={styles.fastFillHeader}>
-                <Text style={styles.fastFillName}>Dr. Rajesh Sharma</Text>
+                <Text style={styles.fastFillName}>Admin</Text>
                 <View style={styles.adminBadge}><Text style={styles.adminBadgeText}>ADMIN</Text></View>
               </View>
               <Text style={styles.fastFillEmail}>admin@campus.edu</Text>
@@ -202,7 +209,7 @@ export default function MobileLoginScreen() {
             >
               <View style={styles.fastFillHeader}>
                 <Text style={styles.fastFillName}>Rohit Gupta</Text>
-                <View style={styles.adminBadge}><Text style={styles.adminBadgeText}>ADMIN</Text></View>
+                <View style={styles.mentorBadge}><Text style={styles.mentorBadgeText}>STUDENT</Text></View>
               </View>
               <Text style={styles.fastFillEmail}>rohit.gupta@campus.edu</Text>
             </TouchableOpacity>
@@ -219,6 +226,20 @@ export default function MobileLoginScreen() {
                 <View style={styles.mentorBadge}><Text style={styles.mentorBadgeText}>MENTOR</Text></View>
               </View>
               <Text style={styles.fastFillEmail}>vidya.gupta@campus.edu</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.fastFillCard}
+              onPress={() => {
+                setEmail('nyoimei.konyak@campus.edu');
+                setPassword('demo1234');
+              }}
+            >
+              <View style={styles.fastFillHeader}>
+                <Text style={styles.fastFillName}>Nyoimel C Konyak</Text>
+                <View style={styles.mentorBadge}><Text style={styles.mentorBadgeText}>MENTOR</Text></View>
+              </View>
+              <Text style={styles.fastFillEmail}>nyoimei.konyak@campus.edu</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -368,6 +389,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
     alignItems: 'center',
+    backgroundColor: '#f8fafc',
   },
   socialBtnText: {
     fontSize: 12,
@@ -435,6 +457,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   switchAuth: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
     marginTop: 20,
   },

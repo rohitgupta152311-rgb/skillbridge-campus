@@ -15,6 +15,7 @@ import {
   Video,
   PhoneCall,
   Flag,
+  Shield,
 } from 'lucide-react';
 import { Avatar, Card, Badge, EmptyState, Button, Modal } from '../../shared/components';
 import { useAuthStore } from '../../identity/authentication/auth-store';
@@ -23,6 +24,7 @@ import { socketClient } from '../../infrastructure/socket/socket-client';
 import { TutoringCallModal } from '../session-booking/TutoringCallModal';
 import {
   getUserById,
+  getUsers,
   markMessagesRead,
   isUserConnected,
   sendConnectionRequest,
@@ -138,7 +140,7 @@ function ConversationList({
     apiClient.getPeerSuggestions()
       .then((peers) => {
         if (peers && Array.isArray(peers)) {
-          setLivePeers(peers.filter(p => p.id !== userId));
+          setLivePeers(peers.filter(p => p.id !== userId && p.role !== 'admin' && p.id !== 'user-admin' && p.fullName?.toLowerCase() !== 'admin'));
         }
       })
       .catch(() => {});
@@ -501,9 +503,14 @@ function ChatArea({
       const sent = await apiClient.sendMessage(conversationId, content);
       if (sent) {
         setMessages(prev => prev.map(m => m.id === tempId ? sent : m));
+      } else {
+        setMessages(prev => prev.filter(m => m.id !== tempId));
+        addToast({ type: 'error', title: 'Message delivery failed', message: 'Could not deliver message to the server.' });
       }
     } catch (err) {
       console.warn('API sendMessage error:', err);
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      addToast({ type: 'error', title: 'Message delivery failed', message: 'Network or server error prevented delivery.' });
     } finally {
       setIsSending(false);
       setRefreshKey(k => k + 1);
@@ -590,7 +597,12 @@ function ChatArea({
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <p className="text-sm font-bold text-slate-900 truncate">{other?.fullName}</p>
-              {isConnected ? (
+              {other?.role === 'admin' || other?.id === 'user-admin' || other?.fullName?.toLowerCase() === 'admin' ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-violet-100 border border-violet-200 text-[10px] font-bold text-violet-800">
+                  <Shield className="w-3 h-3 text-violet-600" />
+                  Platform Admin
+                </span>
+              ) : isConnected ? (
                 <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[10px] font-semibold text-emerald-700">
                   <UserCheck className="w-3 h-3 text-emerald-600" />
                   Connected Peer
@@ -952,13 +964,52 @@ function ComposeChatModal({
     let active = true;
     setLoading(true);
 
+    const currentUser = useAuthStore.getState().user;
+    const isCurrentUserAdmin = currentUser?.role === 'admin' || currentUser?.id === 'user-admin';
+
     apiClient.getPeerSuggestions({ search: search.trim() })
       .then((data) => {
-        if (active && data && Array.isArray(data)) {
-          setPeers(data.filter((u: any) => u.id !== userId));
+        if (active && data && Array.isArray(data) && data.length > 0) {
+          const filtered = data.filter((u: any) => {
+            if (u.id === userId) return false;
+            if (!isCurrentUserAdmin && (u.role === 'admin' || u.id === 'user-admin' || u.fullName?.toLowerCase() === 'admin')) {
+              return false;
+            }
+            return true;
+          });
+          setPeers(filtered);
+        } else if (active) {
+          // Local data store fallback
+          const local = getUsers().filter((u) => {
+            if (u.id === userId) return false;
+            if (!isCurrentUserAdmin && (u.role === 'admin' || u.id === 'user-admin' || u.fullName?.toLowerCase() === 'admin')) {
+              return false;
+            }
+            if (search.trim()) {
+              const q = search.trim().toLowerCase();
+              return (
+                u.fullName?.toLowerCase().includes(q) ||
+                u.department?.toLowerCase().includes(q) ||
+                u.email?.toLowerCase().includes(q)
+              );
+            }
+            return true;
+          });
+          setPeers(local);
         }
       })
-      .catch((e) => console.warn('Could not load suggestions:', e))
+      .catch(() => {
+        if (active) {
+          const local = getUsers().filter((u) => {
+            if (u.id === userId) return false;
+            if (!isCurrentUserAdmin && (u.role === 'admin' || u.id === 'user-admin' || u.fullName?.toLowerCase() === 'admin')) {
+              return false;
+            }
+            return true;
+          });
+          setPeers(local);
+        }
+      })
       .finally(() => {
         if (active) setLoading(false);
       });

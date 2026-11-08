@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
 import {
   GraduationCap,
@@ -30,7 +30,7 @@ import {
   Download,
 } from 'lucide-react';
 import { useAuthStore } from '../../identity/authentication/auth-store';
-import { Avatar, Badge, DownloadAppModal } from '../../shared/components';
+import { Avatar, Badge, DownloadAppModal, PageSkeleton } from '../../shared/components';
 import { getNotificationsByUser } from '../../infrastructure/local-storage/data-service';
 import { useToastStore } from '../../shared/notifications/toast-store';
 import clsx from 'clsx';
@@ -231,7 +231,7 @@ export function DashboardLayout() {
       {/* Current User Quick Footer */}
       <div className="p-3 border-t border-slate-200/80 bg-slate-50/60">
         <div className="flex items-center gap-3 p-2 rounded-xl bg-white border border-slate-200/60 shadow-xs mb-2">
-          <Avatar name={user.fullName} size="sm" showStatus status={user.onlineStatus} />
+          <Avatar name={user.fullName} src={user.avatar} size="sm" showStatus status={user.onlineStatus} />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold text-slate-900 truncate">{user.fullName}</p>
             <div className="flex items-center gap-1">
@@ -450,7 +450,7 @@ export function DashboardLayout() {
                   onClick={() => setPersonaMenuOpen(!personaMenuOpen)}
                   className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200/80 hover:opacity-90 transition-opacity"
                 >
-                  <Avatar name={user.fullName} size="sm" showStatus status={user.onlineStatus} />
+                  <Avatar name={user.fullName} src={user.avatar} size="sm" showStatus status={user.onlineStatus} />
                   <div className="hidden xl:block text-left">
                     <p className="text-xs font-bold text-slate-800 leading-tight">{user.fullName}</p>
                     <p className="text-[10px] text-slate-500 capitalize">{user.role || 'Student'}</p>
@@ -513,7 +513,9 @@ export function DashboardLayout() {
 
         {/* Content Body */}
         <main className="flex-1 pb-24 lg:pb-8">
-          <Outlet />
+          <Suspense fallback={<PageSkeleton />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
 

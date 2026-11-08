@@ -36,7 +36,7 @@ export async function getFeed(req: Request, res: Response, next: NextFunction) {
             orderBy: { createdAt: 'desc' },
             include: { author: { include: { profile: true } } },
           },
-          savedBy: currentUserId ? { where: { userId: currentUserId } } : true,
+          savedBy: currentUserId ? { where: { userId: currentUserId } } : false,
           _count: {
             select: {
               reactions: true,

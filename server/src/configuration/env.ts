@@ -19,6 +19,8 @@ const envSchema = z.object({
   LINKEDIN_CLIENT_ID: z.string().optional().default(''),
   LINKEDIN_CLIENT_SECRET: z.string().optional().default(''),
   LINKEDIN_CALLBACK_URL: z.string().optional().default('http://localhost:5000/api/v1/auth/linkedin/callback'),
+  CLOUDINARY_API_KEY: z.string().optional().default(''),
+  AWS_ACCESS_KEY_ID: z.string().optional().default(''),
 });
 
 const parsed = envSchema.safeParse(process.env);

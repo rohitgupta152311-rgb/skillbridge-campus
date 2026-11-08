@@ -8,15 +8,14 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { User, Mail, Lock, Building2, CheckCircle2 } from 'lucide-react-native';
-import { useAuth } from '../../services/auth-context';
+import { User, Mail, Lock } from 'lucide-react-native';
 import { MobileApi } from '../../services/api';
 
 export default function MobileRegisterScreen() {
   const router = useRouter();
-  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const [fullName, setFullName] = useState('');
@@ -65,7 +64,7 @@ export default function MobileRegisterScreen() {
       if (regRes.success) {
         Alert.alert(
           'Registration Submitted',
-          `Thank you, ${cleanName}! Your account has been registered and is pending administrator approval. You will be able to sign in once an administrator approves your profile.`,
+          `Thank you, ${cleanName}! Your account has been registered and is pending administrator review. You will be able to sign in once an administrator approves your profile.`,
           [
             {
               text: 'Go to Sign In',
@@ -83,6 +82,21 @@ export default function MobileRegisterScreen() {
     }
   };
 
+  const handleGoogleOAuth = () => {
+    const googleAuthUrl =
+      'https://accounts.google.com/o/oauth2/v2/auth?client_id=647527528972-e6hov032q5igkbfdu3af9vmpdq3t53ag.apps.googleusercontent.com&redirect_uri=https://skillbridge-backend-15a7.onrender.com/api/v1/auth/google/callback&response_type=code&scope=openid%20email%20profile&prompt=select_account';
+    Linking.openURL(googleAuthUrl).catch((err) => {
+      Alert.alert('Browser Error', 'Could not open Google Accounts authorization: ' + err.message);
+    });
+  };
+
+  const handleGithubOAuth = () => {
+    const githubAuthUrl = 'https://skillbridge-backend-15a7.onrender.com/api/v1/auth/github';
+    Linking.openURL(githubAuthUrl).catch((err) => {
+      Alert.alert('Browser Error', 'Could not open GitHub authorization: ' + err.message);
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -91,6 +105,38 @@ export default function MobileRegisterScreen() {
           Create your university networking & mentorship profile
         </Text>
 
+        {/* Real Social Sign-Up Options */}
+        <View style={styles.socialBox}>
+          <TouchableOpacity
+            style={styles.googleBtn}
+            onPress={handleGoogleOAuth}
+          >
+            <Text style={styles.googleBtnText}>Continue with Google</Text>
+          </TouchableOpacity>
+
+          <View style={styles.socialRow}>
+            <TouchableOpacity
+              style={styles.socialBtn}
+              onPress={handleGithubOAuth}
+            >
+              <Text style={styles.socialBtnText}>GitHub</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.socialBtn}
+              onPress={() => router.push('/(auth)/linkedin-import' as any)}
+            >
+              <Text style={styles.socialBtnText}>LinkedIn</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>OR REGISTER WITH CAMPUS EMAIL</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
         <View style={styles.form}>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Full Name</Text>
@@ -98,7 +144,7 @@ export default function MobileRegisterScreen() {
               <User size={16} color="#94a3b8" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Elena Rostova"
+                placeholder="Rohit Gupta"
                 value={fullName}
                 onChangeText={setFullName}
               />
@@ -165,8 +211,10 @@ export default function MobileRegisterScreen() {
             />
           </View>
 
-          <TouchableOpacity style={styles.submitBtn} onPress={handleRegister}>
-            <Text style={styles.submitBtnText}>Create Campus Account</Text>
+          <TouchableOpacity style={styles.submitBtn} onPress={handleRegister} disabled={loading}>
+            <Text style={styles.submitBtnText}>
+              {loading ? 'Creating Account...' : 'Create Campus Account'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -202,6 +250,55 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginTop: 4,
     marginBottom: 20,
+  },
+  socialBox: {
+    gap: 10,
+    marginBottom: 16,
+  },
+  googleBtn: {
+    backgroundColor: '#2563eb',
+    paddingVertical: 12,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  googleBtnText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  socialRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  socialBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+  },
+  socialBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#334155',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 16,
+    gap: 8,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#f1f5f9',
+  },
+  dividerText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#94a3b8',
   },
   form: {
     gap: 12,

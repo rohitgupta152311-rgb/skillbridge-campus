@@ -4,7 +4,7 @@
 -- Mentors
 INSERT INTO profiles (id, email, full_name, role, department, year, bio, is_verified, online_status) VALUES
 ('b0000000-0000-0000-0000-000000000001', 'sarah.mentor@campus.edu', 'Sarah Chen', 'mentor', 'Computer Science', '4th Year', 'Passionate about teaching web development and helping juniors build real-world projects.', true, 'available'),
-('b0000000-0000-0000-0000-000000000002', 'rajesh.kumar@campus.edu', 'Rajesh Kumar', 'mentor', 'Computer Science', 'Alumni', 'ML engineer at FAANG company. Mentoring in Python and machine learning.', true, 'available'),
+('b0000000-0000-0000-0000-000000000002', 'rohit.gupta@campus.edu', 'Rohit Gupta', 'mentor', 'Computer Science', 'Alumni', 'ML engineer at FAANG company. Mentoring in Python and machine learning.', true, 'available'),
 ('b0000000-0000-0000-0000-000000000003', 'emily.davis@campus.edu', 'Emily Davis', 'mentor', 'Electronics Engineering', '4th Year', 'Specializing in embedded systems and IoT. 3x Hackathon winner.', true, 'busy'),
 ('b0000000-0000-0000-0000-000000000004', 'marcus.johnson@campus.edu', 'Marcus Johnson', 'mentor', 'Mathematics', 'Alumni', 'Math PhD candidate specializing in calculus and linear algebra.', true, 'offline'),
 ('b0000000-0000-0000-0000-000000000005', 'priya.sharma@campus.edu', 'Priya Sharma', 'mentor', 'Computer Science', '3rd Year', 'Competitive programmer with 1800+ rating on Codeforces.', true, 'available');

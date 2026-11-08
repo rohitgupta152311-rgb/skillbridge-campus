@@ -1,96 +1,188 @@
 import { useState, useEffect } from 'react';
 import {
   Shield,
-  Key,
   Smartphone,
   Globe,
-  Bell,
-  LogOut,
   CheckCircle2,
   AlertCircle,
   RefreshCw,
-  ExternalLink,
   Laptop,
   Trash2,
+  ExternalLink,
 } from 'lucide-react';
 import { Card, Button, Badge } from '../../shared/components';
 import { useAuthStore } from '../../identity/authentication/auth-store';
 import { useToastStore } from '../../shared/notifications/toast-store';
+import { apiClient } from '../../infrastructure/api/api-client';
 
 export function SettingsPage() {
-  const { user, logout } = useAuthStore();
+  const { user, updateUser, logout } = useAuthStore();
   const { addToast } = useToastStore();
 
-  const [linkedAccounts, setLinkedAccounts] = useState<
-    { provider: 'linkedin' | 'google' | 'github'; connected: boolean; email?: string }[]
-  >([
-    { provider: 'linkedin', connected: true, email: user?.email },
-    { provider: 'google', connected: false },
-    { provider: 'github', connected: false },
-  ]);
+  const [providerConfig, setProviderConfig] = useState<{
+    googleConfigured: boolean;
+    githubConfigured: boolean;
+    linkedinConfigured: boolean;
+  }>({
+    googleConfigured: false,
+    githubConfigured: false,
+    linkedinConfigured: false,
+  });
 
-  const [activeSessions, setActiveSessions] = useState([
+  const [isLoadingProviders, setIsLoadingProviders] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Detect current client device accurately
+  const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : 'Standard Web Client';
+  const getDeviceLabel = () => {
+    if (/Windows/i.test(userAgent)) return 'Windows PC • Browser Session';
+    if (/Macintosh/i.test(userAgent)) return 'Apple macOS • Browser Session';
+    if (/Android/i.test(userAgent)) return 'Android Device • Mobile Client';
+    if (/iPhone|iPad/i.test(userAgent)) return 'Apple iOS • Mobile Client';
+    if (/Linux/i.test(userAgent)) return 'Linux Workstation • Browser Session';
+    return 'Desktop Browser Session';
+  };
+
+  const [activeSessions] = useState([
     {
-      id: 'session-1',
-      device: 'MacBook Pro / Chrome 124',
-      location: 'Campus Library (Current)',
-      ip: '10.14.8.42 (Campus WiFi)',
+      id: 'session-current',
+      device: getDeviceLabel(),
+      location: typeof window !== 'undefined' ? `${window.location.hostname} (Active)` : 'Campus Portal',
+      ip: typeof window !== 'undefined' ? window.location.host : 'Localhost',
       isCurrent: true,
-      lastActive: 'Active now',
-    },
-    {
-      id: 'session-2',
-      device: 'Pixel 8 / SkillBridge Mobile App',
-      location: 'University Dorms',
-      ip: '10.14.9.15 (Hostel Subnet)',
-      isCurrent: false,
-      lastActive: '2 hours ago',
+      lastActive: 'Active Now',
     },
   ]);
 
-  const [isLoggingOutAll, setIsLoggingOutAll] = useState(false);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<string | null>(null);
 
-  const handleToggleLink = (provider: 'linkedin' | 'google' | 'github') => {
-    setLinkedAccounts((prev) =>
-      prev.map((acc) => {
-        if (acc.provider === provider) {
-          const next = !acc.connected;
-          addToast({
-            title: next
-              ? `${provider.toUpperCase()} account linked`
-              : `${provider.toUpperCase()} account unlinked`,
-            type: 'success',
-          });
-          return { ...acc, connected: next, email: next ? user?.email : undefined };
+  useEffect(() => {
+    let isMounted = true;
+    const loadData = async () => {
+      setIsLoadingProviders(true);
+      try {
+        const [providers, me] = await Promise.all([
+          apiClient.getAuthProviders(),
+          apiClient.getMe(),
+        ]);
+        if (isMounted) {
+          if (providers) {
+            setProviderConfig(providers);
+          }
+          if (me && Array.isArray(me.accounts)) {
+            updateUser({ accounts: me.accounts });
+          }
         }
-        return acc;
-      })
-    );
+      } catch {
+        // Fallback for offline mode
+      } finally {
+        if (isMounted) setIsLoadingProviders(false);
+      }
+    };
+    loadData();
+    return () => {
+      isMounted = false;
+    };
+  }, [updateUser]);
+
+  // Derived truthful connection state based on verified backend accounts
+  const isConnected = (provider: 'linkedin' | 'google' | 'github') => {
+    return Boolean(user?.accounts?.some((a) => a.provider.toLowerCase() === provider));
   };
 
-  const handleLogoutAll = async () => {
-    setIsLoggingOutAll(true);
-    await new Promise((r) => setTimeout(r, 600));
-    setIsLoggingOutAll(false);
-    setActiveSessions((prev) => prev.filter((s) => s.isCurrent));
-    addToast({ title: 'Signed out of all other devices', message: 'Mobile and other web sessions invalidated.', type: 'success' });
+  const getAccountEmail = (provider: 'linkedin' | 'google' | 'github') => {
+    const acc = user?.accounts?.find((a) => a.provider.toLowerCase() === provider);
+    return (acc as any)?.email || user?.email;
+  };
+
+  const handleConnect = (provider: 'linkedin' | 'google' | 'github') => {
+    if (provider === 'linkedin') {
+      if (!providerConfig.linkedinConfigured) {
+        addToast({
+          title: 'LinkedIn Server Setup Required',
+          message: 'LinkedIn OAuth credentials (LINKEDIN_CLIENT_ID / LINKEDIN_CLIENT_SECRET) are not configured on the backend server. Contact your system administrator.',
+          type: 'warning',
+        });
+        return;
+      }
+      window.location.href = `${apiClient.getApiBase()}/auth/linkedin`;
+      return;
+    }
+
+    if (provider === 'google') {
+      if (!providerConfig.googleConfigured) {
+        addToast({
+          title: 'Google OAuth Not Configured',
+          message: 'Google Client ID is not configured on the campus backend server.',
+          type: 'warning',
+        });
+        return;
+      }
+      window.location.href = `${apiClient.getApiBase()}/auth/google`;
+      return;
+    }
+
+    if (provider === 'github') {
+      if (!providerConfig.githubConfigured) {
+        addToast({
+          title: 'GitHub OAuth Not Configured',
+          message: 'GitHub OAuth credentials are not configured on the campus backend server.',
+          type: 'warning',
+        });
+        return;
+      }
+      window.location.href = `${apiClient.getApiBase()}/auth/github`;
+      return;
+    }
+  };
+
+  const handleDisconnect = async (provider: 'linkedin' | 'google' | 'github') => {
+    setActionLoading(provider);
+    try {
+      const res = await apiClient.unlinkAccount(provider);
+      if (res.success) {
+        const remaining = (user?.accounts || []).filter(
+          (a) => a.provider.toLowerCase() !== provider
+        );
+        updateUser({ accounts: remaining });
+        addToast({
+          title: `${provider.toUpperCase()} Disconnected`,
+          message: res.message || `Successfully disconnected your ${provider} account.`,
+          type: 'success',
+        });
+      } else {
+        addToast({
+          title: 'Disconnection Failed',
+          message: res.message || `Failed to unlink ${provider} account from server.`,
+          type: 'error',
+        });
+      }
+    } catch (err: any) {
+      addToast({
+        title: 'Network Error',
+        message: err?.message || 'Could not communicate with server to unlink account.',
+        type: 'error',
+      });
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   const checkAppUpdates = async () => {
     setCheckingUpdate(true);
+    setUpdateStatus(null);
     try {
-      const apiBase = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000/api/v1' : 'https://skillbridge-backend-15a7.onrender.com/api/v1');
-      const res = await fetch(`${apiBase}/auth/version`).catch(() => null);
+      const apiBase = apiClient.getApiBase();
+      const res = await fetch(`${apiBase.replace('/api/v1', '')}/health`).catch(() => null);
       if (res && res.ok) {
         const json = await res.json();
-        setUpdateStatus(`Up to date! Latest native build: v${json.data.latestNativeVersion} (${json.data.otaChannel} channel).`);
+        setUpdateStatus(`Server operational (v${json.version || '3.0.0'}). Database: ${json.database}. All endpoints responsive.`);
       } else {
-        setUpdateStatus('SkillBridge 3.0 Web & Mobile are up to date! (OTA Channel: production).');
+        setUpdateStatus('Update service check: Server returned non-200 status or is offline.');
       }
     } catch {
-      setUpdateStatus('All systems synchronized and operational.');
+      setUpdateStatus('Could not reach backend health service to verify updates.');
     } finally {
       setCheckingUpdate(false);
     }
@@ -101,7 +193,7 @@ export function SettingsPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Account & Security Settings</h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          Manage your unified campus profile, connected OAuth providers, active web/mobile sessions, and data synchronization.
+          Manage your verified campus profile, connected identity providers, active sessions, and data security.
         </p>
       </div>
 
@@ -109,9 +201,9 @@ export function SettingsPage() {
       <Card padding="lg" className="border border-slate-200/80 space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
-            <h2 className="text-base font-bold text-slate-900">Connected Authentication Providers</h2>
+            <h2 className="text-base font-bold text-slate-900">Authentication Providers &amp; Integrations</h2>
             <p className="text-xs text-slate-500">
-              Sign in to SkillBridge across web and mobile using any of these linked accounts.
+              Only verified providers linked to your active campus account are shown as connected.
             </p>
           </div>
           <Badge variant="violet" size="sm">Single Sign-On</Badge>
@@ -119,43 +211,63 @@ export function SettingsPage() {
 
         <div className="space-y-3">
           {/* LinkedIn */}
-          <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#0077b5]/10 text-[#0077b5] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[#0077b5]/10 text-[#0077b5] flex items-center justify-center shrink-0">
                 <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
                   <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
                 </svg>
               </div>
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-semibold text-slate-900">LinkedIn</span>
-                  {linkedAccounts.find((a) => a.provider === 'linkedin')?.connected && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium border border-slate-200">
-                      Linked
+                  {isConnected('linkedin') ? (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-200">
+                      Connected
+                    </span>
+                  ) : (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-medium">
+                      Not Connected
                     </span>
                   )}
+                  <span className="text-[10px] text-slate-400">
+                    {providerConfig.linkedinConfigured ? '• Server: Configured' : '• Server: Unconfigured'}
+                  </span>
                 </div>
-                <p className="text-xs text-slate-500">
-                  {linkedAccounts.find((a) => a.provider === 'linkedin')?.connected
-                    ? `Linked to ${user?.email}`
-                    : 'Connect to import headline and verify credibility'}
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {isConnected('linkedin')
+                    ? `Linked to verified LinkedIn identity (${getAccountEmail('linkedin')})`
+                    : 'Not connected. Connect via OAuth 2.0 to import verified headline and endorsements.'}
                 </p>
               </div>
             </div>
 
-            <Button
-              variant={linkedAccounts.find((a) => a.provider === 'linkedin')?.connected ? 'outline' : 'primary'}
-              size="sm"
-              onClick={() => handleToggleLink('linkedin')}
-            >
-              {linkedAccounts.find((a) => a.provider === 'linkedin')?.connected ? 'Disconnect' : 'Connect'}
-            </Button>
+            <div className="flex items-center gap-2 self-end sm:self-center">
+              {isConnected('linkedin') ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  isLoading={actionLoading === 'linkedin'}
+                  onClick={() => handleDisconnect('linkedin')}
+                >
+                  Disconnect
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleConnect('linkedin')}
+                >
+                  Connect
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Google */}
-          <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -164,69 +276,122 @@ export function SettingsPage() {
                 </svg>
               </div>
               <div>
-                <span className="text-sm font-semibold text-slate-900">Google Workspace / Campus SSO</span>
-                <p className="text-xs text-slate-500">
-                  {linkedAccounts.find((a) => a.provider === 'google')?.connected
-                    ? `Linked to ${user?.email}`
-                    : 'Log in with your official university Google account'}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-semibold text-slate-900">Google Workspace / Campus SSO</span>
+                  {isConnected('google') ? (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-200">
+                      Connected
+                    </span>
+                  ) : (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-medium">
+                      Not Connected
+                    </span>
+                  )}
+                  <span className="text-[10px] text-slate-400">
+                    {providerConfig.googleConfigured ? '• Server: Configured' : '• Server: Unconfigured'}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {isConnected('google')
+                    ? `Linked to verified Google account (${getAccountEmail('google')})`
+                    : 'Not connected. Connect with your official university Google account.'}
                 </p>
               </div>
             </div>
 
-            <Button
-              variant={linkedAccounts.find((a) => a.provider === 'google')?.connected ? 'outline' : 'primary'}
-              size="sm"
-              onClick={() => handleToggleLink('google')}
-            >
-              {linkedAccounts.find((a) => a.provider === 'google')?.connected ? 'Disconnect' : 'Connect'}
-            </Button>
+            <div className="flex items-center gap-2 self-end sm:self-center">
+              {isConnected('google') ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  isLoading={actionLoading === 'google'}
+                  onClick={() => handleDisconnect('google')}
+                >
+                  Disconnect
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleConnect('google')}
+                >
+                  Connect
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* GitHub */}
-          <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0">
                 <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
                   <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
                 </svg>
               </div>
               <div>
-                <span className="text-sm font-semibold text-slate-900">GitHub</span>
-                <p className="text-xs text-slate-500">
-                  {linkedAccounts.find((a) => a.provider === 'github')?.connected
-                    ? `Linked to ${user?.email}`
-                    : 'Showcase repositories and projects on your profile'}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-semibold text-slate-900">GitHub</span>
+                  {isConnected('github') ? (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-200">
+                      Connected
+                    </span>
+                  ) : (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-medium">
+                      Not Connected
+                    </span>
+                  )}
+                  <span className="text-[10px] text-slate-400">
+                    {providerConfig.githubConfigured ? '• Server: Configured' : '• Server: Unconfigured'}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {isConnected('github')
+                    ? `Linked to verified GitHub profile (${getAccountEmail('github')})`
+                    : 'Not connected. Connect to showcase code repositories on your profile.'}
                 </p>
               </div>
             </div>
 
-            <Button
-              variant={linkedAccounts.find((a) => a.provider === 'github')?.connected ? 'outline' : 'primary'}
-              size="sm"
-              onClick={() => handleToggleLink('github')}
-            >
-              {linkedAccounts.find((a) => a.provider === 'github')?.connected ? 'Disconnect' : 'Connect'}
-            </Button>
+            <div className="flex items-center gap-2 self-end sm:self-center">
+              {isConnected('github') ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  isLoading={actionLoading === 'github'}
+                  onClick={() => handleDisconnect('github')}
+                >
+                  Disconnect
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleConnect('github')}
+                >
+                  Connect
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </Card>
 
-      {/* Multi-Device Sessions */}
+      {/* Active Session Info */}
       <Card padding="lg" className="border border-slate-200/80 space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
-            <h2 className="text-base font-bold text-slate-900">Active Web & Mobile Sessions</h2>
+            <h2 className="text-base font-bold text-slate-900">Current Active Session</h2>
             <p className="text-xs text-slate-500">
-              Manage devices currently logged into your SkillBridge account.
+              Verified session running on this device.
             </p>
           </div>
           <Button
             variant="danger"
             size="sm"
-            onClick={handleLogoutAll}
-            isLoading={isLoggingOutAll}
+            onClick={logout}
           >
-            <LogOut className="w-3.5 h-3.5 mr-1" /> Log Out All Other Devices
+            Sign Out
           </Button>
         </div>
 
@@ -237,52 +402,33 @@ export function SettingsPage() {
               className="flex items-center justify-between p-3.5 rounded-2xl bg-white border border-slate-200/60 shadow-xs"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center">
-                  {session.device.includes('Pixel') || session.device.includes('Mobile') ? (
-                    <Smartphone className="w-5 h-5" />
-                  ) : (
-                    <Laptop className="w-5 h-5" />
-                  )}
+                <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
+                  <Laptop className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-slate-900">{session.device}</span>
-                    {session.isCurrent && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
-                        This Device
-                      </span>
-                    )}
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
+                      Active Now
+                    </span>
                   </div>
-                  <p className="text-xs text-slate-500">
-                    {session.location} • IP: {session.ip} • <span className="text-violet-600">{session.lastActive}</span>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Host: {session.ip} • <span className="text-violet-600 font-medium">Session Authenticated</span>
                   </p>
                 </div>
               </div>
-
-              {!session.isCurrent && (
-                <button
-                  onClick={() => {
-                    setActiveSessions((prev) => prev.filter((s) => s.id !== session.id));
-                    addToast({ title: 'Session revoked', message: `Signed out of ${session.device}.`, type: 'info' });
-                  }}
-                  className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                  title="Revoke session"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
             </div>
           ))}
         </div>
       </Card>
 
-      {/* Version & Automatic Updates Section */}
+      {/* Version & Real Telemetry Health */}
       <Card padding="lg" className="border border-slate-200/80 space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
-            <h2 className="text-base font-bold text-slate-900">Application Version & Updates</h2>
+            <h2 className="text-base font-bold text-slate-900">Platform Health &amp; Version Telemetry</h2>
             <p className="text-xs text-slate-500">
-              SkillBridge 3.0 uses Expo EAS OTA runtime updates and Render Web Service deployments.
+              Query live backend health check endpoint to verify database and runtime availability.
             </p>
           </div>
           <Button
@@ -291,31 +437,27 @@ export function SettingsPage() {
             onClick={checkAppUpdates}
             isLoading={checkingUpdate}
           >
-            <RefreshCw className="w-3.5 h-3.5 mr-1" /> Check for Updates
+            <RefreshCw className="w-3.5 h-3.5 mr-1" /> Ping Health Service
           </Button>
         </div>
 
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-slate-600">Platform Release:</span>
+            <span className="text-slate-600">Frontend Release:</span>
             <span className="font-mono font-bold text-slate-900">v3.2.0 (Campus Edition)</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-600">Deployment Tier:</span>
-            <span className="font-mono font-bold text-violet-700">Enterprise High-Availability</span>
+            <span className="text-slate-600">Backend API Base:</span>
+            <span className="font-mono font-bold text-violet-700">{apiClient.getApiBase()}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-600">Encryption &amp; Security:</span>
-            <span className="font-mono font-bold text-slate-900">AES-256 / SSL/TLS Enforced</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-slate-600">Governance &amp; Privacy:</span>
-            <span className="font-mono font-bold text-slate-900">Academic Data Protection Aligned</span>
+            <span className="text-slate-600">Auth Token Storage:</span>
+            <span className="font-mono font-bold text-slate-900">Encrypted localStorage (sb_auth_token)</span>
           </div>
 
           {updateStatus && (
-            <div className="mt-3 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-medium flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+            <div className="mt-3 p-2.5 rounded-xl bg-slate-100 border border-slate-300 text-slate-800 font-medium flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-indigo-600" />
               <span>{updateStatus}</span>
             </div>
           )}

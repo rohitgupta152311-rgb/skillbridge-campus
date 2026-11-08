@@ -165,6 +165,53 @@ export const apiClient = {
     return null;
   },
 
+  getApiBase(): string {
+    return API_BASE;
+  },
+
+  async getAuthProviders(): Promise<{
+    googleConfigured: boolean;
+    githubConfigured: boolean;
+    linkedinConfigured: boolean;
+  }> {
+    try {
+      const res = await fetch(`${API_BASE}/auth/providers`);
+      if (res.ok) {
+        const json = await res.json();
+        return {
+          googleConfigured: Boolean(json.data?.googleConfigured),
+          githubConfigured: Boolean(json.data?.githubConfigured),
+          linkedinConfigured: Boolean(json.data?.linkedinConfigured),
+        };
+      }
+    } catch {
+      // Fall through
+    }
+    return {
+      googleConfigured: false,
+      githubConfigured: false,
+      linkedinConfigured: false,
+    };
+  },
+
+  async unlinkAccount(provider: string): Promise<{ success: boolean; message?: string }> {
+    const token = getAuthToken();
+    if (!token) return { success: false, message: 'Authentication required' };
+    try {
+      const res = await fetch(`${API_BASE}/auth/linked-accounts/${provider}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        return { success: false, message: json.message || 'Failed to unlink account' };
+      }
+      return { success: true, message: json.message };
+    } catch (err: any) {
+      return { success: false, message: err?.message || 'Network error while unlinking account' };
+    }
+  },
+
   // ── MESSAGING & REAL-TIME CONVERSATIONS (DATABASE PERSISTED) ──
   async getConversations(): Promise<Conversation[]> {
     const token = getAuthToken();
@@ -221,59 +268,72 @@ export const apiClient = {
 
   async startConversation(recipientId: string): Promise<Conversation | null> {
     const token = getAuthToken();
-    if (!token) return null;
+    const currentUser = JSON.parse(localStorage.getItem('sb_current_user') || '{}');
 
-    try {
-      const res = await fetch(`${API_BASE}/messages/conversations`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ recipientId }),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        const conv = json.data;
-        const mapped: Conversation = {
-          id: conv.id,
-          participantIds: conv.participantIds || [recipientId],
-          otherUser: conv.otherUser,
-          lastMessage: conv.lastMessage?.content || '',
-          lastMessageAt: conv.lastMessage?.createdAt || conv.updatedAt || new Date().toISOString(),
-          createdAt: conv.createdAt || conv.updatedAt || new Date().toISOString(),
-          unreadCount: {},
-        };
-        return mapped;
+    if (token) {
+      try {
+        const res = await fetch(`${API_BASE}/messages/conversations`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ recipientId }),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const conv = json.data;
+          const mapped: Conversation = {
+            id: conv.id,
+            participantIds: conv.participantIds || [recipientId],
+            otherUser: conv.otherUser,
+            lastMessage: conv.lastMessage?.content || '',
+            lastMessageAt: conv.lastMessage?.createdAt || conv.updatedAt || new Date().toISOString(),
+            createdAt: conv.createdAt || conv.updatedAt || new Date().toISOString(),
+            unreadCount: {},
+          };
+          return mapped;
+        }
+      } catch (e) {
+        console.warn('Backend start conversation error:', e);
       }
-    } catch (e) {
-      console.warn('Backend start conversation error:', e);
+    }
+
+    // Local fallback for offline / local mode
+    if (currentUser?.id) {
+      const local = LocalData.getOrCreateConversation(currentUser.id, recipientId);
+      return local;
     }
     return null;
   },
 
   async getMessages(conversationId: string): Promise<Message[]> {
     const token = getAuthToken();
-    if (!token || !conversationId || conversationId.startsWith('conv-')) return [];
-
-    try {
-      const res = await fetch(`${API_BASE}/messages/conversations/${conversationId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const json = await res.json();
-        const backendMsgs = json.data || [];
-        return backendMsgs.map((m: any) => ({
-          id: m.id,
-          conversationId: m.conversationId || conversationId,
-          senderId: m.senderId,
-          content: m.content,
-          timestamp: m.createdAt || m.timestamp || new Date().toISOString(),
-          isRead: true,
-        }));
+    if (token && conversationId && !conversationId.startsWith('conv-')) {
+      try {
+        const res = await fetch(`${API_BASE}/messages/conversations/${conversationId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const backendMsgs = json.data || [];
+          return backendMsgs.map((m: any) => ({
+            id: m.id,
+            conversationId: m.conversationId || conversationId,
+            senderId: m.senderId,
+            content: m.content,
+            timestamp: m.createdAt || m.timestamp || new Date().toISOString(),
+            isRead: true,
+          }));
+        }
+      } catch (e) {
+        console.warn('Backend messages fetch error:', e);
       }
-    } catch (e) {
-      console.warn('Backend messages fetch error:', e);
+    }
+
+    // Local fallback
+    if (conversationId) {
+      return LocalData.getMessagesByConversation(conversationId);
     }
     return [];
   },
@@ -281,31 +341,42 @@ export const apiClient = {
   async sendMessage(conversationId: string, content: string): Promise<Message | null> {
     const currentUser = JSON.parse(localStorage.getItem('sb_current_user') || '{}');
     const token = getAuthToken();
-    if (!token || !conversationId || conversationId.startsWith('conv-')) return null;
 
-    try {
-      const res = await fetch(`${API_BASE}/messages/conversations/${conversationId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ content: content.trim() }),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        const m = json.data;
-        return {
-          id: m.id,
-          conversationId: m.conversationId || conversationId,
-          senderId: m.senderId || currentUser.id,
-          content: m.content,
-          timestamp: m.createdAt || new Date().toISOString(),
-          isRead: true,
-        };
+    if (token && conversationId && !conversationId.startsWith('conv-')) {
+      try {
+        const res = await fetch(`${API_BASE}/messages/conversations/${conversationId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ content: content.trim() }),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const m = json.data;
+          return {
+            id: m.id,
+            conversationId: m.conversationId || conversationId,
+            senderId: m.senderId || currentUser.id,
+            content: m.content,
+            timestamp: m.createdAt || new Date().toISOString(),
+            isRead: true,
+          };
+        }
+      } catch (e) {
+        console.warn('Backend send message error:', e);
       }
-    } catch (e) {
-      console.warn('Backend send message error:', e);
+    }
+
+    // Local fallback
+    if (conversationId && currentUser?.id) {
+      const localMsg = LocalData.addMessage({
+        conversationId,
+        senderId: currentUser.id,
+        content: content.trim(),
+      });
+      return localMsg;
     }
     return null;
   },

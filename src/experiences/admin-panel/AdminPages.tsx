@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Users,
   Flag,
@@ -52,7 +52,7 @@ import {
   Legend,
 } from 'recharts';
 import { Card, Avatar, Badge, Button, Modal, EmptyState } from '../../shared/components';
-import { apiClient } from '../../infrastructure/api/api-client';
+import { apiClient, checkBackend } from '../../infrastructure/api/api-client';
 import * as LocalData from '../../infrastructure/local-storage/data-service';
 import { formatDate } from '../../foundation/helpers';
 import { useToastStore } from '../../shared/notifications/toast-store';
@@ -65,6 +65,15 @@ import type { User, UserReport } from '../../foundation/types';
 export function AdminHeader({ onRefresh, isRefreshing }: { onRefresh?: () => void; isRefreshing?: boolean }) {
   const location = useLocation();
   const { user } = useAuthStore();
+  const [dbConnected, setDbConnected] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    checkBackend().then((status) => {
+      if (active) setDbConnected(status);
+    });
+    return () => { active = false; };
+  }, [isRefreshing]);
 
   const navTabs = [
     { label: 'Overview', path: '/admin', icon: BarChart3 },
@@ -88,10 +97,17 @@ export function AdminHeader({ onRefresh, isRefreshing }: { onRefresh?: () => voi
                 <Shield className="w-3 h-3 text-indigo-400" />
                 CENTRAL PLATFORM ADMINISTRATION
               </span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                LIVE DATABASE SYNC
-              </span>
+              {dbConnected === true ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  LIVE DATABASE SYNC
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  LOCAL DATA STORE
+                </span>
+              )}
             </div>
             <h1 className="text-2xl font-extrabold tracking-tight text-white">
               SkillBridge Governance & Operations
@@ -105,14 +121,24 @@ export function AdminHeader({ onRefresh, isRefreshing }: { onRefresh?: () => voi
             <div className="px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-right">
               <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Logged In Admin</p>
               <p className="text-xs font-bold text-white">
-                {user?.fullName || 'Dr. Rajesh Sharma'} ({user?.email || 'admin@campus.edu'})
+                {user?.fullName || 'Rohit Gupta'} ({user?.email || 'rohit.gupta@campus.edu'})
               </p>
             </div>
-            <div className="px-3.5 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-right">
-              <p className="text-[10px] text-emerald-400 uppercase font-bold tracking-wider">Database Link</p>
-              <p className="text-xs font-bold text-emerald-300 flex items-center gap-1.5 justify-end">
-                <Database className="w-3.5 h-3.5 text-emerald-400" />
-                PostgreSQL Operational
+            <div
+              className={`px-3.5 py-2 rounded-xl text-right border ${
+                dbConnected === true
+                  ? 'bg-emerald-500/10 border-emerald-500/20'
+                  : dbConnected === false
+                  ? 'bg-amber-500/10 border-amber-500/20'
+                  : 'bg-white/5 border-white/10'
+              }`}
+            >
+              <p className={`text-[10px] uppercase font-bold tracking-wider ${dbConnected === true ? 'text-emerald-400' : 'text-amber-400'}`}>
+                Database Link
+              </p>
+              <p className={`text-xs font-bold flex items-center gap-1.5 justify-end ${dbConnected === true ? 'text-emerald-300' : 'text-amber-300'}`}>
+                <Database className="w-3.5 h-3.5" />
+                {dbConnected === true ? 'PostgreSQL Live' : dbConnected === false ? 'Local Store (Offline)' : 'Checking...'}
               </p>
             </div>
             {onRefresh && (
@@ -285,7 +311,7 @@ export function AdminDashboard() {
             <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
           </span>
           <p className="text-xs font-semibold text-slate-700">
-            Real-Time Engine: <span className="text-slate-900 font-bold">PostgreSQL Database Connected</span> &bull; 
+            Real-Time Engine: <span className="text-slate-900 font-bold">{metrics?.systemHealth?.database === 'CONNECTED' ? 'PostgreSQL Database Connected' : 'Local Data Store Active'}</span> &bull; 
             Auto-refresh active every 12s
           </p>
         </div>
@@ -574,6 +600,7 @@ export function AdminDashboard() {
 // 2. USER DIRECTORY & MANAGEMENT
 // ============================================================================
 export function AdminUsersPage() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -865,6 +892,25 @@ export function AdminUsersPage() {
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={async () => {
+                            try {
+                              const conv = await apiClient.startConversation(u.id);
+                              if (conv?.id) {
+                                navigate(`/messages/${conv.id}`);
+                              } else {
+                                navigate('/messages');
+                              }
+                            } catch {
+                              navigate('/messages');
+                            }
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-violet-50 hover:bg-violet-100 text-violet-700 font-bold transition-colors flex items-center gap-1 text-xs"
+                          title="Message this campus user"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>Chat</span>
+                        </button>
                         <button
                           onClick={() => setSelectedUser(u)}
                           className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 text-slate-700 font-bold transition-colors"
@@ -1847,7 +1893,7 @@ export function AdminAuditLogsPage() {
             entityId: 'conv-1',
             details: { reason: 'Academic conduct compliance' },
             createdAt: new Date(),
-            user: { email: 'admin@campus.edu', profile: { fullName: 'Dr. Rajesh Sharma' } },
+            user: { email: 'rohit.gupta@campus.edu', profile: { fullName: 'Rohit Gupta' } },
             ipAddress: '127.0.0.1',
           },
           {
@@ -1857,7 +1903,7 @@ export function AdminAuditLogsPage() {
             entityId: 'usr-42',
             details: { targetEmail: 'rohit.gupta@campus.edu' },
             createdAt: new Date(Date.now() - 3600000),
-            user: { email: 'admin@campus.edu', profile: { fullName: 'Dr. Rajesh Sharma' } },
+            user: { email: 'rohit.gupta@campus.edu', profile: { fullName: 'Rohit Gupta' } },
             ipAddress: '127.0.0.1',
           },
         ]);

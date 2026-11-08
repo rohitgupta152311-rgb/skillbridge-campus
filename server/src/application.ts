@@ -72,8 +72,8 @@ export function createApplication() {
       database: isDbConnected ? 'CONNECTED' : 'DISCONNECTED',
       uptime: process.uptime(),
       features: {
-        linkedInAutoImport: true,
-        cloudObjectStorage: true,
+        linkedInAutoImport: Boolean(env.LINKEDIN_CLIENT_ID && env.LINKEDIN_CLIENT_SECRET),
+        cloudObjectStorage: Boolean(env.CLOUDINARY_API_KEY || env.AWS_ACCESS_KEY_ID),
         realtimeWebSockets: true,
         mobileOtaSync: true,
       },

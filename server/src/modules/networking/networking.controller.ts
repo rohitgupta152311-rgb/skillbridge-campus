@@ -85,6 +85,10 @@ export async function getSuggestions(req: Request, res: Response, next: NextFunc
     if (userId) {
       where.id = { not: userId };
     }
+    // Admin is hidden from regular non-admin users in discovery, directory, and suggestions
+    if (req.user?.role !== 'ADMIN') {
+      where.role = { not: 'ADMIN' };
+    }
 
     if (search) {
       where.OR = [

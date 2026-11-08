@@ -97,7 +97,6 @@ export function SkillExchangePage() {
     if (!user || !scheduleModal.match) return;
 
     setScheduling(true);
-    await new Promise((r) => setTimeout(r, 600));
 
     scheduleExchangeSessions({
       currentUserId: user.id,

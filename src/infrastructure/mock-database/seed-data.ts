@@ -1,584 +1,40 @@
 import {
   User, MentorExpertise, TimeSlot, TutoringSession,
   Conversation, Message, SessionReview, Notification, UserReport,
-  Post, CommunityItem, SkillItem, Connection, Project, ProjectApplication
+  Post, CommunityItem, SkillItem, Connection, Project, ProjectApplication, TwoWayMatch
 } from '../../foundation/types';
 
 // ==========================================
-// 45 FICTIONAL INDIAN STUDENT IDENTITIES
-// Representing diverse regions, genders, and engineering/non-engineering disciplines
+// INSTITUTIONAL CAMPUS USERS (NIT NAGALAND EEE)
 // ==========================================
 export const mockUsers: User[] = [
-  // 0. Campus System Administrator: Dr. Rajesh Sharma
+  // 0. Platform Administrator: Admin (Hidden from public student discovery; can direct message anyone)
   {
     id: 'user-admin',
     email: 'admin@campus.edu',
-    fullName: 'Dr. Rajesh Sharma',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces',
+    fullName: 'Admin',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces',
     role: 'admin',
-    department: 'Academic Administration & Safety',
-    year: 'Faculty / Administration',
-    university: 'National Institute of Technology (NIT) Nagaland',
-    headline: 'System Administrator & Dean of Student Affairs | NIT Nagaland',
-    bio: 'Oversees campus technical mentorship exchange, academic governance, safety compliance, and inter-departmental skill barter integrity.',
-    joinedAt: '2023-01-01T00:00:00Z',
+    department: 'Campus Administration',
+    year: 'System Administrator',
+    university: 'SkillBridge Campus Governance',
+    headline: 'Platform Administrator & Safety Governance',
+    bio: 'Chief Platform Administrator overseeing student safety, verification, report audits, and direct campus announcements.',
+    joinedAt: '2024-01-01T00:00:00Z',
     isVerified: true,
     isSuspended: false,
-    learningPreferences: ['reading'],
+    learningPreferences: ['visual'],
     languages: ['English', 'Hindi'],
     onlineStatus: 'available',
-    skillsOffered: [
-      { skillName: 'Campus Governance', proficiency: 'expert', yearsExperience: 10 },
-      { skillName: 'Academic Mentorship', proficiency: 'expert', yearsExperience: 8 },
-    ],
+    skillsOffered: [],
     skillsWanted: [],
-    availableDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+    availableDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
     badges: [
-      { id: 'b-admin', title: 'Campus Dean', icon: 'Shield', tier: 'gold', description: 'Chief Platform Administrator & Safety Lead', earnedAt: '2023-01-01' },
-    ],
-  },
-  // 1. Kabir Sen (North India - CS)
-  {
-    id: 'user-kabir',
-    email: 'kabir.sen@campus.edu',
-    fullName: 'Kabir Sen',
-    avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentee',
-    department: 'Computer Science & Engineering',
-    year: '3rd Year',
-    university: 'Delhi Technological University (DTU)',
-    headline: 'Full-Stack Developer | React, TypeScript & Node.js | Looking to learn Python & AI',
-    bio: 'Passionate about building scalable web platforms and real-time collaborative software. Actively seeking peer exchange to learn Python and Machine Learning fundamentals for our final year capstone.',
-    joinedAt: '2024-08-15T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['visual', 'kinesthetic'],
-    languages: ['English', 'Hindi'],
-    onlineStatus: 'available',
-    githubUrl: 'https://github.com/kabirsen-dev',
-    linkedinUrl: 'https://linkedin.com/in/kabirsen-sample',
-    skillsOffered: [
-      { skillName: 'ReactJS', proficiency: 'advanced', yearsExperience: 2.5 },
-      { skillName: 'TypeScript', proficiency: 'advanced', yearsExperience: 2 },
-      { skillName: 'Node.js', proficiency: 'intermediate', yearsExperience: 2 },
-      { skillName: 'Tailwind CSS', proficiency: 'expert', yearsExperience: 2.5 },
-    ],
-    skillsWanted: [
-      { skillName: 'Python', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'Machine Learning', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'FastAPI', proficiency: 'beginner', yearsExperience: 0 },
-    ],
-    availableDays: ['monday', 'wednesday', 'friday', 'saturday'],
-    badges: [
-      { id: 'b1', title: 'Top Contributor', icon: 'Zap', tier: 'gold', description: 'Shared 15+ open-source components', earnedAt: '2024-10-01' },
-      { id: 'b2', title: 'Reciprocal Pioneer', icon: 'Repeat', tier: 'gold', description: 'Completed 10 mutual skill barter exchanges', earnedAt: '2024-11-01' },
-      { id: 'b3', title: 'Collaborative Builder', icon: 'Rocket', tier: 'silver', description: 'Active contributor in 2 campus initiatives', earnedAt: '2024-11-03' },
+      { id: 'b-admin-shield', title: 'Campus Admin', icon: 'Shield', tier: 'gold', description: 'Institutional Safety & Governance Lead', earnedAt: '2024-01-01' },
     ],
   },
 
-  // 2. Complementary Reciprocal Match: Ananya Singh (North India - Data Science & AI)
-  {
-    id: 'user-ananya',
-    email: 'ananya.singh@campus.edu',
-    fullName: 'Ananya Singh',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentor',
-    department: 'Data Science & Artificial Intelligence',
-    year: '3rd Year',
-    university: 'BITS Pilani',
-    headline: 'ML Researcher | Python, PyTorch & Scikit-learn | Eager to learn ReactJS for web interfaces',
-    bio: 'Specializing in deep learning and NLP architectures. Need help learning ReactJS and frontend design so I can build intuitive web dashboards for my machine learning models.',
-    joinedAt: '2024-08-10T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['visual', 'reading'],
-    languages: ['English', 'Hindi', 'Punjabi'],
-    onlineStatus: 'available',
-    githubUrl: 'https://github.com/ananya-ai',
-    linkedinUrl: 'https://linkedin.com/in/ananyasingh-bits',
-    skillsOffered: [
-      { skillName: 'Python', proficiency: 'expert', yearsExperience: 3 },
-      { skillName: 'Machine Learning', proficiency: 'advanced', yearsExperience: 2.5 },
-      { skillName: 'PyTorch', proficiency: 'advanced', yearsExperience: 2 },
-      { skillName: 'FastAPI', proficiency: 'intermediate', yearsExperience: 1.5 },
-    ],
-    skillsWanted: [
-      { skillName: 'ReactJS', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'TypeScript', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'Tailwind CSS', proficiency: 'beginner', yearsExperience: 0 },
-    ],
-    availableDays: ['monday', 'wednesday', 'friday', 'sunday'],
-    badges: [
-      { id: 'b4', title: 'Knowledge Sharer', icon: 'BookOpen', tier: 'gold', description: 'Conducted 18 peer data science sessions', earnedAt: '2024-09-15' },
-      { id: 'b5', title: 'AI Hackathon Winner', icon: 'Award', tier: 'gold', description: '1st place Smart India AI Challenge', earnedAt: '2024-10-10' },
-    ],
-  },
-
-  // 3. Aarav Sharma (North India - CS & Systems)
-  {
-    id: 'user-aarav',
-    email: 'aarav.sharma@campus.edu',
-    fullName: 'Aarav Sharma',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentor',
-    department: 'Computer Science & Engineering',
-    year: '4th Year',
-    university: 'IIT Delhi',
-    headline: 'Competitive Programmer (Candidate Master) | C++, Data Structures & Algorithms',
-    bio: 'Solved 1200+ problems across Codeforces & LeetCode. Love explaining trees, graphs, and dynamic programming to juniors.',
-    joinedAt: '2024-07-20T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['visual', 'reading'],
-    languages: ['English', 'Hindi'],
-    onlineStatus: 'available',
-    skillsOffered: [
-      { skillName: 'C++', proficiency: 'expert', yearsExperience: 4 },
-      { skillName: 'Data Structures', proficiency: 'expert', yearsExperience: 4 },
-      { skillName: 'Algorithms', proficiency: 'expert', yearsExperience: 4 },
-    ],
-    skillsWanted: [
-      { skillName: 'System Design', proficiency: 'intermediate', yearsExperience: 1 },
-      { skillName: 'Kubernetes', proficiency: 'beginner', yearsExperience: 0 },
-    ],
-    availableDays: ['tuesday', 'thursday', 'saturday'],
-    badges: [{ id: 'b6', title: 'Algorithm Master', icon: 'Code', tier: 'gold', description: 'Rank 1 campus competitive coder', earnedAt: '2024-09-01' }],
-  },
-
-  // 4. Priya Verma (East India - Distributed Systems & Cloud)
-  {
-    id: 'user-priya',
-    email: 'priya.verma@campus.edu',
-    fullName: 'Priya Verma',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentor',
-    department: 'Computer Science & Engineering',
-    year: '4th Year',
-    university: 'IIT Kharagpur',
-    headline: 'Cloud Architect & Go Engineer | Distributed Systems & Docker | Mentoring campus peers',
-    bio: 'Building resilient cloud backends in Go and Kubernetes. Teaching juniors how to design microservices and containerized pipelines.',
-    joinedAt: '2024-07-25T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['kinesthetic', 'reading'],
-    languages: ['English', 'Hindi', 'Bengali'],
-    onlineStatus: 'available',
-    skillsOffered: [
-      { skillName: 'Go', proficiency: 'expert', yearsExperience: 3 },
-      { skillName: 'Docker', proficiency: 'advanced', yearsExperience: 2.5 },
-      { skillName: 'System Design', proficiency: 'advanced', yearsExperience: 2 },
-    ],
-    skillsWanted: [
-      { skillName: 'C++', proficiency: 'intermediate', yearsExperience: 1 },
-      { skillName: 'Rust', proficiency: 'beginner', yearsExperience: 0 },
-    ],
-    availableDays: ['tuesday', 'thursday', 'saturday'],
-    badges: [{ id: 'b7', title: 'Cloud Guru', icon: 'Cloud', tier: 'gold', description: 'Certified Kubernetes Administrator', earnedAt: '2024-10-15' }],
-  },
-
-  // 5. Arjun Mehta (West India - Mechanical & Robotics)
-  {
-    id: 'user-arjun',
-    email: 'arjun.mehta@campus.edu',
-    fullName: 'Arjun Mehta',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentor',
-    department: 'Mechanical Engineering',
-    year: '4th Year',
-    university: 'IIT Bombay',
-    headline: 'CAD / SolidWorks Specialist & Robotics Lead | Autonomous Rover Mechanisms',
-    bio: 'Lead Mechanical Designer for the student robotics team. Experienced in kinematic modeling, FEA stress simulations, and 3D prototyping.',
-    joinedAt: '2024-08-01T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['visual', 'kinesthetic'],
-    languages: ['English', 'Hindi', 'Gujarati', 'Marathi'],
-    onlineStatus: 'available',
-    skillsOffered: [
-      { skillName: 'SolidWorks', proficiency: 'expert', yearsExperience: 3.5 },
-      { skillName: 'CAD Modeling', proficiency: 'expert', yearsExperience: 4 },
-      { skillName: 'Robotics Kinematics', proficiency: 'advanced', yearsExperience: 2.5 },
-    ],
-    skillsWanted: [
-      { skillName: 'ROS2', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'Embedded C', proficiency: 'beginner', yearsExperience: 0 },
-    ],
-    availableDays: ['wednesday', 'thursday', 'saturday'],
-    badges: [{ id: 'b8', title: 'Robotics Pioneer', icon: 'Cpu', tier: 'gold', description: 'Built AeroQuad rover chassis', earnedAt: '2024-09-20' }],
-  },
-
-  // 6. Rahul Nair (South India - ECE & Robotics Firmware)
-  {
-    id: 'user-rahul',
-    email: 'rahul.nair@campus.edu',
-    fullName: 'Rahul Nair',
-    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentor',
-    department: 'Electronics & Communication Engineering',
-    year: '4th Year',
-    university: 'NIT Trichy',
-    headline: 'Firmware Engineer | ROS2, ESP32, RTOS & Embedded C | Wants to learn CAD Modeling',
-    bio: 'Passionate about firmware design and real-time microcontrollers. Teaches ROS2 and sensor interfacing; eager to trade with a mechanical peer for SolidWorks!',
-    joinedAt: '2024-08-05T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['kinesthetic'],
-    languages: ['English', 'Malayalam', 'Tamil', 'Hindi'],
-    onlineStatus: 'available',
-    skillsOffered: [
-      { skillName: 'ROS2', proficiency: 'advanced', yearsExperience: 2.5 },
-      { skillName: 'ESP32', proficiency: 'expert', yearsExperience: 3 },
-      { skillName: 'Embedded C', proficiency: 'advanced', yearsExperience: 3 },
-    ],
-    skillsWanted: [
-      { skillName: 'SolidWorks', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'CAD Modeling', proficiency: 'beginner', yearsExperience: 0 },
-    ],
-    availableDays: ['wednesday', 'thursday', 'saturday'],
-    badges: [{ id: 'b9', title: 'Hardware Wizard', icon: 'Zap', tier: 'gold', description: 'Built 12 IoT sensor nodes', earnedAt: '2024-10-05' }],
-  },
-
-  // 7. Sneha Patel (West India - UI/UX & Product Design)
-  {
-    id: 'user-sneha',
-    email: 'sneha.patel@campus.edu',
-    fullName: 'Sneha Patel',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentor',
-    department: 'Design & Human-Computer Interaction',
-    year: '3rd Year',
-    university: 'National Institute of Design (NID) / MIT Pune',
-    headline: 'Product Designer | Figma, Design Systems & User Research | Looking for Webflow/React peer',
-    bio: 'Crafting pixel-perfect design systems, user journeys, and mobile experiences. Love collaborating with engineers to make campus software look world-class.',
-    joinedAt: '2024-08-12T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['visual', 'kinesthetic'],
-    languages: ['English', 'Hindi', 'Gujarati'],
-    onlineStatus: 'available',
-    skillsOffered: [
-      { skillName: 'Figma', proficiency: 'expert', yearsExperience: 3 },
-      { skillName: 'UI/UX Design', proficiency: 'expert', yearsExperience: 3 },
-      { skillName: 'Design Systems', proficiency: 'advanced', yearsExperience: 2 },
-    ],
-    skillsWanted: [
-      { skillName: 'ReactJS', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'Tailwind CSS', proficiency: 'beginner', yearsExperience: 0 },
-    ],
-    availableDays: ['monday', 'tuesday', 'friday', 'sunday'],
-    badges: [{ id: 'b10', title: 'Creative Visionary', icon: 'Sparkles', tier: 'gold', description: 'Designed 5 published mobile apps', earnedAt: '2024-10-22' }],
-  },
-
-  // 8. Aditya Kumar (North India - Electrical & Power Electronics)
-  {
-    id: 'user-aditya',
-    email: 'aditya.kumar@campus.edu',
-    fullName: 'Aditya Kumar',
-    avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentor',
-    department: 'Electrical Engineering',
-    year: '3rd Year',
-    university: 'IIT Roorkee',
-    headline: 'Power Electronics & Battery Systems | MATLAB / Simulink & EV Microgrids',
-    bio: 'Specializing in BMS (Battery Management Systems) and motor drive controllers. Building sustainable electric vehicle charging infrastructure for Indian campuses.',
-    joinedAt: '2024-08-18T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['reading', 'kinesthetic'],
-    languages: ['English', 'Hindi'],
-    onlineStatus: 'available',
-    skillsOffered: [
-      { skillName: 'MATLAB', proficiency: 'advanced', yearsExperience: 2.5 },
-      { skillName: 'Power Electronics', proficiency: 'advanced', yearsExperience: 2.5 },
-      { skillName: 'Battery Management', proficiency: 'intermediate', yearsExperience: 2 },
-    ],
-    skillsWanted: [
-      { skillName: 'IoT', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'Python', proficiency: 'beginner', yearsExperience: 0 },
-    ],
-    availableDays: ['monday', 'wednesday', 'saturday'],
-    badges: [{ id: 'b11', title: 'Eco Builder', icon: 'Sun', tier: 'silver', description: 'Designed campus solar microgrid prototype', earnedAt: '2024-10-18' }],
-  },
-
-  // 9. Neha Reddy (South India - Electronics & VLSI)
-  {
-    id: 'user-neha',
-    email: 'neha.reddy@campus.edu',
-    fullName: 'Neha Reddy',
-    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentor',
-    department: 'Electronics & Communication Engineering',
-    year: '4th Year',
-    university: 'Anna University / CEG Chennai',
-    headline: 'VLSI Chip Designer | Verilog, FPGA & Digital Electronics | GATE ECE Mentor',
-    bio: 'Passionate about semiconductor architecture, RTL synthesis, and FPGA prototyping on Xilinx boards. Mentoring juniors for core electronics placements and GATE.',
-    joinedAt: '2024-07-28T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['visual', 'reading'],
-    languages: ['English', 'Telugu', 'Tamil', 'Hindi'],
-    onlineStatus: 'available',
-    skillsOffered: [
-      { skillName: 'Verilog', proficiency: 'expert', yearsExperience: 3 },
-      { skillName: 'Digital Electronics', proficiency: 'expert', yearsExperience: 3.5 },
-      { skillName: 'FPGA Design', proficiency: 'advanced', yearsExperience: 2.5 },
-    ],
-    skillsWanted: [
-      { skillName: 'PCB Design', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'Python Automation', proficiency: 'beginner', yearsExperience: 0 },
-    ],
-    availableDays: ['tuesday', 'thursday', 'sunday'],
-    badges: [{ id: 'b12', title: 'Silicon Master', icon: 'Cpu', tier: 'gold', description: 'Taped out 32-bit RISC-V core on FPGA', earnedAt: '2024-09-12' }],
-  },
-
-  // 10. Karan Malhotra (North India - Cybersecurity & DevOps)
-  {
-    id: 'user-karan',
-    email: 'karan.malhotra@campus.edu',
-    fullName: 'Karan Malhotra',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentor',
-    department: 'Information Technology',
-    year: '3rd Year',
-    university: 'IIIT Delhi',
-    headline: 'Ethical Hacker & AppSec Specialist | WAFs, Linux Hardening & Penetration Testing',
-    bio: 'Active bug bounty hunter and CTF player. Experienced in reverse engineering, network security, and securing web application perimeters.',
-    joinedAt: '2024-08-22T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['kinesthetic'],
-    languages: ['English', 'Hindi', 'Punjabi'],
-    onlineStatus: 'available',
-    skillsOffered: [
-      { skillName: 'Cybersecurity', proficiency: 'advanced', yearsExperience: 2.5 },
-      { skillName: 'Linux Administration', proficiency: 'expert', yearsExperience: 3 },
-      { skillName: 'Network Security', proficiency: 'advanced', yearsExperience: 2.5 },
-    ],
-    skillsWanted: [
-      { skillName: 'Go', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'Docker', proficiency: 'intermediate', yearsExperience: 1 },
-    ],
-    availableDays: ['monday', 'wednesday', 'friday'],
-    badges: [{ id: 'b13', title: 'Security Shield', icon: 'Shield', tier: 'silver', description: 'Discovered 4 CVEs in open-source tools', earnedAt: '2024-10-30' }],
-  },
-
-  // 11. Aditi Das (East India - Civil & Sustainable Infrastructure)
-  {
-    id: 'user-aditi',
-    email: 'aditi.das@campus.edu',
-    fullName: 'Aditi Das',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentor',
-    department: 'Civil Engineering',
-    year: '4th Year',
-    university: 'Jadavpur University Kolkata',
-    headline: 'Structural Analyst | AutoCAD, STAAD.Pro & Earthquake Resistant Design',
-    bio: 'Passionate about smart city structural modeling and sustainable materials. Helping peers conquer Engineering Mechanics and Structural Analysis.',
-    joinedAt: '2024-08-03T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['visual', 'reading'],
-    languages: ['English', 'Bengali', 'Hindi'],
-    onlineStatus: 'available',
-    skillsOffered: [
-      { skillName: 'AutoCAD', proficiency: 'expert', yearsExperience: 3.5 },
-      { skillName: 'Structural Analysis', proficiency: 'advanced', yearsExperience: 2.5 },
-      { skillName: 'STAAD.Pro', proficiency: 'advanced', yearsExperience: 2 },
-    ],
-    skillsWanted: [
-      { skillName: 'Python Automation', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'GIS Mapping', proficiency: 'beginner', yearsExperience: 0 },
-    ],
-    availableDays: ['tuesday', 'thursday', 'saturday'],
-    badges: [{ id: 'b14', title: 'Master Builder', icon: 'Building', tier: 'gold', description: 'Top aggregate marks in Structural Dynamics', earnedAt: '2024-09-08' }],
-  },
-
-  // 12. Kavya Iyer (South India - GIS & Remote Sensing)
-  {
-    id: 'user-kavya',
-    email: 'kavya.iyer@campus.edu',
-    fullName: 'Kavya Iyer',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentor',
-    department: 'Civil Engineering & Geoinformatics',
-    year: '3rd Year',
-    university: 'RV College of Engineering (RVCE) Bengaluru',
-    headline: 'Spatial Data Scientist | GIS, QGIS & Remote Sensing | Environmental Mapping',
-    bio: 'Mapping urban flood risks and campus topography with satellite data and GIS. Looking for Python peers to help automate geospatial raster pipelines!',
-    joinedAt: '2024-08-14T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['visual', 'kinesthetic'],
-    languages: ['English', 'Kannada', 'Tamil', 'Hindi'],
-    onlineStatus: 'available',
-    skillsOffered: [
-      { skillName: 'QGIS', proficiency: 'expert', yearsExperience: 3 },
-      { skillName: 'Remote Sensing', proficiency: 'advanced', yearsExperience: 2.5 },
-      { skillName: 'Cartography', proficiency: 'advanced', yearsExperience: 2 },
-    ],
-    skillsWanted: [
-      { skillName: 'Python', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'Leaflet.js', proficiency: 'beginner', yearsExperience: 0 },
-    ],
-    availableDays: ['monday', 'wednesday', 'friday'],
-    badges: [{ id: 'b15', title: 'Geo Explorer', icon: 'Globe', tier: 'silver', description: 'Created campus flood vulnerability map', earnedAt: '2024-10-12' }],
-  },
-
-  // 13. Aman Yadav (North India - Mobile & Flutter)
-  {
-    id: 'user-aman',
-    email: 'aman.yadav@campus.edu',
-    fullName: 'Aman Yadav',
-    avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentor',
-    department: 'Computer Science & Engineering',
-    year: '3rd Year',
-    university: 'Delhi Technological University (DTU)',
-    headline: 'Mobile App Developer | Flutter, Dart & Firebase | Building cross-platform campus apps',
-    bio: 'Built 4 production Flutter apps on Google Play. Teaching Dart fundamentals and reactive state management (Riverpod / Bloc).',
-    joinedAt: '2024-08-16T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['kinesthetic'],
-    languages: ['English', 'Hindi'],
-    onlineStatus: 'available',
-    skillsOffered: [
-      { skillName: 'Flutter', proficiency: 'expert', yearsExperience: 3 },
-      { skillName: 'Dart', proficiency: 'expert', yearsExperience: 3 },
-      { skillName: 'Firebase', proficiency: 'advanced', yearsExperience: 2.5 },
-    ],
-    skillsWanted: [
-      { skillName: 'React Native', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'GraphQL', proficiency: 'beginner', yearsExperience: 0 },
-    ],
-    availableDays: ['monday', 'thursday', 'saturday'],
-    badges: [{ id: 'b16', title: 'Mobile Pioneer', icon: 'Smartphone', tier: 'gold', description: '10k+ downloads on campus transit app', earnedAt: '2024-10-25' }],
-  },
-
-  // 14. Ishita Banerjee (East India - Computational Biology)
-  {
-    id: 'user-ishita',
-    email: 'ishita.banerjee@campus.edu',
-    fullName: 'Ishita Banerjee',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentor',
-    department: 'Biotechnology & Bioinformatics',
-    year: '4th Year',
-    university: 'Jadavpur University Kolkata',
-    headline: 'Bioinformatics Researcher | Python, R, Genomics & Protein Modeling',
-    bio: 'Conducting molecular dynamics simulations and DNA sequence alignment algorithms. Eager to collaborate with CS students on 3D WebGL molecular tools.',
-    joinedAt: '2024-08-08T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['reading', 'visual'],
-    languages: ['English', 'Bengali', 'Hindi'],
-    onlineStatus: 'available',
-    skillsOffered: [
-      { skillName: 'R Programming', proficiency: 'expert', yearsExperience: 3 },
-      { skillName: 'Bioinformatics', proficiency: 'advanced', yearsExperience: 2.5 },
-      { skillName: 'Molecular Modeling', proficiency: 'advanced', yearsExperience: 2 },
-    ],
-    skillsWanted: [
-      { skillName: 'Three.js', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'WebGL', proficiency: 'beginner', yearsExperience: 0 },
-    ],
-    availableDays: ['tuesday', 'friday', 'sunday'],
-    badges: [{ id: 'b17', title: 'Bio Innovator', icon: 'Activity', tier: 'gold', description: 'Published paper in BMC Bioinformatics', earnedAt: '2024-09-19' }],
-  },
-
-  // 15. Rohan Mishra (West India - Android & Native Systems)
-  {
-    id: 'user-rohan',
-    email: 'rohan.mishra@campus.edu',
-    fullName: 'Rohan Mishra',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentor',
-    department: 'Information Technology',
-    year: '3rd Year',
-    university: 'VJTI Mumbai',
-    headline: 'Android Native Developer | Kotlin, Jetpack Compose & Coroutines',
-    bio: 'Deeply focused on Android architecture, MVVM, and offline-first room databases. Helping students transition from Java to modern Kotlin.',
-    joinedAt: '2024-08-20T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['kinesthetic'],
-    languages: ['English', 'Hindi', 'Marathi'],
-    onlineStatus: 'available',
-    skillsOffered: [
-      { skillName: 'Kotlin', proficiency: 'expert', yearsExperience: 3 },
-      { skillName: 'Jetpack Compose', proficiency: 'advanced', yearsExperience: 2 },
-      { skillName: 'Android Architecture', proficiency: 'advanced', yearsExperience: 2.5 },
-    ],
-    skillsWanted: [
-      { skillName: 'Swift', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'iOS Development', proficiency: 'beginner', yearsExperience: 0 },
-    ],
-    availableDays: ['wednesday', 'friday', 'saturday'],
-    badges: [{ id: 'b18', title: 'Kotlin Champion', icon: 'Code', tier: 'silver', description: 'Organized Mumbai student Kotlin dev group', earnedAt: '2024-10-14' }],
-  },
-
-  // 16. Akash Das (Northeast India - Embedded Hardware & LoRaWAN)
-  {
-    id: 'user-akash',
-    email: 'akash.das@campus.edu',
-    fullName: 'Akash Das',
-    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentor',
-    department: 'Electronics & Instrumentation',
-    year: '4th Year',
-    university: 'NIT Silchar',
-    headline: 'IoT Hardware Architect | LoRaWAN, Sensor Networks & Custom PCB Fabrication',
-    bio: 'Designed long-range environmental telemetry stations deployed across Assam tea gardens. Passionate about hardware hacking and Eagle CAD PCB layout.',
-    joinedAt: '2024-07-22T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['kinesthetic'],
-    languages: ['English', 'Assamese', 'Bengali', 'Hindi'],
-    onlineStatus: 'available',
-    skillsOffered: [
-      { skillName: 'PCB Design', proficiency: 'expert', yearsExperience: 3.5 },
-      { skillName: 'LoRaWAN', proficiency: 'expert', yearsExperience: 3 },
-      { skillName: 'Sensor Interfacing', proficiency: 'advanced', yearsExperience: 3 },
-    ],
-    skillsWanted: [
-      { skillName: 'FastAPI', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'MQTT Brokers', proficiency: 'intermediate', yearsExperience: 1 },
-    ],
-    availableDays: ['wednesday', 'saturday', 'sunday'],
-    badges: [{ id: 'b19', title: 'Hardware Innovator', icon: 'Cpu', tier: 'gold', description: 'Deployed 15km LoRa telemetry gateway', earnedAt: '2024-09-30' }],
-  },
-
-  // 17. Shreya Kapoor (North India - Business, Strategy & Product Management)
-  {
-    id: 'user-shreya',
-    email: 'shreya.kapoor@campus.edu',
-    fullName: 'Shreya Kapoor',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces',
-    role: 'mentor',
-    department: 'Business & Entrepreneurship',
-    year: '3rd Year',
-    university: 'Shri Ram College of Commerce (SRCC) / Delhi University',
-    headline: 'Student Founder & Product Manager | Pitch Decks, Unit Economics & Market Research',
-    bio: 'Helping technical student builders commercialize their prototypes. Experienced in venture pitch decks, go-to-market strategies, and grant applications.',
-    joinedAt: '2024-08-25T00:00:00Z',
-    isVerified: true,
-    isSuspended: false,
-    learningPreferences: ['reading', 'visual'],
-    languages: ['English', 'Hindi', 'French'],
-    onlineStatus: 'available',
-    skillsOffered: [
-      { skillName: 'Product Management', proficiency: 'advanced', yearsExperience: 2.5 },
-      { skillName: 'Pitch Decks', proficiency: 'expert', yearsExperience: 3 },
-      { skillName: 'Financial Modeling', proficiency: 'intermediate', yearsExperience: 2 },
-    ],
-    skillsWanted: [
-      { skillName: 'SQL', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'Python for Business', proficiency: 'beginner', yearsExperience: 0 },
-    ],
-    availableDays: ['tuesday', 'thursday', 'friday'],
-    badges: [{ id: 'b20', title: 'Startup Mentor', icon: 'Briefcase', tier: 'gold', description: 'Mentored 8 campus student startups', earnedAt: '2024-10-19' }],
-  },
-  // 17b. Rohit Gupta (NIT Nagaland - Electrical & Electronics Engineering)
+  // 1. Rohit Gupta (NIT Nagaland - Electrical & Electronics Engineering)
   {
     id: 'user-rohit',
     email: 'rohit.gupta@campus.edu',
@@ -588,8 +44,8 @@ export const mockUsers: User[] = [
     department: 'Electrical & Electronics Engineering',
     year: '2nd Year',
     university: 'National Institute of Technology (NIT) Nagaland',
-    headline: 'EEE Student | NIT Nagaland | Power Electronics, IoT & Embedded Systems',
-    bio: 'Electrical & Electronics Engineering (EEE) student at National Institute of Technology (NIT) Nagaland. Specializing in power electronic circuits, MATLAB Simulink modeling, IoT telemetry, and embedded microcontrollers. Passionate about reciprocal technical skill exchange and engineering project collaboration.',
+    headline: 'EEE Student | NIT Nagaland | Power Electronics & Embedded IoT',
+    bio: 'Electrical & Electronics Engineering student at NIT Nagaland. Specializing in power electronic converters, MATLAB Simulink modeling, IoT telemetry, and embedded microcontrollers. Passionate about reciprocal technical skill exchange and engineering project collaboration.',
     joinedAt: '2024-09-01T00:00:00Z',
     isVerified: true,
     isSuspended: false,
@@ -616,7 +72,8 @@ export const mockUsers: User[] = [
       { id: 'b-rohit-2', title: 'Hardware Innovator', icon: 'Cpu', tier: 'gold', description: 'Built IoT microgrid monitor prototype at NIT Nagaland lab', earnedAt: '2024-11-01' },
     ],
   },
-  // 18. Vidya Gupta (NIT Nagaland - Electrical & Electronics Engineering)
+
+  // 2. Vidya Gupta (NIT Nagaland - Electrical & Electronics Engineering)
   {
     id: 'user-vidya',
     email: 'vidya.gupta@campus.edu',
@@ -654,7 +111,7 @@ export const mockUsers: User[] = [
     ],
   },
 
-  // 19. Nyoimei C Konyak (NIT Nagaland - Electrical & Electronics Engineering)
+  // 3. Nyoimei C Konyak (NIT Nagaland - Electrical & Electronics Engineering)
   {
     id: 'user-nyoimei',
     email: 'nyoimei.konyak@campus.edu',
@@ -691,7 +148,7 @@ export const mockUsers: User[] = [
     ],
   },
 
-  // 20. Devrapalli Salini (NIT Nagaland - Electrical & Electronics Engineering)
+  // 4. Devrapalli Salini (NIT Nagaland - Electrical & Electronics Engineering)
   {
     id: 'user-salini',
     email: 'devrapalli.salini@campus.edu',
@@ -728,7 +185,7 @@ export const mockUsers: User[] = [
     ],
   },
 
-  // 21. Kasturika Narzary (NIT Nagaland - Electrical & Electronics Engineering)
+  // 5. Kasturika Narzary (NIT Nagaland - Electrical & Electronics Engineering)
   {
     id: 'user-kasturika',
     email: 'kasturika.narzary@campus.edu',
@@ -765,7 +222,7 @@ export const mockUsers: User[] = [
     ],
   },
 
-  // 22. Betimansa S Chang (NIT Nagaland - Electrical & Electronics Engineering)
+  // 6. Betimansa S Chang (NIT Nagaland - Electrical & Electronics Engineering)
   {
     id: 'user-betimansa',
     email: 'betimansa.chang@campus.edu',
@@ -793,581 +250,380 @@ export const mockUsers: User[] = [
     ],
     skillsWanted: [
       { skillName: 'ReactJS', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'WebSockets', proficiency: 'beginner', yearsExperience: 0 },
-      { skillName: 'Node.js', proficiency: 'beginner', yearsExperience: 0 },
+      { skillName: 'Web Development', proficiency: 'beginner', yearsExperience: 0 },
+      { skillName: 'Python', proficiency: 'beginner', yearsExperience: 0 },
     ],
     availableDays: ['wednesday', 'thursday', 'saturday'],
     badges: [
-      { id: 'b25', title: 'EV Hardware Pioneer', icon: 'Rocket', tier: 'gold', description: 'Built EV battery pack telemetry monitor', earnedAt: '2024-10-12' },
+      { id: 'b25', title: 'EV Hardware Specialist', icon: 'Award', tier: 'gold', description: 'Tested multi-cell LiFePO4 BMS rack at NITN lab', earnedAt: '2024-10-25' },
     ],
   },
 ];
 
 // ==========================================
-// 8 MULTIDISCIPLINARY INDIAN CAMPUS PROJECTS
-// ==========================================
-export const mockProjects: Project[] = [
-  {
-    id: 'proj-1',
-    title: 'AgriPulse - IoT Smart Agriculture & Automated Irrigation',
-    tagline: 'Precision crop soil sensor network & solar valve controllers for Indian farms',
-    description: 'An interdisciplinary initiative uniting Electronics, Computer Science, and Agriculture. We have built 12 custom LoRa soil probes that measure moisture, pH, and temperature. Currently building the real-time React web dashboard and Android app for farmers with multilingual Hindi/English alerts.',
-    category: 'IoT & Hardware',
-    ownerId: 'user-akash',
-    ownerName: 'Akash Das',
-    ownerAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=faces',
-    ownerDepartment: 'Electronics & Instrumentation',
-    ownerUniversity: 'NIT Silchar',
-    status: 'recruiting',
-    teamSizeMax: 5,
-    currentMembers: [
-      { userId: 'user-akash', name: 'Akash Das', role: 'Hardware & RF Lead', skills: ['LoRaWAN', 'PCB Design', 'ESP32'], avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=faces' },
-      { userId: 'user-rahul', name: 'Rahul Nair', role: 'Firmware Engineer', skills: ['Embedded C', 'FreeRTOS'], avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=faces' },
-    ],
-    openPositions: [
-      { id: 'pos-101', title: 'Frontend Dashboard Engineer', requiredSkills: ['React', 'TypeScript', 'Tailwind CSS'], spots: 1 },
-      { id: 'pos-102', title: 'ML Soil Yield Modeler', requiredSkills: ['Python', 'Pandas', 'Scikit-learn'], spots: 1 },
-      { id: 'pos-103', title: 'UI/UX Mobile Designer', requiredSkills: ['Figma', 'User Research'], spots: 1 },
-    ],
-    requiredSkills: ['React', 'TypeScript', 'Python', 'ESP32', 'Figma'],
-    estimatedDuration: '10 Weeks',
-    repoUrl: 'https://github.com/skillbridge-campus/agripulse-iot',
-    createdAt: '2026-10-15T00:00:00Z',
-    milestones: [
-      { id: 'm1', title: 'LoRa Node Hardware Prototype & Enclosure', isCompleted: true },
-      { id: 'm2', title: 'MQTT Telemetry Broker & TimeSeries DB', isCompleted: true },
-      { id: 'm3', title: 'Farmer Web Dashboard & Hindi SMS Bot', isCompleted: false },
-      { id: 'm4', title: 'Campus Botanical Garden Pilot Deployment', isCompleted: false },
-    ],
-  },
-  {
-    id: 'proj-2',
-    title: 'CampusMind - Multilingual Semantic Search for University Lecture Notes',
-    tagline: 'Vector RAG search across engineering syllabus textbooks, PYQs, and handwritten notes',
-    description: 'An AI & NLP platform indexing past 10 years of university question papers, classroom transcripts, and faculty slides. Enables students to query in natural Hindi or English and get exact conceptual explanations with citation links.',
-    category: 'AI & Machine Learning',
-    ownerId: 'user-ananya',
-    ownerName: 'Ananya Singh',
-    ownerAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces',
-    ownerDepartment: 'Data Science & Artificial Intelligence',
-    ownerUniversity: 'BITS Pilani',
-    status: 'recruiting',
-    teamSizeMax: 4,
-    currentMembers: [
-      { userId: 'user-ananya', name: 'Ananya Singh', role: 'AI & Embeddings Lead', skills: ['Python', 'PyTorch', 'Vector Search'], avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces' },
-    ],
-    openPositions: [
-      { id: 'pos-201', title: 'Full-Stack Search UI Lead', requiredSkills: ['React', 'TypeScript', 'FastAPI'], spots: 1 },
-      { id: 'pos-202', title: 'OCR & PDF Extraction Engineer', requiredSkills: ['Python', 'Tesseract', 'OpenCV'], spots: 1 },
-    ],
-    requiredSkills: ['Python', 'React', 'FastAPI', 'PyTorch', 'TypeScript'],
-    estimatedDuration: '8 Weeks',
-    repoUrl: 'https://github.com/skillbridge-campus/campusmind-search',
-    createdAt: '2026-10-20T00:00:00Z',
-    milestones: [
-      { id: 'm201', title: 'RAG Pipeline & Pinecone Vector Store', isCompleted: true },
-      { id: 'm202', title: 'FastAPI Semantic Retrieval Gateway', isCompleted: true },
-      { id: 'm203', title: 'React Search Client & Citation Preview', isCompleted: false },
-    ],
-  },
-  {
-    id: 'proj-3',
-    title: 'AeroQuad - Autonomous Campus Security & Environmental Rover',
-    tagline: 'Four-wheel steer rover with ROS2 SLAM, LiDAR mapping & obstacle avoidance',
-    description: 'Combining mechanical chassis fabrication, embedded sensors, and computer vision. The rover autonomously navigates university walkways, measuring air quality index (AQI) and reporting street lighting outages.',
-    category: 'IoT & Hardware',
-    ownerId: 'user-arjun',
-    ownerName: 'Arjun Mehta',
-    ownerAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces',
-    ownerDepartment: 'Mechanical Engineering',
-    ownerUniversity: 'IIT Bombay',
-    status: 'recruiting',
-    teamSizeMax: 5,
-    currentMembers: [
-      { userId: 'user-arjun', name: 'Arjun Mehta', role: 'Mechanical Lead', skills: ['SolidWorks', 'CAD', 'Machining'], avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces' },
-      { userId: 'user-rahul', name: 'Rahul Nair', role: 'ROS2 & Navigation Lead', skills: ['ROS2', 'C++', 'SLAM'], avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=faces' },
-    ],
-    openPositions: [
-      { id: 'pos-301', title: 'Edge Computer Vision Engineer', requiredSkills: ['Python', 'OpenCV', 'YOLOv8'], spots: 1 },
-      { id: 'pos-302', title: 'Telemetry Web Dashboard Lead', requiredSkills: ['React', 'WebSockets', 'Tailwind'], spots: 1 },
-    ],
-    requiredSkills: ['ROS2', 'SolidWorks', 'C++', 'Python', 'OpenCV'],
-    estimatedDuration: '12 Weeks',
-    repoUrl: 'https://github.com/skillbridge-campus/aeroquad-rover',
-    createdAt: '2026-10-10T00:00:00Z',
-    milestones: [
-      { id: 'm301', title: 'Chassis Welding & Steering Linkage Assembly', isCompleted: true },
-      { id: 'm302', title: 'LiDAR 2D SLAM Nav2 Stack Tuning', isCompleted: false },
-    ],
-  },
-  {
-    id: 'proj-4',
-    title: 'ZeroShield - High-Performance Web Application Firewall',
-    tagline: 'Distributed reverse-proxy WAF in Go with real-time DDoS mitigation rules',
-    description: 'An open-source high-throughput reverse proxy protecting campus web servers against SQL injection, cross-site scripting (XSS), and automated bot scans. Features an administrative live traffic dashboard.',
-    category: 'Cybersecurity',
-    ownerId: 'user-karan',
-    ownerName: 'Karan Malhotra',
-    ownerAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces',
-    ownerDepartment: 'Information Technology',
-    ownerUniversity: 'IIIT Delhi',
-    status: 'recruiting',
-    teamSizeMax: 4,
-    currentMembers: [
-      { userId: 'user-karan', name: 'Karan Malhotra', role: 'Security Architect', skills: ['Cybersecurity', 'Linux', 'Network Security'], avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces' },
-      { userId: 'user-priya', name: 'Priya Verma', role: 'Distributed Systems Engineer', skills: ['Go', 'Docker', 'System Design'], avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=faces' },
-    ],
-    openPositions: [
-      { id: 'pos-401', title: 'Frontend Threat Console Engineer', requiredSkills: ['React', 'TypeScript', 'Tailwind CSS'], spots: 1 },
-      { id: 'pos-402', title: 'eBPF Kernel Packet Filter Hacker', requiredSkills: ['C', 'Linux Kernel', 'eBPF'], spots: 1 },
-    ],
-    requiredSkills: ['Go', 'React', 'Docker', 'Linux', 'Cybersecurity'],
-    estimatedDuration: '8 Weeks',
-    repoUrl: 'https://github.com/skillbridge-campus/zeroshield-waf',
-    createdAt: '2026-10-18T00:00:00Z',
-    milestones: [
-      { id: 'm401', title: 'Core Reverse Proxy in Go with Regex Rules', isCompleted: true },
-      { id: 'm402', title: 'Real-time WebSocket Attack Analytics', isCompleted: false },
-    ],
-  },
-  {
-    id: 'proj-5',
-    title: 'SolarGrid BMS - Smart EV Charging Station Microgrid Controller',
-    tagline: 'IoT battery health monitoring & solar energy balancer for campus electric bikes',
-    description: 'An Electrical and Embedded engineering project designing custom battery charging stations powered by rooftop campus solar panels with dynamic load shedding.',
-    category: 'IoT & Hardware',
-    ownerId: 'user-aditya',
-    ownerName: 'Aditya Kumar',
-    ownerAvatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&h=200&fit=crop&crop=faces',
-    ownerDepartment: 'Electrical Engineering',
-    ownerUniversity: 'IIT Roorkee',
-    status: 'recruiting',
-    teamSizeMax: 4,
-    currentMembers: [
-      { userId: 'user-aditya', name: 'Aditya Kumar', role: 'Power Lead', skills: ['Power Electronics', 'MATLAB'], avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&h=200&fit=crop&crop=faces' },
-    ],
-    openPositions: [
-      { id: 'pos-501', title: 'Firmware & CAN-bus Integrator', requiredSkills: ['Embedded C', 'CAN Protocol', 'STM32'], spots: 1 },
-    ],
-    requiredSkills: ['MATLAB', 'Power Electronics', 'Embedded C', 'Node.js'],
-    estimatedDuration: '10 Weeks',
-    createdAt: '2026-10-22T00:00:00Z',
-    milestones: [
-      { id: 'm501', title: 'Simulink Model of 48V Battery Pack', isCompleted: true },
-    ],
-  },
-  {
-    id: 'proj-6',
-    title: 'CampusTransit - Real-Time GPS Tracking & Electric Shuttle Dispatch',
-    tagline: 'Low-latency mobile app for campus buses with arrival prediction & crowd density',
-    description: 'Developed in Flutter and WebSockets. Solves the everyday frustration of waiting at campus bus stops by placing ESP32 GPS trackers on all 8 university shuttles.',
-    category: 'Mobile Apps',
-    ownerId: 'user-aman',
-    ownerName: 'Aman Yadav',
-    ownerAvatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&h=200&fit=crop&crop=faces',
-    ownerDepartment: 'Computer Science & Engineering',
-    ownerUniversity: 'Delhi Technological University (DTU)',
-    status: 'recruiting',
-    teamSizeMax: 4,
-    currentMembers: [
-      { userId: 'user-aman', name: 'Aman Yadav', role: 'Mobile Lead', skills: ['Flutter', 'Dart', 'Firebase'], avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&h=200&fit=crop&crop=faces' },
-    ],
-    openPositions: [
-      { id: 'pos-601', title: 'GPS Hardware Specialist', requiredSkills: ['ESP32', 'GPS Module (NEO-6M)', 'MQTT'], spots: 1 },
-    ],
-    requiredSkills: ['Flutter', 'Dart', 'Python', 'ESP32'],
-    estimatedDuration: '6 Weeks',
-    createdAt: '2026-10-28T00:00:00Z',
-    milestones: [
-      { id: 'm601', title: 'Flutter Mobile Map UI with Smooth Markers', isCompleted: true },
-    ],
-  },
-  {
-    id: 'proj-7',
-    title: 'FoldLab - 3D Biomolecular Structure Visualizer for WebGL',
-    tagline: 'In-browser molecular dynamics & protein-ligand docking visualization using Three.js',
-    description: 'An interdisciplinary tool enabling biochemistry and pharmaceutical engineering students to inspect 3D protein structures, AlphaFold PDB predictions, and hydrogen bonds without installing heavy desktop software.',
-    category: 'EdTech & SaaS',
-    ownerId: 'user-ishita',
-    ownerName: 'Ishita Banerjee',
-    ownerAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=faces',
-    ownerDepartment: 'Biotechnology & Bioinformatics',
-    ownerUniversity: 'Jadavpur University Kolkata',
-    status: 'recruiting',
-    teamSizeMax: 4,
-    currentMembers: [
-      { userId: 'user-ishita', name: 'Ishita Banerjee', role: 'Domain Lead', skills: ['Bioinformatics', 'R', 'PDB Data'], avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=faces' },
-    ],
-    openPositions: [
-      { id: 'pos-701', title: 'Three.js / WebGL Rendering Lead', requiredSkills: ['Three.js', 'WebGL', 'React', 'GLSL'], spots: 1 },
-    ],
-    requiredSkills: ['Three.js', 'React', 'Bioinformatics', 'WebGL'],
-    estimatedDuration: '8 Weeks',
-    createdAt: '2026-10-12T00:00:00Z',
-    milestones: [
-      { id: 'm701', title: 'PDB File Parser & Atom Coordinate Extraction', isCompleted: true },
-    ],
-  },
-  {
-    id: 'proj-8',
-    title: 'AyurBot - Multilingual Indic NLP Knowledge Assistant',
-    tagline: 'Botanical database & ayurvedic literature QA system with Hindi/Tamil translation',
-    description: 'Digitizing historical Indian medicinal plant manuscripts with OCR and LLM question-answering for botany and pharmacology students across India.',
-    category: 'AI & Machine Learning',
-    ownerId: 'user-sneha',
-    ownerName: 'Sneha Patel',
-    ownerAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=faces',
-    ownerDepartment: 'Design & Human Factors',
-    ownerUniversity: 'NID / MIT Pune',
-    status: 'recruiting',
-    teamSizeMax: 4,
-    currentMembers: [
-      { userId: 'user-sneha', name: 'Sneha Patel', role: 'Product & UX Lead', skills: ['User Research', 'Design Systems'], avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=faces' },
-    ],
-    openPositions: [
-      { id: 'pos-801', title: 'Indic NLP Model Fine-tuner', requiredSkills: ['Python', 'HuggingFace', 'PyTorch'], spots: 1 },
-    ],
-    requiredSkills: ['Python', 'NLP', 'React', 'Figma'],
-    estimatedDuration: '8 Weeks',
-    createdAt: '2026-10-24T00:00:00Z',
-    milestones: [
-      { id: 'm801', title: 'Manuscript Corpus OCR & Cleaning', isCompleted: true },
-    ],
-  },
-];
-
-// ==========================================
-// 8 INDIAN KNOWLEDGE-SHARING COMMUNITIES
-// ==========================================
-export const mockCommunities: CommunityItem[] = [
-  {
-    id: 'comm-1',
-    name: 'Indian Student Developers',
-    description: 'The largest inter-college community for web developers, full-stack builders, and open-source contributors across Indian universities.',
-    membersCount: 420,
-    category: 'Web Development',
-    avatar: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=120&h=120&fit=crop',
-    isJoined: true,
-  },
-  {
-    id: 'comm-2',
-    name: 'AI Builders India',
-    description: 'Students building real machine learning models, fine-tuning LLMs, exploring Computer Vision, and publishing AI research.',
-    membersCount: 310,
-    category: 'AI & Machine Learning',
-    avatar: 'https://images.unsplash.com/photo-1555255707-c07966088b7b?w=120&h=120&fit=crop',
-    isJoined: true,
-  },
-  {
-    id: 'comm-3',
-    name: 'IoT & Embedded Systems India',
-    description: 'Hardware hackers, PCB designers, ESP32 enthusiasts, and robotics builders sharing schematics and firmware tips.',
-    membersCount: 185,
-    category: 'IoT & Robotics',
-    avatar: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=120&h=120&fit=crop',
-    isJoined: true,
-  },
-  {
-    id: 'comm-4',
-    name: 'Women in Technology (Campus Chapter)',
-    description: 'Fostering peer mentorship, hackathon teaming, interview preparation, and leadership for women engineers across India.',
-    membersCount: 240,
-    category: 'Community & Mentorship',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&h=120&fit=crop',
-    isJoined: true,
-  },
-  {
-    id: 'comm-5',
-    name: 'Competitive Programming Circle',
-    description: 'Daily Codeforces and LeetCode problem discussions, editorial walkthroughs, graph algorithms, and ICPC practice.',
-    membersCount: 350,
-    category: 'Algorithms',
-    avatar: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=120&h=120&fit=crop',
-    isJoined: false,
-  },
-  {
-    id: 'comm-6',
-    name: 'Engineering Research Network',
-    description: 'Undergraduate and postgrad researchers collaborating on IEEE/Springer paper writing, dataset curation, and review.',
-    membersCount: 160,
-    category: 'Research',
-    avatar: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=120&h=120&fit=crop',
-    isJoined: false,
-  },
-  {
-    id: 'comm-7',
-    name: 'Campus Startup & Entrepreneurship Club',
-    description: 'From hostel room prototype to seed round. Co-founder matching, grant applications (NIDHI-PRAYAS), and pitch reviews.',
-    membersCount: 195,
-    category: 'Entrepreneurship',
-    avatar: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=120&h=120&fit=crop',
-    isJoined: false,
-  },
-  {
-    id: 'comm-8',
-    name: 'UI/UX Design & Creative Guild',
-    description: 'Designers building in Figma, sharing design critique, micro-interactions, portfolio teardowns, and design systems.',
-    membersCount: 210,
-    category: 'Design & Creativity',
-    avatar: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=120&h=120&fit=crop',
-    isJoined: true,
-  },
-];
-
-// ==========================================
-// AUTHENTIC CAMPUS KNOWLEDGE-SHARING POSTS
-// Categories: Teaching, Learning, Projects, Questions, Opportunities, Achievements, Discussions
+// AUTHENTIC CAMPUS FEED POSTS (NO FAKE POSTS)
 // ==========================================
 export const mockPosts: Post[] = [
   {
-    id: 'post-6',
+    id: 'post-rohit-1',
+    authorId: 'user-rohit',
+    authorName: 'Rohit Gupta',
+    authorAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=faces',
+    authorHeadline: 'Admin • EEE Student | NIT Nagaland',
+    authorDepartment: 'Electrical & Electronics Engineering',
+    authorRole: 'admin',
+    content: `⚡ [NIT NAGALAND EEE HARDWARE WORKSHOP]
+
+Hosting a peer technical workshop on "Buck-Boost Converter Circuit Simulation & MATLAB Modeling" this Thursday at 3:30 PM in the EEE Hardware Lab!
+
+Topics covered:
+1. Inductor saturation and MOSFET gate driver selection
+2. Closed-loop voltage regulation with PWM in MATLAB Simulink
+3. Hardware PCB layout considerations for noise reduction
+
+Open to all batchmates. Feel free to comment or connect if you would like hands-on circuit test points!`,
+    createdAt: '2026-11-08T04:00:00Z',
+    likesCount: 42,
+    commentsCount: 2,
+    sharesCount: 6,
+    postType: 'STANDARD',
+    tags: ['Teaching', 'PowerElectronics', 'MATLAB', 'NITNagaland'],
+    comments: [
+      {
+        id: 'c-r-1',
+        postId: 'post-rohit-1',
+        authorId: 'user-vidya',
+        authorName: 'Vidya Gupta',
+        authorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=faces',
+        content: 'I will bring the oscilloscope probe calibration kit from the control lab for our demonstration!',
+        createdAt: '2026-11-08T04:15:00Z',
+      },
+      {
+        id: 'c-r-2',
+        postId: 'post-rohit-1',
+        authorId: 'user-nyoimei',
+        authorName: 'Nyoimei C Konyak',
+        authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces',
+        content: 'Count me in Rohit. I can show the ESP32 ADC sampling setup for output telemetry.',
+        createdAt: '2026-11-08T04:22:00Z',
+      }
+    ],
+  },
+  {
+    id: 'post-vidya-1',
     authorId: 'user-vidya',
     authorName: 'Vidya Gupta',
     authorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=faces',
     authorHeadline: 'EEE Student | NIT Nagaland',
     authorDepartment: 'Electrical & Electronics Engineering',
     authorRole: 'mentor',
-        content: `⚡ [PEER SKILL BARTER - NIT NAGALAND EEE]
+    content: `🤝 [PEER SKILL BARTER - NIT NAGALAND EEE]
 
 I can teach Circuit Analysis, Power Electronics (Buck/Boost converters), and MATLAB Simulink modeling for electrical engineering core courses.
 
 In exchange, I want to learn ReactJS or Python programming fundamentals for building our smart grid web monitoring dashboard. Let's connect!`,
-    createdAt: '2026-11-06T06:00:00Z',
-    likesCount: 36,
-    commentsCount: 2,
+    createdAt: '2026-11-07T12:00:00Z',
+    likesCount: 38,
+    commentsCount: 1,
     sharesCount: 4,
     postType: 'STANDARD',
     tags: ['Teaching', 'PowerElectronics', 'MATLAB', 'SkillBarter'],
+    comments: [
+      {
+        id: 'c-v-1',
+        postId: 'post-vidya-1',
+        authorId: 'user-rohit',
+        authorName: 'Rohit Gupta',
+        authorAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=faces',
+        content: 'Vidya, we can pair on the smart grid dashboard React components after lab hours!',
+        createdAt: '2026-11-07T12:30:00Z',
+      }
+    ],
   },
   {
-    id: 'post-7',
+    id: 'post-nyoimei-1',
     authorId: 'user-nyoimei',
     authorName: 'Nyoimei C Konyak',
     authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces',
     authorHeadline: 'EEE Student | NIT Nagaland',
     authorDepartment: 'Electrical & Electronics Engineering',
     authorRole: 'mentor',
-        content: `🔌 [NIT NAGALAND EEE LAB UPDATE]
+    content: `🔌 [NIT NAGALAND EEE LAB UPDATE]
 
 Our EEE team just completed testing our ESP32-based multi-channel energy monitoring prototype at the NIT Nagaland electrical lab! Measures voltage, current, and active power with 98.4% accuracy.
 
-Looking for a peer collaborator to help build a lightweight React web dashboard to visualize the real-time telemetry. Open to all students!`,
-    createdAt: '2026-11-06T04:30:00Z',
+Looking for peer feedback on the telemetry rate and data packaging. Open to all batchmates!`,
+    createdAt: '2026-11-07T08:30:00Z',
     likesCount: 51,
-    commentsCount: 3,
+    commentsCount: 1,
     sharesCount: 8,
     postType: 'PROJECT_SHOWCASE',
     tags: ['Projects', 'Embedded', 'NITNagaland', 'EEE'],
-  },
-  {
-    id: 'post-1',
-    authorId: 'user-kabir',
-    authorName: 'Kabir Sen',
-    authorAvatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&h=200&fit=crop&crop=faces',
-    authorHeadline: 'Full-Stack Developer | React & TypeScript | DTU',
-    authorDepartment: 'Computer Science & Engineering',
-    authorRole: 'mentee',
-    content: '🤝 [TWO-WAY SKILL BARTER]\n\nI can teach you modern ReactJS (Hooks, custom hooks, Tailwind CSS, component architecture, and Next.js basics).\n\nIn exchange, I am looking for a campus peer who can teach me Python and FastAPI fundamentals for our final year machine learning capstone. Free 1-on-1 reciprocal exchange!\n\nIf you want to build beautiful web apps and know Python, send me a connection or comment below! Let\'s grow together.',
-    createdAt: '2026-11-05T16:30:00Z',
-    likesCount: 24,
-    commentsCount: 2,
-    sharesCount: 3,
-    postType: 'STANDARD',
-    tags: ['Teaching', 'ReactJS', 'Python', 'SkillBarter'],
     comments: [
       {
-        id: 'c-1',
-        postId: 'post-1',
-        authorId: 'user-ananya',
-        authorName: 'Ananya Singh',
-        authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces',
-        content: 'Kabir! This is an exact 100% reciprocal match. I have been building PyTorch models and FastAPI backends for 2 years, but my frontend UI skills are zero. Would love to trade sessions this Wednesday or Friday!',
-        createdAt: '2026-11-05T16:45:00Z',
-      },
-      {
-        id: 'c-2',
-        postId: 'post-1',
-        authorId: 'user-aarav',
-        authorName: 'Aarav Sharma',
-        authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces',
-        content: 'This reciprocal model is brilliant. I did a similar exchange with Sneha last month for Figma and frontend. Highly recommend partnering up with Kabir!',
-        createdAt: '2026-11-05T17:05:00Z',
-      },
+        id: 'c-n-1',
+        postId: 'post-nyoimei-1',
+        authorId: 'user-salini',
+        authorName: 'Devrapalli Salini',
+        authorAvatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=faces',
+        content: 'Awesome precision Nyoimei! We can integrate this sensor directly into our solar inverter test bench.',
+        createdAt: '2026-11-07T09:10:00Z',
+      }
     ],
   },
   {
-    id: 'post-2',
-    authorId: 'user-akash',
-    authorName: 'Akash Das',
-    authorAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=faces',
-    authorHeadline: 'IoT Hardware Architect | NIT Silchar',
-    authorDepartment: 'Electronics & Instrumentation',
+    id: 'post-salini-1',
+    authorId: 'user-salini',
+    authorName: 'Devrapalli Salini',
+    authorAvatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=faces',
+    authorHeadline: 'EEE Student | NIT Nagaland',
+    authorDepartment: 'Electrical & Electronics Engineering',
     authorRole: 'mentor',
-    content: '🚀 [PROJECT COLLABORATION]\n\nOur team "AgriPulse" just completed testing our LoRa-based soil telemetry probes across campus fields. We are now recruiting 1 Frontend Engineer (React/TypeScript) and 1 UI/UX Designer to build the live sensor dashboard for farmers!\n\nOpen to all colleges. Check our ProjectSpace listing and hit "Find My Team" or apply directly. Let\'s build tech that helps rural agriculture.',
-    createdAt: '2026-11-05T14:15:00Z',
-    likesCount: 38,
-    commentsCount: 1,
+    content: `☀️ [RENEWABLE ENERGY & SOLAR MPPT TESTING]
+
+Tested our Perturb & Observe (P&O) MPPT tracking algorithm on a 250W solar module today under variable cloud cover. Efficiency improved by 14% compared to fixed-voltage PWM!
+
+Happy to share the MATLAB simulation files and circuit schematics with anyone working on clean energy systems.`,
+    createdAt: '2026-11-06T15:00:00Z',
+    likesCount: 35,
+    commentsCount: 0,
     sharesCount: 5,
-    postType: 'PROJECT_SHOWCASE',
-    tags: ['Projects', 'IoT', 'AgriTech', 'React'],
-    comments: [
-      {
-        id: 'c-3',
-        postId: 'post-2',
-        authorId: 'user-sneha',
-        authorName: 'Sneha Patel',
-        authorAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=faces',
-        content: 'Akash, this sounds incredible. I have been designing mobile dashboards for vernacular users in Figma. Just submitted an application via ProjectSpace!',
-        createdAt: '2026-11-05T14:30:00Z',
-      },
-    ],
-  },
-  {
-    id: 'post-3',
-    authorId: 'user-aarav',
-    authorName: 'Aarav Sharma',
-    authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces',
-    authorHeadline: 'Competitive Programmer | IIT Delhi',
-    authorDepartment: 'Computer Science & Engineering',
-    authorRole: 'mentor',
-    content: '💡 [KNOWLEDGE SHARING & DSA NOTES]\n\nHosting a free community study circle this Saturday on "Graph Algorithms for Technical Interviews & Hackathons":\n\n1. Disjoint Set Union (DSU) & Kruskal\'s MST\n2. Dijkstra with Priority Queues & Topological Sort\n3. Bridge finding (Tarjan\'s Algorithm)\n\nAll year students welcome. Join the "Competitive Programming Circle" in the Communities tab to get the Google Meet link!',
-    createdAt: '2026-11-05T11:00:00Z',
-    likesCount: 47,
-    commentsCount: 0,
-    sharesCount: 8,
     postType: 'STANDARD',
-    tags: ['Learning', 'DataStructures', 'Algorithms', 'InterviewPrep'],
+    tags: ['SolarPV', 'RenewableEnergy', 'MPPT', 'MATLAB'],
   },
   {
-    id: 'post-4',
-    authorId: 'user-neha',
-    authorName: 'Neha Reddy',
+    id: 'post-kasturika-1',
+    authorId: 'user-kasturika',
+    authorName: 'Kasturika Narzary',
     authorAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&h=200&fit=crop&crop=faces',
-    authorHeadline: 'VLSI Chip Designer | Anna University Chennai',
-    authorDepartment: 'Electronics & Communication Engineering',
+    authorHeadline: 'EEE Student | NIT Nagaland',
+    authorDepartment: 'Electrical & Electronics Engineering',
     authorRole: 'mentor',
-    content: '📚 [RESOURCES & HANDWRITTEN NOTES]\n\nJust uploaded my comprehensive handwritten notes on Sequential Circuits, FSM Design, and Verilog RTL for Semester 4 ECE students.\n\nCovers Setup & Hold Time Violations, Metastability, and Clock Domain Crossing (CDC) with timing diagrams. You can view them in the ECE study group!',
-    createdAt: '2026-11-04T18:20:00Z',
-    likesCount: 52,
+    content: `📚 [HANDWRITTEN REFERENCE NOTES - DIGITAL ELECTRONICS & VERILOG]
+
+Uploaded my summarized notes for 2nd Year EEE students:
+• Mealy vs. Moore state machine design with state transition tables
+• Timing hazard elimination and setup/hold constraints
+• Testbench generation in Verilog RTL
+
+Check the files in our Electrical & Electronics Engineering study group!`,
+    createdAt: '2026-11-06T10:20:00Z',
+    likesCount: 46,
     commentsCount: 0,
-    sharesCount: 12,
+    sharesCount: 7,
     postType: 'STANDARD',
-    tags: ['Teaching', 'Electronics', 'Verilog', 'Notes'],
+    tags: ['Verilog', 'DigitalElectronics', 'Notes', 'NITNagaland'],
   },
   {
-    id: 'post-5',
-    authorId: 'user-karan',
-    authorName: 'Karan Malhotra',
-    authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces',
-    authorHeadline: 'Ethical Hacker & AppSec | IIIT Delhi',
-    authorDepartment: 'Information Technology',
+    id: 'post-betimansa-1',
+    authorId: 'user-betimansa',
+    authorName: 'Betimansa S Chang',
+    authorAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=faces',
+    authorHeadline: 'EEE Student | NIT Nagaland',
+    authorDepartment: 'Electrical & Electronics Engineering',
     authorRole: 'mentor',
-    content: '🏆 [ACHIEVEMENT & LEARNING UPDATE]\n\nThrilled to share that our campus team placed 2nd in the National Cyber Defense CTF! We defended an open-source Kubernetes cluster against 14 simulated zero-day attacks.\n\nHuge shoutout to Priya Verma for setting up our Docker isolation pipelines under immense time pressure. Hackathon collaboration works!',
-    createdAt: '2026-11-04T09:10:00Z',
-    likesCount: 65,
+    content: `🔋 [ELECTRIC VEHICLE BMS BENCH PROGRESS]
+
+Finished calibrating the 16-channel thermistor array and cell voltage taps for our LiFePO4 battery pack prototype. CAN-bus message broadcasting at 500 kbps to our display unit is stable!
+
+If anyone wants to learn CAN-bus protocol or battery safety protection design, let me know!`,
+    createdAt: '2026-11-05T14:40:00Z',
+    likesCount: 49,
     commentsCount: 0,
     sharesCount: 6,
-    postType: 'ACHIEVEMENT',
-    tags: ['Achievements', 'Cybersecurity', 'CTF', 'Cloud'],
+    postType: 'PROJECT_SHOWCASE',
+    tags: ['EV', 'BMS', 'BatteryTech', 'Hardware'],
   },
 ];
 
 // ==========================================
-// COMPATIBILITY SEEDS & PLACEHOLDERS
+// MENTOR EXPERTISE (NIT NAGALAND EEE PEERS)
 // ==========================================
 export const mockExpertise: MentorExpertise[] = [
   { id: 'exp-rohit-1', mentorId: 'user-rohit', topic: 'Power Electronics & MATLAB Simulink', category: 'technical', proficiencyLevel: 5, description: 'Power semiconductor converters, inverter modeling, and MATLAB simulations', yearsOfExperience: 2.5 },
   { id: 'exp-rohit-2', mentorId: 'user-rohit', topic: 'Embedded Systems & IoT Hardware', category: 'technical', proficiencyLevel: 5, description: 'ESP32 firmware, sensor telemetry, and microcontrollers', yearsOfExperience: 2 },
-  { id: 'exp-9', mentorId: 'user-vidya', topic: 'Power Electronics & MATLAB Simulink', category: 'technical', proficiencyLevel: 5, description: 'Power semiconductor converters, inverter modeling, and MATLAB simulations', yearsOfExperience: 2.5 },
-  { id: 'exp-10', mentorId: 'user-nyoimei', topic: 'Embedded Microcontrollers & C', category: 'technical', proficiencyLevel: 5, description: '8051 and ARM microcontroller interfacing, timers, interrupts, and sensors', yearsOfExperience: 2.5 },
-  { id: 'exp-11', mentorId: 'user-salini', topic: 'Renewable Solar PV & Smart Grid Systems', category: 'technical', proficiencyLevel: 5, description: 'Solar microgrid architectures, MPPT algorithms, and power quality', yearsOfExperience: 3 },
-  { id: 'exp-12', mentorId: 'user-kasturika', topic: 'Digital Logic & Verilog RTL Design', category: 'technical', proficiencyLevel: 5, description: 'FPGA programming, FSM state machines, combinational logic, and KiCAD PCB layout', yearsOfExperience: 2.5 },
-  { id: 'exp-13', mentorId: 'user-betimansa', topic: 'Electric Vehicle BMS & IoT Hardware', category: 'technical', proficiencyLevel: 5, description: 'Lithium battery pack monitoring, ESP32 telemetry, and CAN-bus protocol', yearsOfExperience: 3 },
-  { id: 'exp-11', mentorId: 'user-salini', topic: 'Machine Learning & Exploratory Data Analysis', category: 'technical', proficiencyLevel: 5, description: 'Statistical data pipelines, Pandas, Scikit-learn, and SQL', yearsOfExperience: 3 },
-  { id: 'exp-12', mentorId: 'user-kasturika', topic: 'Responsive Web UI & Tailwind CSS', category: 'technical', proficiencyLevel: 5, description: 'Translating Figma designs into accessible React components', yearsOfExperience: 2 },
-  { id: 'exp-13', mentorId: 'user-betimansa', topic: 'Embedded Systems & ESP32 Prototyping', category: 'technical', proficiencyLevel: 5, description: 'C/C++ firmware, sensor telemetry, and IoT microcontrollers', yearsOfExperience: 3 },
-  { id: 'exp-1', mentorId: 'user-ananya', topic: 'Python Programming', category: 'technical', proficiencyLevel: 5, description: 'From syntax to data analysis and FastAPI web APIs', yearsOfExperience: 3 },
-  { id: 'exp-2', mentorId: 'user-ananya', topic: 'Machine Learning', category: 'technical', proficiencyLevel: 4, description: 'Supervised learning, deep learning, PyTorch models', yearsOfExperience: 2.5 },
-  { id: 'exp-3', mentorId: 'user-aarav', topic: 'Data Structures & Algorithms', category: 'technical', proficiencyLevel: 5, description: 'C++ STL, trees, graphs, dynamic programming', yearsOfExperience: 4 },
-  { id: 'exp-4', mentorId: 'user-priya', topic: 'Go & Distributed Systems', category: 'technical', proficiencyLevel: 5, description: 'Microservices, Docker, concurrent pipelines in Go', yearsOfExperience: 3 },
-  { id: 'exp-5', mentorId: 'user-arjun', topic: 'SolidWorks & CAD', category: 'technical', proficiencyLevel: 5, description: '3D modeling, robotics kinematics, mechanical prototypes', yearsOfExperience: 3.5 },
-  { id: 'exp-6', mentorId: 'user-rahul', topic: 'ROS2 & Embedded C', category: 'technical', proficiencyLevel: 4, description: 'Microcontroller programming, sensor telemetry, RTOS', yearsOfExperience: 3 },
-  { id: 'exp-7', mentorId: 'user-sneha', topic: 'Figma & UI/UX Design', category: 'technical', proficiencyLevel: 5, description: 'Design systems, user experience wireframing, interactive prototypes', yearsOfExperience: 3 },
-  { id: 'exp-8', mentorId: 'user-neha', topic: 'Verilog & Digital Electronics', category: 'academic', proficiencyLevel: 5, description: 'RTL design, FSMs, combinational/sequential logic, FPGA', yearsOfExperience: 3.5 },
+  { id: 'exp-vidya-1', mentorId: 'user-vidya', topic: 'Power Electronics & Circuit Analysis', category: 'technical', proficiencyLevel: 5, description: 'Power semiconductor converters, inverter modeling, and MATLAB simulations', yearsOfExperience: 2.5 },
+  { id: 'exp-nyoimei-1', mentorId: 'user-nyoimei', topic: 'Embedded Microcontrollers & C', category: 'technical', proficiencyLevel: 5, description: '8051 and ARM microcontroller interfacing, timers, interrupts, and sensors', yearsOfExperience: 2.5 },
+  { id: 'exp-salini-1', mentorId: 'user-salini', topic: 'Renewable Solar PV & Smart Grid Systems', category: 'technical', proficiencyLevel: 5, description: 'Solar microgrid architectures, MPPT algorithms, and power quality', yearsOfExperience: 3 },
+  { id: 'exp-kasturika-1', mentorId: 'user-kasturika', topic: 'Digital Logic & Verilog RTL Design', category: 'technical', proficiencyLevel: 5, description: 'FPGA programming, FSM state machines, combinational logic, and KiCAD PCB layout', yearsOfExperience: 2.5 },
+  { id: 'exp-betimansa-1', mentorId: 'user-betimansa', topic: 'Electric Vehicle BMS & IoT Hardware', category: 'technical', proficiencyLevel: 5, description: 'Lithium battery pack monitoring, ESP32 telemetry, and CAN-bus protocol', yearsOfExperience: 3 },
 ];
 
+// ==========================================
+// AVAILABILITY SLOTS
+// ==========================================
 export const mockAvailability: TimeSlot[] = [
-  { id: 'slot-1', mentorId: 'user-ananya', dayOfWeek: 'wednesday', startTime: '16:00', endTime: '18:00', isRecurring: true },
-  { id: 'slot-2', mentorId: 'user-ananya', dayOfWeek: 'friday', startTime: '17:00', endTime: '19:00', isRecurring: true },
-  { id: 'slot-3', mentorId: 'user-aarav', dayOfWeek: 'saturday', startTime: '14:00', endTime: '16:00', isRecurring: true },
-  { id: 'slot-4', mentorId: 'user-rahul', dayOfWeek: 'thursday', startTime: '17:00', endTime: '19:00', isRecurring: true },
+  { id: 'slot-rohit-1', mentorId: 'user-rohit', dayOfWeek: 'monday', startTime: '16:00', endTime: '18:00', isRecurring: true },
+  { id: 'slot-rohit-2', mentorId: 'user-rohit', dayOfWeek: 'wednesday', startTime: '16:00', endTime: '18:00', isRecurring: true },
+  { id: 'slot-vidya-1', mentorId: 'user-vidya', dayOfWeek: 'tuesday', startTime: '15:00', endTime: '17:00', isRecurring: true },
+  { id: 'slot-vidya-2', mentorId: 'user-vidya', dayOfWeek: 'thursday', startTime: '16:00', endTime: '18:00', isRecurring: true },
+  { id: 'slot-nyoimei-1', mentorId: 'user-nyoimei', dayOfWeek: 'wednesday', startTime: '15:00', endTime: '17:00', isRecurring: true },
+  { id: 'slot-nyoimei-2', mentorId: 'user-nyoimei', dayOfWeek: 'saturday', startTime: '10:00', endTime: '12:00', isRecurring: true },
+  { id: 'slot-salini-1', mentorId: 'user-salini', dayOfWeek: 'tuesday', startTime: '16:00', endTime: '18:00', isRecurring: true },
+  { id: 'slot-salini-2', mentorId: 'user-salini', dayOfWeek: 'thursday', startTime: '15:00', endTime: '17:00', isRecurring: true },
+  { id: 'slot-kasturika-1', mentorId: 'user-kasturika', dayOfWeek: 'monday', startTime: '15:30', endTime: '17:30', isRecurring: true },
+  { id: 'slot-kasturika-2', mentorId: 'user-kasturika', dayOfWeek: 'friday', startTime: '16:00', endTime: '18:00', isRecurring: true },
+  { id: 'slot-betimansa-1', mentorId: 'user-betimansa', dayOfWeek: 'wednesday', startTime: '16:30', endTime: '18:30', isRecurring: true },
+  { id: 'slot-betimansa-2', mentorId: 'user-betimansa', dayOfWeek: 'saturday', startTime: '14:00', endTime: '16:00', isRecurring: true },
 ];
 
+// ==========================================
+// SESSIONS
+// ==========================================
 export const mockSessions: TutoringSession[] = [
   {
     id: 'sess-1',
-    mentorId: 'user-ananya',
-    menteeId: 'user-kabir',
-    topic: 'Python Async & FastAPI Setup',
-    description: 'Reciprocal Exchange Session 1: Kabir teaches React custom hooks; Ananya walks through FastAPI async endpoints.',
-    date: '2026-11-07',
+    mentorId: 'user-vidya',
+    menteeId: 'user-rohit',
+    topic: 'Power Electronics Inverter Harmonics',
+    description: 'Reciprocal peer review of single-phase full-bridge SPWM simulations in MATLAB.',
+    date: '2026-11-09',
     startTime: '16:00',
     duration: 60,
     sessionType: 'online',
     status: 'accepted',
-    meetingLink: 'https://meet.jit.si/skillbridge-py-fastapi',
-    notes: 'Reciprocal Exchange Session 1',
-    createdAt: '2026-11-05T10:00:00Z',
-    updatedAt: '2026-11-05T10:00:00Z',
+    meetingLink: 'https://meet.google.com/sb-nitn-eee',
+    createdAt: '2026-11-07T10:00:00Z',
+    updatedAt: '2026-11-07T10:00:00Z',
+  },
+  {
+    id: 'sess-2',
+    mentorId: 'user-nyoimei',
+    menteeId: 'user-salini',
+    topic: 'ESP32 ADC Calibration for Solar Probes',
+    description: 'Setting up attenuation and polynomial fit for accurate solar voltage measurements.',
+    date: '2026-11-10',
+    startTime: '15:30',
+    duration: 60,
+    sessionType: 'online',
+    status: 'accepted',
+    meetingLink: 'https://meet.google.com/sb-nitn-adc',
+    createdAt: '2026-11-07T14:00:00Z',
+    updatedAt: '2026-11-07T14:00:00Z',
   },
 ];
 
+// ==========================================
+// REVIEWS
+// ==========================================
 export const mockReviews: SessionReview[] = [
-  { id: 'rev-1', sessionId: 'sess-prev', mentorId: 'user-ananya', menteeId: 'user-kabir', overallRating: 5, teachingQuality: 5, communication: 5, subjectKnowledge: 5, review: 'Ananya explained Python generators and async await with crystal clarity. Super helpful session!', createdAt: '2026-11-01T17:00:00Z' },
-  { id: 'rev-2', sessionId: 'sess-prev2', mentorId: 'user-aarav', menteeId: 'user-kabir', overallRating: 5, teachingQuality: 5, communication: 5, subjectKnowledge: 5, review: 'Aarav is an absolute master of dynamic programming. Helped me solve LeetCode Hard graph problems easily.', createdAt: '2026-10-28T15:00:00Z' },
+  {
+    id: 'rev-1',
+    sessionId: 'sess-prev-1',
+    mentorId: 'user-vidya',
+    menteeId: 'user-rohit',
+    overallRating: 5,
+    teachingQuality: 5,
+    communication: 5,
+    subjectKnowledge: 5,
+    review: 'Exceptional explanation of Buck converter inductor sizing and continuous conduction mode equations!',
+    createdAt: '2026-11-04T18:00:00Z',
+  },
+  {
+    id: 'rev-2',
+    sessionId: 'sess-prev-2',
+    mentorId: 'user-nyoimei',
+    menteeId: 'user-kasturika',
+    overallRating: 5,
+    teachingQuality: 5,
+    communication: 5,
+    subjectKnowledge: 5,
+    review: 'Great peer mentoring on configuring timer interrupts on the ARM Cortex-M microcontroller.',
+    createdAt: '2026-11-05T17:30:00Z',
+  },
+  {
+    id: 'rev-3',
+    sessionId: 'sess-prev-3',
+    mentorId: 'user-rohit',
+    menteeId: 'user-betimansa',
+    overallRating: 5,
+    teachingQuality: 5,
+    communication: 5,
+    subjectKnowledge: 5,
+    review: 'Very practical walkthrough of microgrid power flow calculations and hardware safety protocols.',
+    createdAt: '2026-11-06T19:00:00Z',
+  },
 ];
 
-export const mockConversations: Conversation[] = [];
-
-export const mockMessages: Message[] = [];
-
+// ==========================================
+// NOTIFICATIONS
+// ==========================================
 export const mockNotifications: Notification[] = [
   {
     id: 'notif-1',
-    userId: 'user-kabir',
-    type: 'connection_request',
-    title: 'Reciprocal Skill Match! ⚡',
-    message: 'Ananya Singh accepted your skill exchange proposal (ReactJS ↔ Python).',
+    userId: 'user-rohit',
+    type: 'session_request',
+    title: 'New Session Scheduled',
+    message: 'Vidya Gupta scheduled a peer review on Power Electronics Inverter Harmonics for Monday.',
+    linkUrl: '/sessions',
     isRead: false,
-    createdAt: '2026-11-05T17:02:00Z',
+    createdAt: '2026-11-08T03:30:00Z',
   },
   {
     id: 'notif-2',
-    userId: 'user-kabir',
-    type: 'session_accepted',
-    title: 'Skill Session Confirmed',
-    message: 'Upcoming: Python & FastAPI Barter with Ananya on Wednesday at 4:00 PM.',
-    isRead: false,
-    createdAt: '2026-11-05T16:05:00Z',
+    userId: 'user-rohit',
+    type: 'connection_accepted',
+    title: 'Campus Peer Network',
+    message: 'All 5 EEE department peers are connected and ready for technical skill exchanges.',
+    linkUrl: '/network',
+    isRead: true,
+    createdAt: '2026-11-07T11:00:00Z',
   },
 ];
 
-export const mockSkills: SkillItem[] = [
-  { id: 'sk-1', name: 'ReactJS', category: 'Frontend', endorsementsCount: 48 },
-  { id: 'sk-2', name: 'Python', category: 'Data & AI', endorsementsCount: 52 },
-  { id: 'sk-3', name: 'TypeScript', category: 'Frontend', endorsementsCount: 38 },
-  { id: 'sk-4', name: 'C++', category: 'Competitive Programming', endorsementsCount: 46 },
-  { id: 'sk-5', name: 'ESP32 & IoT', category: 'Embedded Systems', endorsementsCount: 39 },
-  { id: 'sk-6', name: 'SolidWorks', category: 'Mechanical CAD', endorsementsCount: 34 },
-  { id: 'sk-7', name: 'Figma & UI/UX', category: 'Design', endorsementsCount: 44 },
-  { id: 'sk-8', name: 'Verilog', category: 'VLSI Electronics', endorsementsCount: 31 },
+// ==========================================
+// USER REPORTS (CLEAN)
+// ==========================================
+export const mockReports: UserReport[] = [];
+
+// ==========================================
+// COMMUNITIES (NIT NAGALAND HUBS)
+// ==========================================
+export const mockCommunities: CommunityItem[] = [
+  {
+    id: 'comm-1',
+    name: 'Electrical & Electronics Engineering (NIT Nagaland)',
+    slug: 'eee-nit-nagaland',
+    description: 'Official department exchange for power electronics, microcontrollers, VLSI, and EV battery management systems.',
+    membersCount: 6,
+    isJoined: true,
+  },
+  {
+    id: 'comm-2',
+    name: 'Embedded Systems & Hardware Club',
+    slug: 'embedded-systems-robotics',
+    description: 'Microcontroller programming, PCB design, sensors, and IoT prototyping circle.',
+    membersCount: 6,
+    isJoined: true,
+  },
+  {
+    id: 'comm-3',
+    name: 'Clean Tech & Renewable Energy Circle',
+    slug: 'renewable-energy-cleantech',
+    description: 'Solar microgrids, battery energy storage systems, and power quality analysis.',
+    membersCount: 6,
+    isJoined: true,
+  },
 ];
 
+// ==========================================
+// SKILLS DIRECTORY
+// ==========================================
+export const mockSkills: SkillItem[] = [
+  { id: 'sk-1', name: 'Power Electronics', category: 'Technical', endorsementsCount: 38 },
+  { id: 'sk-2', name: 'MATLAB & Simulink', category: 'Technical', endorsementsCount: 32 },
+  { id: 'sk-3', name: 'Circuit Analysis', category: 'Technical', endorsementsCount: 45 },
+  { id: 'sk-4', name: 'Embedded C & Microcontrollers', category: 'Technical', endorsementsCount: 29 },
+  { id: 'sk-5', name: 'Renewable Solar Energy', category: 'Technical', endorsementsCount: 26 },
+  { id: 'sk-6', name: 'Digital Electronics & Verilog', category: 'Technical', endorsementsCount: 24 },
+  { id: 'sk-7', name: 'Electric Vehicle BMS', category: 'Technical', endorsementsCount: 28 },
+  { id: 'sk-8', name: 'IoT Telemetry & ESP32', category: 'Technical', endorsementsCount: 31 },
+];
+
+// ==========================================
+// CONNECTIONS (BETWEEN ROHIT AND 5 GIRLS)
+// ==========================================
 export const mockConnections: Connection[] = [
-  { id: 'conn-1', senderId: 'user-kabir', receiverId: 'user-ananya', status: 'ACCEPTED', createdAt: '2026-11-01T00:00:00Z' },
-  { id: 'conn-2', senderId: 'user-kabir', receiverId: 'user-aarav', status: 'ACCEPTED', createdAt: '2026-10-25T00:00:00Z' },
-  { id: 'conn-3', senderId: 'user-kabir', receiverId: 'user-akash', status: 'ACCEPTED', createdAt: '2026-11-02T00:00:00Z' },
-  // NIT Nagaland Cohort Active Peer Connections
   { id: 'conn-rohit-1', senderId: 'user-rohit', receiverId: 'user-vidya', status: 'ACCEPTED', createdAt: '2026-11-02T09:00:00Z' },
   { id: 'conn-rohit-2', senderId: 'user-rohit', receiverId: 'user-nyoimei', status: 'ACCEPTED', createdAt: '2026-11-03T10:00:00Z' },
   { id: 'conn-rohit-3', senderId: 'user-rohit', receiverId: 'user-salini', status: 'ACCEPTED', createdAt: '2026-11-04T11:00:00Z' },
@@ -1381,58 +637,53 @@ export const mockConnections: Connection[] = [
   { id: 'conn-106', senderId: 'user-salini', receiverId: 'user-betimansa', status: 'ACCEPTED', createdAt: '2026-11-05T08:00:00Z' },
 ];
 
-export const mockProjectApplications: ProjectApplication[] = [
+// ==========================================
+// CAMPUS HARDWARE PROJECTS
+// ==========================================
+export const mockProjects: Project[] = [
   {
-    id: 'app-1',
-    projectId: 'proj-1',
-    projectTitle: 'AgriPulse - IoT Smart Agriculture',
-    applicantId: 'user-sneha',
-    applicantName: 'Sneha Patel',
-    applicantAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=faces',
-    applicantDepartment: 'Design & Human-Computer Interaction',
-    applicantYear: '3rd Year',
-    appliedPositionId: 'pos-103',
-    appliedPositionTitle: 'UI/UX Mobile Designer',
-    pitch: 'I have designed bilingual farmer mobile interfaces in Figma and would love to contribute to AgriPulse.',
-    relevantSkills: ['Figma', 'UI/UX Design', 'Design Systems'],
-    status: 'pending',
-    appliedAt: '2026-11-05T14:30:00Z',
+    id: 'proj-1',
+    title: 'NIT Nagaland Campus Microgrid Telemetry System',
+    tagline: 'IoT sensor network for lab power monitoring',
+    description: 'Building an IoT sensor array with ESP32 to monitor active power, voltage drops, and power factor across campus labs in real-time.',
+    category: 'Engineering & IoT',
+    ownerDepartment: 'Electrical & Electronics Engineering',
+    ownerId: 'user-rohit',
+    ownerName: 'Rohit Gupta',
+    ownerAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=faces',
+    currentMembers: [
+      { userId: 'user-rohit', name: 'Rohit Gupta', role: 'Hardware & Circuit Lead', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=faces', skills: ['Power Electronics', 'IoT'] },
+      { userId: 'user-vidya', name: 'Vidya Gupta', role: 'Simulation Specialist', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=faces', skills: ['MATLAB', 'Circuit Analysis'] },
+      { userId: 'user-nyoimei', name: 'Nyoimei C Konyak', role: 'Firmware Engineer', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces', skills: ['Embedded C', 'Microcontrollers'] },
+    ],
+    status: 'active',
+    requiredSkills: ['Power Electronics', 'ESP32', 'MATLAB', 'ReactJS'],
+    openPositions: [],
+    milestones: [],
+    createdAt: '2026-11-01T09:00:00Z',
+  },
+  {
+    id: 'proj-2',
+    title: 'Multi-Cell LiFePO4 Electric Vehicle BMS',
+    tagline: 'Smart battery management for electric vehicle prototypes',
+    description: 'Hardware protection system with active cell balancing, temperature cutoff, and CAN-bus telemetry for student EV prototypes.',
+    category: 'Electric Vehicles',
+    ownerDepartment: 'Electrical & Electronics Engineering',
+    ownerId: 'user-betimansa',
+    ownerName: 'Betimansa S Chang',
+    ownerAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=faces',
+    currentMembers: [
+      { userId: 'user-betimansa', name: 'Betimansa S Chang', role: 'BMS Architect', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=faces', skills: ['Battery Management', 'ESP32'] },
+      { userId: 'user-salini', name: 'Devrapalli Salini', role: 'Power Quality Analyst', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=faces', skills: ['Power Systems', 'Solar Energy'] },
+    ],
+    status: 'active',
+    requiredSkills: ['Battery Management', 'CAN-bus', 'Circuit Analysis'],
+    openPositions: [],
+    milestones: [],
+    createdAt: '2026-11-02T11:00:00Z',
   },
 ];
 
-// ============================================================================
-// MOCK SAFETY & MODERATION REPORTS
-// ============================================================================
-export const mockReports: UserReport[] = [
-  {
-    id: 'rep-1',
-    reporterId: 'user-vidya',
-    reportedUserId: 'user-kabir',
-    reason: 'Unverified commercial solicitation during peer review',
-    description: 'During our scheduled peer review on MATLAB Simulink, user posted external commercial promotion links.',
-    status: 'pending',
-    createdAt: '2026-11-04T14:30:00Z',
-  },
-  {
-    id: 'rep-2',
-    reporterId: 'user-salini',
-    reportedUserId: 'user-ananya',
-    reason: 'No-show for confirmed hardware telemetry exchange',
-    description: 'Confirmed session was missed without prior cancellation. Requested exchange credit balance adjustment.',
-    status: 'resolved',
-    createdAt: '2026-11-01T09:15:00Z',
-    resolvedAt: '2026-11-02T11:00:00Z',
-    resolvedBy: 'user-admin',
-  },
-  {
-    id: 'rep-3',
-    reporterId: 'user-nyoimei',
-    reportedUserId: 'user-kasturika',
-    reason: 'Profile title formatting clarification',
-    description: 'Minor inquiry regarding department designation formatting. Resolved via direct peer messaging.',
-    status: 'dismissed',
-    createdAt: '2026-10-28T16:20:00Z',
-    resolvedAt: '2026-10-29T10:00:00Z',
-    resolvedBy: 'user-admin',
-  },
-];
+export const mockProjectApplications: ProjectApplication[] = [];
+export const mockConversations: Conversation[] = [];
+export const mockMessages: Message[] = [];

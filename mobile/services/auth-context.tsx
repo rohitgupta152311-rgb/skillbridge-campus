@@ -14,6 +14,7 @@ export interface MobileUser {
     currentYear: string;
     university: string;
     linkedinUrl?: string;
+    githubUrl?: string;
   };
 }
 
@@ -23,6 +24,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
+  loginWithOAuth: (authUser: MobileUser, authToken: string) => Promise<void>;
   logout: () => Promise<void>;
   setUser: React.Dispatch<React.SetStateAction<MobileUser | null>>;
 }
@@ -70,6 +72,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return false;
   };
 
+  const loginWithOAuth = async (authUser: MobileUser, authToken: string): Promise<void> => {
+    await Storage.setItem('sb_auth_token', authToken);
+    await Storage.setItem('sb_user', JSON.stringify(authUser));
+    setToken(authToken);
+    setUser(authUser);
+  };
+
   const logout = async () => {
     await Storage.removeItem('sb_auth_token');
     await Storage.removeItem('sb_user');
@@ -85,6 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         isLoading,
         login,
+        loginWithOAuth,
         logout,
         setUser,
       }}
