@@ -77,6 +77,18 @@ export const MobileApi = {
       body: JSON.stringify({ email, password }),
     }),
 
+  sendRegistrationOtp: (payload: any) =>
+    request<any>('/auth/send-registration-otp', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  verifyRegistrationOtp: (payload: any) =>
+    request<any>('/auth/verify-registration-otp', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
   register: (payload: any) =>
     request<any>('/auth/register', {
       method: 'POST',

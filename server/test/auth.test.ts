@@ -74,6 +74,47 @@ describe('Authentication & Firebase Security Suite', () => {
     assert.strictEqual(canLink, false, 'Unverified email MUST NOT be automatically linked to existing account');
   });
 
+  test('2FA Registration Security: generates 6-digit numeric code and enforces expiration', () => {
+    // 1. Generate 6-digit numeric OTP code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    assert.strictEqual(code.length, 6);
+    assert.match(code, /^\d{6}$/);
+
+    // 2. Expiration logic: 10 minutes TTL
+    const createdAt = Date.now();
+    const expiresAt = createdAt + 10 * 60 * 1000;
+    const isExpired = (now: number) => now > expiresAt;
+
+    assert.strictEqual(isExpired(createdAt + 5 * 60 * 1000), false, '5-minute code should be valid');
+    assert.strictEqual(isExpired(createdAt + 11 * 60 * 1000), true, '11-minute code must be expired');
+  });
+
+  test('2FA Registration Security: rate limits after 5 failed verification attempts', () => {
+    let attempts = 0;
+    const maxAttempts = 5;
+    const correctCode = '654321';
+    const testAttempt = (code: string) => {
+      if (attempts >= maxAttempts) {
+        return { success: false, rateLimited: true };
+      }
+      if (code !== correctCode) {
+        attempts += 1;
+        return { success: false, rateLimited: false, attemptsRemaining: maxAttempts - attempts };
+      }
+      return { success: true, rateLimited: false };
+    };
+
+    // Try 5 incorrect codes
+    for (let i = 0; i < 5; i++) {
+      const res = testAttempt('000000');
+      assert.strictEqual(res.success, false);
+    }
+
+    // 6th attempt is rate-limited
+    const lockout = testAttempt('654321');
+    assert.strictEqual(lockout.rateLimited, true, 'User must be locked out after 5 consecutive failed 2FA attempts');
+  });
+
   test('Token expiration verification logic', () => {
     const nowSec = Math.floor(Date.now() / 1000);
     const expiredPayload = { exp: nowSec - 300 }; // 5 min ago

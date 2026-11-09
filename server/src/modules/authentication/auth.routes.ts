@@ -22,6 +22,8 @@ import {
   authenticateWithGoogle,
   authenticateWithGitHub,
   previewGitHubUser,
+  sendRegistrationOtp,
+  verifyRegistrationOtp,
 } from './auth.controller.js';
 import { requireAuth } from '../../middleware/authentication.js';
 
@@ -41,6 +43,10 @@ authRouter.get('/firebase-config', getFirebaseConfig);
 authRouter.post('/google-authenticate', authenticateWithGoogle);
 authRouter.post('/github-authenticate', authenticateWithGitHub);
 authRouter.get('/github-preview/:username', previewGitHubUser);
+
+// Two-Factor Email Authentication (2FA) for Registration
+authRouter.post('/send-registration-otp', sendRegistrationOtp);
+authRouter.post('/verify-registration-otp', verifyRegistrationOtp);
 
 // OAuth Initiation & Status
 authRouter.get('/oauth-status', getOAuthStatus);

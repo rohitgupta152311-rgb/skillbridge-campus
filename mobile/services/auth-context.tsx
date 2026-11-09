@@ -29,6 +29,8 @@ interface AuthContextType {
   loginWithOAuth: (authUser: MobileUser, authToken: string) => Promise<void>;
   loginWithGoogle: (payload: { email: string; fullName?: string; avatarUrl?: string }) => Promise<boolean>;
   loginWithGitHub: (payload: { username: string; email?: string }) => Promise<{ success: boolean; error?: string }>;
+  sendRegistrationOtp: (payload: any) => Promise<{ success: boolean; message?: string; data?: any }>;
+  verifyRegistrationOtp: (payload: any) => Promise<{ success: boolean; message?: string; data?: any }>;
   logout: () => Promise<void>;
   setUser: React.Dispatch<React.SetStateAction<MobileUser | null>>;
 }
@@ -120,6 +122,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const sendRegistrationOtp = async (payload: any): Promise<{ success: boolean; message?: string; data?: any }> => {
+    try {
+      const res = await MobileApi.sendRegistrationOtp(payload);
+      return res;
+    } catch (e: any) {
+      return { success: false, message: e?.message || 'Failed to dispatch verification code.' };
+    }
+  };
+
+  const verifyRegistrationOtp = async (payload: any): Promise<{ success: boolean; message?: string; data?: any }> => {
+    try {
+      const res = await MobileApi.verifyRegistrationOtp(payload);
+      if (res.success && res.data) {
+        const authToken = res.data.token;
+        const authUser = res.data.user;
+
+        await Storage.setItem('sb_auth_token', authToken);
+        await Storage.setItem('sb_user', JSON.stringify(authUser));
+
+        setToken(authToken);
+        setUser(authUser);
+        return { success: true, data: res.data };
+      }
+      return { success: false, message: res.message || 'Invalid verification code.' };
+    } catch (e: any) {
+      return { success: false, message: e?.message || 'Verification failed.' };
+    }
+  };
+
   const loginWithOAuth = async (authUser: MobileUser, authToken: string): Promise<void> => {
     await Storage.setItem('sb_auth_token', authToken);
     await Storage.setItem('sb_user', JSON.stringify(authUser));
@@ -145,6 +176,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loginWithOAuth,
         loginWithGoogle,
         loginWithGitHub,
+        sendRegistrationOtp,
+        verifyRegistrationOtp,
         logout,
         setUser,
       }}

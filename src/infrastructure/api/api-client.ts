@@ -105,6 +105,67 @@ export const apiClient = {
     }
   },
 
+  async sendRegistrationOtp(data: {
+    email: string;
+    fullName?: string;
+    password?: string;
+    role?: string;
+    department?: string;
+    year?: string;
+    university?: string;
+  }): Promise<{ success: boolean; data?: { email: string; expiresInSeconds: number; devCode?: string }; message?: string }> {
+    try {
+      const res = await fetch(`${API_BASE}/auth/send-registration-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: data.email,
+          fullName: data.fullName,
+          password: data.password,
+          role: data.role ? (data.role).toUpperCase() : 'MENTEE',
+          department: data.department,
+          currentYear: data.year,
+          university: data.university || 'NIT Nagaland',
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        return { success: false, message: json.message || 'Failed to dispatch verification code' };
+      }
+      return { success: true, data: json.data, message: json.message };
+    } catch (err: any) {
+      return { success: false, message: err?.message || 'Network error while requesting verification code' };
+    }
+  },
+
+  async verifyRegistrationOtp(data: {
+    email: string;
+    code: string;
+    registrationData?: {
+      fullName?: string;
+      password?: string;
+      role?: string;
+      department?: string;
+      year?: string;
+      university?: string;
+    };
+  }): Promise<{ success: boolean; data?: { token: string; user: any }; message?: string }> {
+    try {
+      const res = await fetch(`${API_BASE}/auth/verify-registration-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        return { success: false, message: json.message || 'Invalid verification code' };
+      }
+      return { success: true, data: json.data, message: json.message };
+    } catch (err: any) {
+      return { success: false, message: err?.message || 'Network error verifying security code' };
+    }
+  },
+
   async login(credentials: {
     email: string;
     password: string;

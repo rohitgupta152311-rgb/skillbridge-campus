@@ -11,6 +11,9 @@ import {
   ExternalLink,
   AlertCircle,
   Loader2,
+  KeyRound,
+  ShieldCheck,
+  ArrowLeft,
 } from 'lucide-react';
 import { Button, Input, Select } from '../../shared/components';
 import { useAuthStore } from './auth-store';
@@ -38,6 +41,15 @@ export function RegisterPage() {
     year: '1st Year',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // 2FA Email Verification State
+  const [step, setStep] = useState<'form' | '2fa'>('form');
+  const [otpCode, setOtpCode] = useState('');
+  const [devCode, setDevCode] = useState<string | null>(null);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [resendTimer, setResendTimer] = useState(0);
 
   // Google Instant Verified Sign-In Modal
   const [googleModalOpen, setGoogleModalOpen] = useState(false);
@@ -83,6 +95,107 @@ export function RegisterPage() {
     if (form.password !== form.confirmPassword) e.confirmPassword = 'Passwords do not match';
     setErrors(e);
     return Object.keys(e).length === 0;
+  };
+
+  // 2FA Resend Countdown Timer
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const interval = setInterval(() => {
+      setResendTimer((t) => t - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+
+  const handleStart2FA = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+    setSendingOtp(true);
+    setOtpError(null);
+    const cleanEmail = form.email.trim().toLowerCase();
+    const res = await useAuthStore.getState().sendRegistrationOtp({
+      email: cleanEmail,
+      password: form.password,
+      fullName: form.fullName.trim(),
+      role: form.role,
+      department: form.department,
+      year: form.year,
+    });
+    setSendingOtp(false);
+    if (res.success) {
+      setStep('2fa');
+      setDevCode(res.devCode || null);
+      setResendTimer(60);
+      addToast({
+        type: 'info',
+        title: 'Two-Factor Code Dispatched',
+        message: `A 6-digit security verification code was dispatched to ${cleanEmail}.`,
+      });
+    } else {
+      setOtpError(res.message || 'Failed to dispatch verification code.');
+      addToast({
+        type: 'error',
+        title: 'Registration Error',
+        message: res.message || 'Failed to send verification code.',
+      });
+    }
+  };
+
+  const handleVerify2FA = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanCode = otpCode.trim().replace(/\s+/g, '');
+    if (cleanCode.length !== 6) {
+      setOtpError('Please enter the full 6-digit verification code.');
+      return;
+    }
+    setVerifyingOtp(true);
+    setOtpError(null);
+    const cleanEmail = form.email.trim().toLowerCase();
+    const res = await useAuthStore.getState().verifyRegistrationOtp(cleanEmail, cleanCode, {
+      email: cleanEmail,
+      fullName: form.fullName.trim(),
+      password: form.password,
+      role: form.role,
+      department: form.department,
+      year: form.year,
+    });
+    setVerifyingOtp(false);
+    if (res.success) {
+      addToast({
+        type: 'success',
+        title: 'Two-Factor Verification Successful',
+        message: `Welcome to SkillBridge, ${form.fullName}! Your campus account is verified.`,
+      });
+      navigate('/feed');
+    } else {
+      setOtpError(res.message || 'Invalid or expired verification code. Please try again.');
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0) return;
+    setSendingOtp(true);
+    setOtpError(null);
+    const cleanEmail = form.email.trim().toLowerCase();
+    const res = await useAuthStore.getState().sendRegistrationOtp({
+      email: cleanEmail,
+      password: form.password,
+      fullName: form.fullName.trim(),
+      role: form.role,
+      department: form.department,
+      year: form.year,
+    });
+    setSendingOtp(false);
+    if (res.success) {
+      setDevCode(res.devCode || null);
+      setResendTimer(60);
+      addToast({
+        type: 'info',
+        title: 'New Code Dispatched',
+        message: `A fresh 6-digit verification code was sent to ${cleanEmail}.`,
+      });
+    } else {
+      setOtpError(res.message || 'Failed to resend code.');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -365,6 +478,103 @@ export function RegisterPage() {
             <span className="text-xl font-bold text-slate-900">SkillBridge</span>
           </div>
 
+          {step === '2fa' ? (
+            /* 2FA Verification Step */
+            <div className="space-y-6 animate-fade-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-violet-100 text-violet-700 tracking-wide uppercase">
+                    Step 2 of 2
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">Email 2FA Verification</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setStep('form')}
+                  className="text-xs text-slate-500 hover:text-slate-800 underline flex items-center gap-1 font-medium"
+                >
+                  <ArrowLeft className="w-3 h-3" />
+                  <span>Edit details</span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-violet-50/80 border border-violet-100">
+                <div className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-violet-500/20">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Verify your campus email</h3>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    We sent a 6-digit code to <strong className="text-violet-700 font-mono">{form.email}</strong>
+                  </p>
+                </div>
+              </div>
+
+              {otpError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                  <span>{otpError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleVerify2FA} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-2">
+                    Enter 6-Digit Two-Factor Code
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    autoFocus
+                    placeholder="••••••"
+                    value={otpCode}
+                    onChange={(e) => {
+                      setOtpCode(e.target.value.replace(/[^0-9]/g, ''));
+                      setOtpError(null);
+                    }}
+                    className="w-full text-center tracking-[0.5em] text-2xl font-mono py-3 px-4 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-600 font-bold bg-slate-50/50"
+                  />
+                </div>
+
+                {devCode && (
+                  <div
+                    onClick={() => setOtpCode(devCode)}
+                    className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 cursor-pointer hover:bg-emerald-100 transition-colors flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-2">
+                      <KeyRound className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Security Verification Code: <strong className="font-mono text-sm tracking-widest">{devCode}</strong></span>
+                    </div>
+                    <span className="text-[11px] underline font-semibold text-emerald-700">Auto-fill</span>
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  size="lg"
+                  isLoading={verifyingOtp}
+                  disabled={otpCode.length !== 6 || verifyingOtp}
+                >
+                  Verify & Complete Registration
+                </Button>
+              </form>
+
+              <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs text-slate-500">
+                <span>Didn't receive the email?</span>
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={resendTimer > 0 || sendingOtp}
+                  className="font-semibold text-violet-600 hover:text-violet-700 disabled:text-slate-400 disabled:cursor-not-allowed"
+                >
+                  {resendTimer > 0 ? `Resend code (${resendTimer}s)` : (sendingOtp ? 'Sending...' : 'Resend Code')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">Create your account</h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1 mb-6">
             Join the campus mentorship network in under two minutes.
@@ -435,7 +645,7 @@ export function RegisterPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleStart2FA} className="space-y-4">
             <Input
               label="Full Name"
               placeholder="Full Name (e.g. Rohit Gupta)"
@@ -538,10 +748,12 @@ export function RegisterPage() {
               />
             </div>
 
-            <Button type="submit" isLoading={isLoading} className="w-full mt-2" size="lg">
-              Create Account
+            <Button type="submit" isLoading={isLoading || sendingOtp} className="w-full mt-2" size="lg">
+              {sendingOtp ? 'Sending Verification Code...' : 'Create Account'}
             </Button>
           </form>
+          </>
+          )}
 
           <p className="mt-6 text-center text-xs text-slate-500">
             Already have an account?{' '}

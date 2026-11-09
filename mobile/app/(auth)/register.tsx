@@ -20,7 +20,7 @@ import { useAuth } from '../../services/auth-context';
 
 export default function MobileRegisterScreen() {
   const router = useRouter();
-  const { loginWithGoogle, loginWithGitHub } = useAuth();
+  const { loginWithGoogle, loginWithGitHub, sendRegistrationOtp, verifyRegistrationOtp } = useAuth();
   const [loading, setLoading] = useState(false);
 
   // Google Instant Registration Modal
@@ -45,6 +45,14 @@ export default function MobileRegisterScreen() {
   } | null>(null);
   const [githubError, setGithubError] = useState<string | null>(null);
 
+  // 2FA Email Verification State
+  const [twoFactorVisible, setTwoFactorVisible] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [twoFactorDevCode, setTwoFactorDevCode] = useState<string | null>(null);
+  const [twoFactorError, setTwoFactorError] = useState<string | null>(null);
+  const [twoFactorVerifying, setTwoFactorVerifying] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -54,9 +62,18 @@ export default function MobileRegisterScreen() {
 
   const EMAIL_FORMAT_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
+  // 2FA Resend Countdown Timer
+  React.useEffect(() => {
+    if (resendTimer <= 0) return;
+    const interval = setInterval(() => {
+      setResendTimer((t) => t - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+
   const handleRegister = async () => {
-    const cleanEmail = email.trim().toLowerCase();
     const cleanName = fullName.trim();
+    const cleanEmail = email.trim().toLowerCase();
 
     if (!cleanName || !cleanEmail || !password) {
       Alert.alert('Incomplete Form', 'Please fill in your full name, email, and password.');
@@ -78,34 +95,85 @@ export default function MobileRegisterScreen() {
 
     setLoading(true);
     try {
-      const regRes = await MobileApi.register({
-        fullName: cleanName,
+      const otpRes = await sendRegistrationOtp({
         email: cleanEmail,
         password,
+        fullName: cleanName,
         role: role.toUpperCase(),
         department,
         currentYear: year,
         university: 'National Institute of Technology (NIT) Nagaland',
       });
 
-      if (regRes.success) {
-        Alert.alert(
-          'Registration Submitted',
-          `Thank you, ${cleanName}! Your account has been registered and is pending administrator review. You will be able to sign in once an administrator approves your profile.`,
-          [
-            {
-              text: 'Go to Sign In',
-              onPress: () => router.replace('/(auth)/login'),
-            },
-          ]
-        );
+      if (otpRes.success) {
+        setTwoFactorDevCode(otpRes.data?.devCode || null);
+        setTwoFactorVisible(true);
+        setResendTimer(60);
       } else {
-        Alert.alert('Registration Failed', regRes.message || 'Unable to register account.');
+        Alert.alert('Registration Error', otpRes.message || 'Unable to dispatch verification code.');
       }
     } catch (err: any) {
       Alert.alert('Registration Error', err.message || 'Could not connect to server.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVerify2FA = async () => {
+    const cleanCode = twoFactorCode.trim().replace(/\s+/g, '');
+    if (cleanCode.length !== 6) {
+      setTwoFactorError('Please enter the full 6-digit code.');
+      return;
+    }
+
+    setTwoFactorVerifying(true);
+    setTwoFactorError(null);
+    try {
+      const res = await verifyRegistrationOtp({
+        email: email.trim().toLowerCase(),
+        code: cleanCode,
+        registrationData: {
+          fullName: fullName.trim(),
+          password,
+          role: role.toUpperCase(),
+          department,
+          currentYear: year,
+          university: 'National Institute of Technology (NIT) Nagaland',
+        },
+      });
+
+      if (res.success) {
+        setTwoFactorVisible(false);
+        router.replace('/(tabs)');
+      } else {
+        setTwoFactorError(res.message || 'Invalid or expired code. Please try again.');
+      }
+    } catch (e: any) {
+      setTwoFactorError(e?.message || 'Verification failed.');
+    } finally {
+      setTwoFactorVerifying(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0) return;
+    setLoading(true);
+    const otpRes = await sendRegistrationOtp({
+      email: email.trim().toLowerCase(),
+      password,
+      fullName: fullName.trim(),
+      role: role.toUpperCase(),
+      department,
+      currentYear: year,
+      university: 'National Institute of Technology (NIT) Nagaland',
+    });
+    setLoading(false);
+    if (otpRes.success) {
+      setTwoFactorDevCode(otpRes.data?.devCode || null);
+      setResendTimer(60);
+      Alert.alert('Code Sent', 'A fresh verification code has been dispatched to your email.');
+    } else {
+      Alert.alert('Resend Failed', otpRes.message || 'Unable to resend code.');
     }
   };
 
@@ -315,6 +383,92 @@ export default function MobileRegisterScreen() {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Two-Factor Email Verification Modal */}
+      <Modal
+        visible={twoFactorVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setTwoFactorVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <TouchableOpacity
+              style={styles.modalCloseBtn}
+              onPress={() => setTwoFactorVisible(false)}
+            >
+              <Text style={styles.modalCloseText}>✕</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.modalTitle}>Two-Factor Verification</Text>
+            <Text style={styles.modalSubtitle}>
+              Enter 6-digit security code sent to 
+
+              <Text style={{ fontWeight: '700', color: '#7c3aed' }}>{email.trim().toLowerCase()}</Text>
+            </Text>
+
+            <View style={styles.modalInputGroup}>
+              <Text style={styles.modalLabel}>6-Digit Security Code</Text>
+              <TextInput
+                style={[styles.modalInput, { textAlign: 'center', letterSpacing: 8, fontSize: 20, fontWeight: '700', fontFamily: 'monospace' }]}
+                placeholder="••••••"
+                value={twoFactorCode}
+                onChangeText={(val) => {
+                  setTwoFactorCode(val.replace(/[^0-9]/g, ''));
+                  setTwoFactorError(null);
+                }}
+                keyboardType="numeric"
+                maxLength={6}
+                autoFocus
+              />
+            </View>
+
+            {twoFactorError && (
+              <View style={styles.modalErrorBox}>
+                <Text style={styles.modalErrorText}>{twoFactorError}</Text>
+              </View>
+            )}
+
+            {twoFactorDevCode && (
+              <TouchableOpacity
+                onPress={() => setTwoFactorCode(twoFactorDevCode)}
+                style={[styles.modalProfileCard, { backgroundColor: '#f5f3ff', borderColor: '#ddd6fe' }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 11, color: '#6d28d9', fontWeight: '700' }}>
+                    Verification Code: <Text style={{ fontFamily: 'monospace', fontSize: 13, letterSpacing: 2 }}>{twoFactorDevCode}</Text>
+                  </Text>
+                  <Text style={{ fontSize: 10, color: '#7c3aed', textDecorationLine: 'underline', marginTop: 2 }}>
+                    Tap to auto-fill code
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              style={[styles.modalPrimaryBtn, { backgroundColor: '#7c3aed' }]}
+              onPress={handleVerify2FA}
+              disabled={twoFactorVerifying || twoFactorCode.length !== 6}
+            >
+              {twoFactorVerifying ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : (
+                <Text style={styles.modalPrimaryBtnText}>Verify & Complete Account</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.modalSecondaryBtn}
+              onPress={handleResendOtp}
+              disabled={resendTimer > 0}
+            >
+              <Text style={styles.modalSecondaryBtnText}>
+                {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend Verification Code'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* Google Instant Registration Modal */}
       <Modal

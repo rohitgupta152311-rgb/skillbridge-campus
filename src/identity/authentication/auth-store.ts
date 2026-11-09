@@ -22,6 +22,8 @@ interface AuthState {
   error: string | null;
   login: (email: string, password: string) => Promise<boolean>;
   register: (data: RegisterData) => Promise<boolean>;
+  sendRegistrationOtp: (data: RegisterData) => Promise<{ success: boolean; message?: string; devCode?: string }>;
+  verifyRegistrationOtp: (email: string, code: string, registerData?: RegisterData) => Promise<{ success: boolean; message?: string }>;
   loginWithOAuth: (profile: OAuthProfileData) => Promise<boolean>;
   loginWithGoogle: (payload: { email: string; fullName?: string; avatarUrl?: string }) => Promise<boolean>;
   loginWithGitHub: (username: string, email?: string) => Promise<{ success: boolean; error?: string }>;
@@ -200,6 +202,66 @@ export const useAuthStore = create<AuthState>((set, get) => {
         error: result.message || 'Invalid email or password. Please verify your credentials.',
       });
       return false;
+    },
+
+    sendRegistrationOtp: async (data: RegisterData): Promise<{ success: boolean; message?: string; devCode?: string }> => {
+      set({ isLoading: true, error: null });
+      const result = await apiClient.sendRegistrationOtp({
+        email: data.email,
+        fullName: data.fullName,
+        password: data.password,
+        role: data.role,
+        department: data.department,
+        year: data.year,
+        university: 'NIT Nagaland',
+      });
+      set({ isLoading: false });
+      if (result.success && result.data) {
+        return {
+          success: true,
+          message: result.message,
+          devCode: result.data.devCode,
+        };
+      }
+      const errMsg = result.message || 'Failed to dispatch verification code.';
+      set({ error: errMsg });
+      return { success: false, message: errMsg };
+    },
+
+    verifyRegistrationOtp: async (email: string, code: string, registerData?: RegisterData): Promise<{ success: boolean; message?: string }> => {
+      set({ isLoading: true, error: null });
+      const result = await apiClient.verifyRegistrationOtp({
+        email,
+        code,
+        registrationData: registerData ? {
+          fullName: registerData.fullName,
+          password: registerData.password,
+          role: registerData.role,
+          department: registerData.department,
+          year: registerData.year,
+          university: 'NIT Nagaland',
+        } : undefined,
+      });
+
+      if (result.success && result.data) {
+        const userObj = mapBackendUserToFrontend(result.data.user, result.data.token);
+        userObj.isVerified = true;
+        userObj.isSuspended = false;
+
+        if (!getUserById(userObj.id)) {
+          addUser(userObj);
+        } else {
+          updateLocalUser(userObj.id, userObj);
+        }
+
+        setAuthSession(result.data.token, userObj);
+        set({ user: userObj, isAuthenticated: true, isLoading: false, error: null });
+        return { success: true };
+      }
+
+      const errMsg = result.message || 'Invalid or expired verification code.';
+      set({ isLoading: false, error: errMsg });
+      return { success: false, message: errMsg };
     },
 
     register: async (data: RegisterData): Promise<boolean> => {
