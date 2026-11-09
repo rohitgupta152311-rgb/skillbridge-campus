@@ -159,6 +159,8 @@ export async function login(req: Request, res: Response, next: NextFunction) {
           id: user.id,
           email: user.email,
           role: user.role,
+          isVerified: user.isVerified,
+          isSuspended: user.isSuspended,
           profile: user.profile,
         },
       },

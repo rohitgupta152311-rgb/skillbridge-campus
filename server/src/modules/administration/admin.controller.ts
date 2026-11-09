@@ -242,7 +242,12 @@ export async function updateUserStatus(req: Request, res: Response, next: NextFu
 
     const updateData: any = {};
     if (typeof isSuspended === 'boolean') updateData.isSuspended = isSuspended;
-    if (typeof isVerified === 'boolean') updateData.isVerified = isVerified;
+    if (typeof isVerified === 'boolean') {
+      updateData.isVerified = isVerified;
+      if (isVerified === true && typeof isSuspended !== 'boolean') {
+        updateData.isSuspended = false;
+      }
+    }
     if (role && Object.values(UserRole).includes(role)) updateData.role = role;
 
     const updatedUser = await prisma.user.update({
@@ -318,7 +323,7 @@ export async function verifyMentor(req: Request, res: Response, next: NextFuncti
 
     const user = await prisma.user.update({
       where: { id: userId },
-      data: { isVerified: true },
+      data: { isVerified: true, isSuspended: false },
       include: { profile: true },
     });
 
@@ -349,7 +354,7 @@ export async function approveUser(req: Request, res: Response, next: NextFunctio
 
     const user = await prisma.user.update({
       where: { id: userId },
-      data: { isVerified: true },
+      data: { isVerified: true, isSuspended: false },
       include: { profile: true },
     });
 

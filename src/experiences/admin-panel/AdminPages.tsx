@@ -684,12 +684,20 @@ export function AdminUsersPage() {
   };
 
   const handleToggleVerify = async (userId: string, currentVerified: boolean) => {
-    const success = await apiClient.updateAdminUserStatus(userId, { isVerified: !currentVerified });
+    const nextVerified = !currentVerified;
+    LocalData.updateUser(userId, {
+      isVerified: nextVerified,
+      ...(nextVerified ? { isSuspended: false } : {}),
+    });
+    const success = await apiClient.updateAdminUserStatus(userId, {
+      isVerified: nextVerified,
+      ...(nextVerified ? { isSuspended: false } : {}),
+    });
     if (success) {
       addToast({
         type: 'success',
         title: 'Verification Updated',
-        message: 'Institutional academic credentials verified in database.',
+        message: `Institutional academic credentials ${nextVerified ? 'verified & approved' : 'marked unverified'} in database.`,
       });
       loadUsers();
     } else {
@@ -925,7 +933,7 @@ export function AdminUsersPage() {
                               : 'bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300'
                           }`}
                         >
-                          {isVerified ? 'Verified' : 'Approve'}
+                          {isVerified ? '✓ Approved' : 'Approve'}
                         </button>
                         <button
                           onClick={() =>

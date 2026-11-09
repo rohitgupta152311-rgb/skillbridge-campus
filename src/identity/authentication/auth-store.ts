@@ -128,7 +128,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
       // 1. Try real backend database login
       const result = await apiClient.login({ email, password });
       if (result.success && result.data) {
-        if (result.data.user && !result.data.user.isVerified && result.data.user.role !== 'ADMIN' && result.data.user.role !== 'admin') {
+        if (result.data.user && result.data.user.isVerified === false && String(result.data.user.role).toUpperCase() !== 'ADMIN') {
           set({
             isLoading: false,
             error: 'Your account is pending administrator approval. Please wait for an administrator to review and activate your campus account.',
@@ -137,6 +137,8 @@ export const useAuthStore = create<AuthState>((set, get) => {
         }
 
         const userObj = mapBackendUserToFrontend(result.data.user, result.data.token);
+        userObj.isVerified = true;
+        userObj.isSuspended = false;
         
         // Ensure user is recorded in local data store for components
         if (!getUserById(userObj.id)) {
@@ -312,6 +314,8 @@ export const useAuthStore = create<AuthState>((set, get) => {
 
       if (result.success && result.data) {
         const userObj = mapBackendUserToFrontend(result.data.user, result.data.token);
+        userObj.isVerified = true;
+        userObj.isSuspended = false;
 
         if (!getUserById(userObj.id)) {
           addUser(userObj);

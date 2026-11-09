@@ -6,6 +6,8 @@ export interface MobileUser {
   id: string;
   email: string;
   role: 'MENTEE' | 'MENTOR' | 'FACULTY' | 'ALUMNI' | 'ADMIN';
+  isVerified?: boolean;
+  isSuspended?: boolean;
   profile?: {
     fullName: string;
     avatarUrl?: string;
@@ -57,19 +59,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    const res = await MobileApi.login(email, password);
-    if (res.success && res.data) {
-      const authToken = res.data.token;
-      const authUser = res.data.user;
+    try {
+      const res = await MobileApi.login(email, password);
+      if (res.success && res.data) {
+        const authToken = res.data.token;
+        const authUser = res.data.user;
 
-      await Storage.setItem('sb_auth_token', authToken);
-      await Storage.setItem('sb_user', JSON.stringify(authUser));
+        await Storage.setItem('sb_auth_token', authToken);
+        await Storage.setItem('sb_user', JSON.stringify(authUser));
 
-      setToken(authToken);
-      setUser(authUser);
-      return true;
+        setToken(authToken);
+        setUser(authUser);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
     }
-    return false;
   };
 
   const loginWithOAuth = async (authUser: MobileUser, authToken: string): Promise<void> => {

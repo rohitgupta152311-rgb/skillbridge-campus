@@ -48,9 +48,16 @@ export default function MobileLoginScreen() {
     }
 
     setLoading(true);
-    await login(cleanEmail, password);
+    const success = await login(cleanEmail, password);
     setLoading(false);
-    router.replace('/(tabs)');
+    if (success) {
+      router.replace('/(tabs)');
+    } else {
+      Alert.alert(
+        'Sign In Failed',
+        'Unable to sign in. Please verify your credentials or ensure your account has been approved by campus administration.'
+      );
+    }
   };
 
   const handleLinkedInOIDC = () => {
