@@ -23,6 +23,8 @@ interface AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   register: (data: RegisterData) => Promise<boolean>;
   loginWithOAuth: (profile: OAuthProfileData) => Promise<boolean>;
+  loginWithGoogle: (payload: { email: string; fullName?: string; avatarUrl?: string }) => Promise<boolean>;
+  loginWithGitHub: (username: string, email?: string) => Promise<{ success: boolean; error?: string }>;
   loginWithFirebase: (idToken: string, extraProfile?: { role?: UserRole; department?: string; year?: string; university?: string }) => Promise<boolean>;
   logout: () => void;
   clearError: () => void;
@@ -256,6 +258,59 @@ export const useAuthStore = create<AuthState>((set, get) => {
 
       set({ isLoading: false, error: null });
       return true;
+    },
+
+    loginWithGoogle: async (payload: { email: string; fullName?: string; avatarUrl?: string }): Promise<boolean> => {
+      set({ isLoading: true, error: null });
+      const result = await apiClient.authenticateWithGoogle(payload);
+      if (result.success && result.data) {
+        const userObj = mapBackendUserToFrontend(result.data.user, result.data.token);
+        userObj.isVerified = true;
+        userObj.isSuspended = false;
+
+        if (!getUserById(userObj.id)) {
+          addUser(userObj);
+        } else {
+          updateLocalUser(userObj.id, userObj);
+        }
+
+        setAuthSession(result.data.token, userObj);
+        set({ user: userObj, isAuthenticated: true, isLoading: false, error: null });
+        return true;
+      }
+
+      set({
+        isLoading: false,
+        error: result.message || 'Google authentication failed. Please try again.',
+      });
+      return false;
+    },
+
+    loginWithGitHub: async (username: string, email?: string): Promise<{ success: boolean; error?: string }> => {
+      set({ isLoading: true, error: null });
+      const result = await apiClient.authenticateWithGitHub({ username, email });
+      if (result.success && result.data) {
+        const userObj = mapBackendUserToFrontend(result.data.user, result.data.token);
+        userObj.isVerified = true;
+        userObj.isSuspended = false;
+
+        if (!getUserById(userObj.id)) {
+          addUser(userObj);
+        } else {
+          updateLocalUser(userObj.id, userObj);
+        }
+
+        setAuthSession(result.data.token, userObj);
+        set({ user: userObj, isAuthenticated: true, isLoading: false, error: null });
+        return { success: true };
+      }
+
+      const errMsg = result.message || 'GitHub authentication failed. Please check your username.';
+      set({
+        isLoading: false,
+        error: errMsg,
+      });
+      return { success: false, error: errMsg };
     },
 
     loginWithOAuth: async (profile: OAuthProfileData): Promise<boolean> => {

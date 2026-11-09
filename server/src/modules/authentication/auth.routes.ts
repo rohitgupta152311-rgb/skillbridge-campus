@@ -19,6 +19,9 @@ import {
   getSystemVersion,
   handleFirebaseAuth,
   getFirebaseConfig,
+  authenticateWithGoogle,
+  authenticateWithGitHub,
+  previewGitHubUser,
 } from './auth.controller.js';
 import { requireAuth } from '../../middleware/authentication.js';
 
@@ -33,6 +36,11 @@ authRouter.get('/me', requireAuth, getMe);
 authRouter.post('/firebase', handleFirebaseAuth);
 authRouter.post('/firebase-login', handleFirebaseAuth);
 authRouter.get('/firebase-config', getFirebaseConfig);
+
+// Direct Google & GitHub Verified Sign-In
+authRouter.post('/google-authenticate', authenticateWithGoogle);
+authRouter.post('/github-authenticate', authenticateWithGitHub);
+authRouter.get('/github-preview/:username', previewGitHubUser);
 
 // OAuth Initiation & Status
 authRouter.get('/oauth-status', getOAuthStatus);

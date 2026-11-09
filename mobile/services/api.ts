@@ -95,6 +95,21 @@ export const MobileApi = {
       body: JSON.stringify(payload),
     }),
 
+  authenticateWithGoogle: (payload: { email: string; fullName?: string; avatarUrl?: string }) =>
+    request<any>('/auth/google-authenticate', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  authenticateWithGitHub: (payload: { username: string; email?: string }) =>
+    request<any>('/auth/github-authenticate', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  previewGitHubUser: (username: string) =>
+    request<any>(`/auth/github-preview/${encodeURIComponent(username.trim().replace(/^@/, ''))}`),
+
   getMe: () => request<any>('/auth/me'),
 
   // Feed & Posts (SWR cached for 15s instant tab loading)

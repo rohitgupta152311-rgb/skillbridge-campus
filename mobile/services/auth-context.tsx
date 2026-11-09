@@ -27,6 +27,8 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   loginWithOAuth: (authUser: MobileUser, authToken: string) => Promise<void>;
+  loginWithGoogle: (payload: { email: string; fullName?: string; avatarUrl?: string }) => Promise<boolean>;
+  loginWithGitHub: (payload: { username: string; email?: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   setUser: React.Dispatch<React.SetStateAction<MobileUser | null>>;
 }
@@ -78,6 +80,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginWithGoogle = async (payload: { email: string; fullName?: string; avatarUrl?: string }): Promise<boolean> => {
+    try {
+      const res = await MobileApi.authenticateWithGoogle(payload);
+      if (res.success && res.data) {
+        const authToken = res.data.token;
+        const authUser = res.data.user;
+
+        await Storage.setItem('sb_auth_token', authToken);
+        await Storage.setItem('sb_user', JSON.stringify(authUser));
+
+        setToken(authToken);
+        setUser(authUser);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
+  const loginWithGitHub = async (payload: { username: string; email?: string }): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await MobileApi.authenticateWithGitHub(payload);
+      if (res.success && res.data) {
+        const authToken = res.data.token;
+        const authUser = res.data.user;
+
+        await Storage.setItem('sb_auth_token', authToken);
+        await Storage.setItem('sb_user', JSON.stringify(authUser));
+
+        setToken(authToken);
+        setUser(authUser);
+        return { success: true };
+      }
+      return { success: false, error: res.message || 'GitHub authentication failed' };
+    } catch (e: any) {
+      return { success: false, error: e?.message || 'Network error during GitHub authentication' };
+    }
+  };
+
   const loginWithOAuth = async (authUser: MobileUser, authToken: string): Promise<void> => {
     await Storage.setItem('sb_auth_token', authToken);
     await Storage.setItem('sb_user', JSON.stringify(authUser));
@@ -101,6 +143,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         login,
         loginWithOAuth,
+        loginWithGoogle,
+        loginWithGitHub,
         logout,
         setUser,
       }}

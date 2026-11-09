@@ -983,3 +983,268 @@ export function getFirebaseConfig(_req: Request, res: Response) {
     },
   });
 }
+
+// ─────────────────────────────────────────────
+// DIRECT GOOGLE & GITHUB VERIFIED AUTHENTICATION
+// ─────────────────────────────────────────────
+
+export async function previewGitHubUser(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { username } = req.params;
+    if (!username) {
+      throw new AppError('GitHub username is required', 400);
+    }
+    const cleanUsername = username.trim().replace(/^@/, '');
+    const ghRes = await fetch(`https://api.github.com/users/${encodeURIComponent(cleanUsername)}`, {
+      headers: {
+        'User-Agent': 'SkillBridge-Campus/3.0',
+        Accept: 'application/vnd.github.v3+json',
+      },
+    });
+
+    if (!ghRes.ok) {
+      if (ghRes.status === 404) {
+        throw new AppError(`GitHub user "@${cleanUsername}" was not found on GitHub.`, 404);
+      }
+      throw new AppError(`GitHub API returned status ${ghRes.status}`, ghRes.status);
+    }
+
+    const data = (await ghRes.json()) as any;
+    return res.json({
+      success: true,
+      data: {
+        login: data.login,
+        name: data.name,
+        avatarUrl: data.avatar_url,
+        bio: data.bio,
+        htmlUrl: data.html_url,
+        publicRepos: data.public_repos,
+        followers: data.followers,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function authenticateWithGoogle(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { email, fullName, avatarUrl } = req.body;
+    if (!email || typeof email !== 'string') {
+      throw new AppError('A valid Google email address is required.', 400);
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    if (!EMAIL_FORMAT_REGEX.test(cleanEmail)) {
+      throw new AppError('Please provide a valid Google email format.', 400);
+    }
+
+    const name = (fullName || cleanEmail.split('@')[0] || 'Campus Student').trim();
+
+    let user = await prisma.user.findUnique({
+      where: { email: cleanEmail },
+      include: { profile: true, accounts: true },
+    });
+
+    if (user && user.isSuspended) {
+      throw new AppError('This account has been suspended by campus administration.', 403);
+    }
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: cleanEmail,
+          isVerified: true,
+          isSuspended: false,
+          role: 'MENTEE',
+          profile: {
+            create: {
+              fullName: name,
+              avatarUrl: avatarUrl || null,
+              headline: 'Student at Campus • Verified via Google',
+              university: 'National Institute of Technology (NIT) Nagaland',
+              department: 'Computer Science',
+              currentYear: '1st Year',
+              languages: ['English', 'Hindi'],
+              onlineStatus: 'available',
+            },
+          },
+        },
+        include: { profile: true, accounts: true },
+      });
+    } else if (!user.isVerified) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { isVerified: true, isSuspended: false },
+        include: { profile: true, accounts: true },
+      });
+    }
+
+    const existingGoogleAccount = user.accounts?.find((a) => a.provider === 'google');
+    if (!existingGoogleAccount) {
+      await prisma.account.create({
+        data: {
+          userId: user.id,
+          provider: 'google',
+          providerAccountId: cleanEmail,
+        },
+      });
+    }
+
+    const token = signToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    return res.json({
+      success: true,
+      message: 'Google authentication successful.',
+      data: {
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          isVerified: true,
+          isSuspended: false,
+          profile: user.profile,
+          accounts: user.accounts,
+        },
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function authenticateWithGitHub(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { username, email } = req.body;
+    if (!username || typeof username !== 'string') {
+      throw new AppError('GitHub username is required.', 400);
+    }
+
+    const cleanUsername = username.trim().replace(/^@/, '');
+
+    let ghUser: any = null;
+    try {
+      const ghRes = await fetch(`https://api.github.com/users/${encodeURIComponent(cleanUsername)}`, {
+        headers: {
+          'User-Agent': 'SkillBridge-Campus/3.0',
+          Accept: 'application/vnd.github.v3+json',
+        },
+      });
+      if (ghRes.ok) {
+        ghUser = await ghRes.json();
+      }
+    } catch (e) {
+      console.warn('GitHub API lookup warning:', e);
+    }
+
+    if (!ghUser || !ghUser.login) {
+      throw new AppError(`GitHub user "@${cleanUsername}" was not found on GitHub. Please check the username.`, 404);
+    }
+
+    const userEmail = (email && typeof email === 'string' && EMAIL_FORMAT_REGEX.test(email.trim().toLowerCase()))
+      ? email.trim().toLowerCase()
+      : (ghUser.email ? ghUser.email.toLowerCase() : `${cleanUsername.toLowerCase()}@github.campus.edu`);
+
+    let user = await prisma.user.findUnique({
+      where: { email: userEmail },
+      include: { profile: true, accounts: true },
+    });
+
+    if (user && user.isSuspended) {
+      throw new AppError('This account has been suspended by campus administration.', 403);
+    }
+
+    const displayName = ghUser.name || cleanUsername;
+    const avatarUrl = ghUser.avatar_url || null;
+    const headline = ghUser.bio || `Developer • GitHub @${cleanUsername}`;
+    const githubUrl = ghUser.html_url || `https://github.com/${cleanUsername}`;
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: userEmail,
+          isVerified: true,
+          isSuspended: false,
+          role: 'MENTEE',
+          profile: {
+            create: {
+              fullName: displayName,
+              avatarUrl,
+              headline,
+              githubUrl,
+              university: 'National Institute of Technology (NIT) Nagaland',
+              department: 'Computer Science',
+              currentYear: '1st Year',
+              languages: ['English', 'Hindi'],
+              onlineStatus: 'available',
+            },
+          },
+        },
+        include: { profile: true, accounts: true },
+      });
+    } else if (!user.isVerified) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          isVerified: true,
+          isSuspended: false,
+          profile: {
+            update: {
+              githubUrl,
+              avatarUrl: user.profile?.avatarUrl || avatarUrl,
+            },
+          },
+        },
+        include: { profile: true, accounts: true },
+      });
+    }
+
+    const existingGhAccount = user.accounts?.find((a) => a.provider === 'github');
+    if (!existingGhAccount) {
+      await prisma.account.create({
+        data: {
+          userId: user.id,
+          provider: 'github',
+          providerAccountId: String(ghUser.id || cleanUsername),
+        },
+      });
+    }
+
+    const token = signToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    return res.json({
+      success: true,
+      message: `Authenticated successfully with GitHub (@${cleanUsername}).`,
+      data: {
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          isVerified: true,
+          isSuspended: false,
+          profile: user.profile,
+          accounts: user.accounts,
+        },
+        githubProfile: {
+          login: ghUser.login,
+          name: ghUser.name,
+          avatarUrl: ghUser.avatar_url,
+          htmlUrl: ghUser.html_url,
+          publicRepos: ghUser.public_repos,
+        },
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}

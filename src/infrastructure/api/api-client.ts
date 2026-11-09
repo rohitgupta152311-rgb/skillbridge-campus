@@ -148,6 +148,61 @@ export const apiClient = {
     }
   },
 
+  async authenticateWithGoogle(payload: {
+    email: string;
+    fullName?: string;
+    avatarUrl?: string;
+  }): Promise<{ success: boolean; data?: { token: string; user: any }; message?: string }> {
+    try {
+      const res = await fetch(`${API_BASE}/auth/google-authenticate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        return { success: false, message: json.message || 'Google authentication failed' };
+      }
+      return { success: true, data: json.data, message: json.message };
+    } catch (err: any) {
+      return { success: false, message: err?.message || 'Network error during Google authentication' };
+    }
+  },
+
+  async authenticateWithGitHub(payload: {
+    username: string;
+    email?: string;
+  }): Promise<{ success: boolean; data?: { token: string; user: any; githubProfile?: any }; message?: string }> {
+    try {
+      const res = await fetch(`${API_BASE}/auth/github-authenticate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        return { success: false, message: json.message || 'GitHub authentication failed' };
+      }
+      return { success: true, data: json.data, message: json.message };
+    } catch (err: any) {
+      return { success: false, message: err?.message || 'Network error during GitHub authentication' };
+    }
+  },
+
+  async previewGitHubUser(username: string): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      const clean = username.trim().replace(/^@/, '');
+      const res = await fetch(`${API_BASE}/auth/github-preview/${encodeURIComponent(clean)}`);
+      const json = await res.json();
+      if (!res.ok) {
+        return { success: false, message: json.message || 'GitHub user not found' };
+      }
+      return { success: true, data: json.data };
+    } catch (err: any) {
+      return { success: false, message: err?.message || 'Network error while checking GitHub user' };
+    }
+  },
+
   async getMe(): Promise<any | null> {
     const token = getAuthToken();
     if (!token) return null;

@@ -9,6 +9,9 @@ import {
   ScrollView,
   Alert,
   Linking,
+  Modal,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
@@ -19,15 +22,38 @@ import {
   EyeOff,
 } from 'lucide-react-native';
 import { useAuth } from '../../services/auth-context';
+import { MobileApi } from '../../services/api';
 
 export default function MobileLoginScreen() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, loginWithGoogle, loginWithGitHub } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Google Instant Sign-In Modal
+  const [googleModalVisible, setGoogleModalVisible] = useState(false);
+  const [googleEmail, setGoogleEmail] = useState('');
+  const [googleFullName, setGoogleFullName] = useState('');
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  // GitHub Instant Sign-In Modal
+  const [githubModalVisible, setGithubModalVisible] = useState(false);
+  const [githubUsername, setGithubUsername] = useState('');
+  const [githubEmail, setGithubEmail] = useState('');
+  const [githubChecking, setGithubChecking] = useState(false);
+  const [githubSigningIn, setGithubSigningIn] = useState(false);
+  const [githubProfile, setGithubProfile] = useState<{
+    login: string;
+    name?: string;
+    avatarUrl?: string;
+    bio?: string;
+    publicRepos?: number;
+    followers?: number;
+  } | null>(null);
+  const [githubError, setGithubError] = useState<string | null>(null);
 
   const EMAIL_FORMAT_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -57,6 +83,67 @@ export default function MobileLoginScreen() {
         'Sign In Failed',
         'Unable to sign in. Please verify your credentials or ensure your account has been approved by campus administration.'
       );
+    }
+  };
+
+  const handleGoogleSubmit = async () => {
+    const clean = googleEmail.trim().toLowerCase();
+    if (!clean) {
+      Alert.alert('Email Required', 'Please enter your Google account email.');
+      return;
+    }
+    setGoogleLoading(true);
+    const success = await loginWithGoogle({
+      email: clean,
+      fullName: googleFullName.trim() || undefined,
+    });
+    setGoogleLoading(false);
+    if (success) {
+      setGoogleModalVisible(false);
+      router.replace('/(tabs)');
+    } else {
+      Alert.alert('Sign-In Failed', 'Unable to authenticate with Google. Please try again.');
+    }
+  };
+
+  const handleLookupGitHub = async () => {
+    const clean = githubUsername.trim().replace(/^@/, '');
+    if (!clean) return;
+    setGithubChecking(true);
+    setGithubError(null);
+    try {
+      const res = await MobileApi.previewGitHubUser(clean);
+      if (res.success && res.data) {
+        setGithubProfile(res.data);
+      } else {
+        setGithubProfile(null);
+        setGithubError(res.message || `GitHub user "@${clean}" not found.`);
+      }
+    } catch (e: any) {
+      setGithubProfile(null);
+      setGithubError(e?.message || 'Could not verify GitHub username.');
+    } finally {
+      setGithubChecking(false);
+    }
+  };
+
+  const handleGitHubSubmit = async () => {
+    const clean = githubUsername.trim().replace(/^@/, '');
+    if (!clean) {
+      Alert.alert('Username Required', 'Please enter your GitHub username.');
+      return;
+    }
+    setGithubSigningIn(true);
+    const res = await loginWithGitHub({
+      username: clean,
+      email: githubEmail.trim() || undefined,
+    });
+    setGithubSigningIn(false);
+    if (res.success) {
+      setGithubModalVisible(false);
+      router.replace('/(tabs)');
+    } else {
+      setGithubError(res.error || 'GitHub sign-in failed.');
     }
   };
 
@@ -108,14 +195,14 @@ export default function MobileLoginScreen() {
           <View style={styles.socialRow}>
             <TouchableOpacity
               style={styles.socialBtn}
-              onPress={handleGoogleOAuth}
+              onPress={() => setGoogleModalVisible(true)}
             >
               <Text style={styles.socialBtnText}>Google SSO</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.socialBtn}
-              onPress={handleGithubOAuth}
+              onPress={() => setGithubModalVisible(true)}
             >
               <Text style={styles.socialBtnText}>GitHub</Text>
             </TouchableOpacity>
@@ -251,6 +338,180 @@ export default function MobileLoginScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Google Instant Sign-In Modal */}
+      <Modal
+        visible={googleModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setGoogleModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <TouchableOpacity
+              style={styles.modalCloseBtn}
+              onPress={() => setGoogleModalVisible(false)}
+            >
+              <Text style={styles.modalCloseText}>✕</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.modalTitle}>Sign in with Google</Text>
+            <Text style={styles.modalSubtitle}>Verified Google SSO Authentication</Text>
+
+            <View style={styles.modalInputGroup}>
+              <Text style={styles.modalLabel}>Google Email Address</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="e.g. name@gmail.com"
+                value={googleEmail}
+                onChangeText={setGoogleEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.modalInputGroup}>
+              <Text style={styles.modalLabel}>Full Name (optional)</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="e.g. Rohit Gupta"
+                value={googleFullName}
+                onChangeText={setGoogleFullName}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={styles.modalPrimaryBtn}
+              onPress={handleGoogleSubmit}
+              disabled={googleLoading || !googleEmail.trim()}
+            >
+              {googleLoading ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : (
+                <Text style={styles.modalPrimaryBtnText}>Continue with Google</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.modalSecondaryBtn}
+              onPress={() => {
+                setGoogleModalVisible(false);
+                handleGoogleOAuth();
+              }}
+            >
+              <Text style={styles.modalSecondaryBtnText}>Open Browser OAuth Instead</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* GitHub Instant Sign-In Modal */}
+      <Modal
+        visible={githubModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          setGithubModalVisible(false);
+          setGithubProfile(null);
+          setGithubError(null);
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <TouchableOpacity
+              style={styles.modalCloseBtn}
+              onPress={() => {
+                setGithubModalVisible(false);
+                setGithubProfile(null);
+                setGithubError(null);
+              }}
+            >
+              <Text style={styles.modalCloseText}>✕</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.modalTitle}>Sign in with GitHub</Text>
+            <Text style={styles.modalSubtitle}>Verify your live GitHub profile & repos</Text>
+
+            <View style={styles.modalInputGroup}>
+              <Text style={styles.modalLabel}>GitHub Username</Text>
+              <View style={styles.modalLookupRow}>
+                <TextInput
+                  style={[styles.modalInput, { flex: 1 }]}
+                  placeholder="e.g. rohitgupta152311-rgb"
+                  value={githubUsername}
+                  onChangeText={(val) => {
+                    setGithubUsername(val);
+                    setGithubError(null);
+                  }}
+                  autoCapitalize="none"
+                />
+                <TouchableOpacity
+                  style={styles.modalLookupBtn}
+                  onPress={handleLookupGitHub}
+                  disabled={githubChecking || !githubUsername.trim()}
+                >
+                  <Text style={styles.modalLookupBtnText}>
+                    {githubChecking ? '...' : 'Verify'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {githubError && (
+              <View style={styles.modalErrorBox}>
+                <Text style={styles.modalErrorText}>{githubError}</Text>
+              </View>
+            )}
+
+            {githubProfile && (
+              <View style={styles.modalProfileCard}>
+                {githubProfile.avatarUrl && (
+                  <Image
+                    source={{ uri: githubProfile.avatarUrl }}
+                    style={styles.modalAvatar}
+                  />
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.modalProfileName}>{githubProfile.name || githubProfile.login}</Text>
+                  <Text style={styles.modalProfileLogin}>@{githubProfile.login}</Text>
+                  {githubProfile.bio && (
+                    <Text style={styles.modalProfileBio} numberOfLines={2}>{githubProfile.bio}</Text>
+                  )}
+                  <Text style={styles.modalProfileStats}>
+                    {githubProfile.publicRepos || 0} Repos • {githubProfile.followers || 0} Followers
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            <View style={styles.modalInputGroup}>
+              <Text style={styles.modalLabel}>Campus Email (optional)</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="e.g. student@nitnagaland.ac.in"
+                value={githubEmail}
+                onChangeText={setGithubEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.modalPrimaryBtn, { backgroundColor: '#0f172a' }]}
+              onPress={handleGitHubSubmit}
+              disabled={githubSigningIn || !githubUsername.trim()}
+            >
+              {githubSigningIn ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : (
+                <Text style={styles.modalPrimaryBtnText}>
+                  {githubProfile ? `Sign in as @${githubProfile.login}` : 'Sign in with GitHub'}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -476,5 +737,162 @@ const styles = StyleSheet.create({
   switchHighlight: {
     color: '#7c3aed',
     fontWeight: '700',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
+    padding: 20,
+    width: '100%',
+    maxWidth: 380,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  modalCloseBtn: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  modalCloseText: {
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '700',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0f172a',
+    marginTop: 4,
+  },
+  modalSubtitle: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+    marginBottom: 16,
+  },
+  modalInputGroup: {
+    marginBottom: 12,
+  },
+  modalLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    fontSize: 13,
+    color: '#0f172a',
+    backgroundColor: '#f8fafc',
+  },
+  modalLookupRow: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+  },
+  modalLookupBtn: {
+    backgroundColor: '#e2e8f0',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  modalLookupBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#1e293b',
+  },
+  modalErrorBox: {
+    backgroundColor: '#fef2f2',
+    borderColor: '#fecaca',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 8,
+    marginBottom: 10,
+  },
+  modalErrorText: {
+    color: '#dc2626',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  modalProfileCard: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 14,
+    padding: 10,
+    marginBottom: 12,
+  },
+  modalAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#cbd5e1',
+  },
+  modalProfileName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  modalProfileLogin: {
+    fontSize: 11,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  modalProfileBio: {
+    fontSize: 10,
+    color: '#475569',
+    marginTop: 2,
+  },
+  modalProfileStats: {
+    fontSize: 10,
+    color: '#2563eb',
+    fontWeight: '600',
+    marginTop: 3,
+  },
+  modalPrimaryBtn: {
+    backgroundColor: '#2563eb',
+    borderRadius: 14,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  modalPrimaryBtnText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  modalSecondaryBtn: {
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  modalSecondaryBtnText: {
+    color: '#64748b',
+    fontSize: 11,
+    fontWeight: '600',
   },
 });
